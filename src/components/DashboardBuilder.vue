@@ -6,7 +6,7 @@
         >
       <v-card flat>
           <v-list>
-            <v-subheader>Columns</v-subheader>
+            <v-subheader>Dashboard Columns</v-subheader>
 
               <v-list-item-group
                   color="primary"
@@ -33,10 +33,10 @@
 
               </v-list-item-group>
 
-            <v-list-item>
-              <v-btn @click="add">Add</v-btn>
-              <v-btn @click="replace">Replace</v-btn>
-            </v-list-item>
+<!--            <v-list-item>-->
+<!--              <v-btn @click="add">Add</v-btn>-->
+<!--              <v-btn @click="replace">Replace</v-btn>-->
+<!--            </v-list-item>-->
         </v-list>
       </v-card>
 
@@ -48,7 +48,7 @@
         >
       <v-card flat>
         <v-list>
-          <v-subheader>Columns</v-subheader>
+          <v-subheader>Available Columns</v-subheader>
 
           <v-list-item-group
               color="primary"
@@ -75,12 +75,49 @@
 
           </v-list-item-group>
 
-          <v-list-item>
-            <v-btn @click="add">Add</v-btn>
-            <v-btn @click="replace">Replace</v-btn>
-          </v-list-item>
+<!--          <v-list-item>-->
+<!--            <v-btn @click="add">Add</v-btn>-->
+<!--            <v-btn @click="replace">Replace</v-btn>-->
+<!--          </v-list-item>-->
         </v-list>
       </v-card>
+    </v-col>
+
+    <v-col
+        cols="12"
+        sm="4"
+    >
+      <v-card
+          flat
+          min-height="268"
+          class="mt-2 p-4"
+      >
+        <v-card-title>Layout Properties <v-spacer></v-spacer><v-btn>Preview</v-btn></v-card-title>
+
+        <v-card-text>
+          <v-text-field
+              label="Title"
+              :rules="[required]"
+              hide-details="auto"
+              v-model="this.activeLayoutModel.title"
+          ></v-text-field>
+          <v-text-field label="Another input"></v-text-field>
+
+        </v-card-text>
+      </v-card>
+
+      <v-card
+          rounded="lg"
+          min-height="268"
+          class="mt-0 p-4"
+      >
+
+        <v-card-title>Element Properties</v-card-title>
+        <v-card-text>
+
+        </v-card-text>
+      </v-card>
+
     </v-col>
 
   </v-row>

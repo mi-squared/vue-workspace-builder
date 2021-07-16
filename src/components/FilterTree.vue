@@ -2,10 +2,10 @@
   <div>
     <v-treeview
         v-model="tree"
-        :items="items"
-        activatable
+        :items="filters"
         item-key="name"
         open-all
+
     >
 
       <template v-slot:label="{ item }">
@@ -115,7 +115,7 @@ export default {
       xls: 'mdi-file-excel',
     },
     tree: [],
-    items: [
+    filters: [
       {
         name: 'any',
         type: 'any',

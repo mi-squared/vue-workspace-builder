@@ -1,11 +1,12 @@
 <template>
 
 <div id="page-layouts">
+  <!-- This is the dialog at the top for creating a new layout -->
   <v-tabs vertical>
-
-    <v-menu
-        bottom
-        left
+    <v-dialog
+        v-model="showNewLayoutDialog"
+        persistent
+        max-width="600px"
     >
       <template v-slot:activator="{ on, attrs }">
         <v-btn
@@ -21,39 +22,47 @@
         </v-btn>
       </template>
 
-      <v-list class="grey lighten-3">
-        <v-list-item>
-          <v-icon>
-            mdi-gr
-          </v-icon>
-          Form
-        </v-list-item>
+      <v-card>
+        <v-card-title>
+          <span class="text-h5">New Layout</span>
+        </v-card-title>
+        <v-card-text>
+          <v-container>
+            <v-text-field
+                v-model="newLayoutModel.title"
+                label="Layout Title*"
+                required
+            ></v-text-field>
+            <v-select
+                v-model="newLayoutModel.type"
+                :items="['Dashboard', 'Form', 'Read-only', 'Report']"
+                label="Type*"
+                required
+            ></v-select>
+          </v-container>
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn
+              color="blue darken-1"
+              text
+              @click="showNewLayoutDialog = false"
+          >
+            Close
+          </v-btn>
+          <v-btn
+              color="blue darken-1"
+              text
+              @click="saveNewLayout"
+          >
+            Save
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+    <!-- End of the new layout dialog -->
 
-        <v-list-item>
-          <v-icon>
-            mdi-gr
-          </v-icon>
-          Dashboard
-        </v-list-item>
-
-        <v-list-item>
-          <v-icon>
-            mdi-gr
-          </v-icon>
-          Read-only View
-        </v-list-item>
-
-        <v-list-item>
-          <v-icon>
-            mdi-gr
-          </v-icon>
-          Report
-        </v-list-item>
-
-      </v-list>
-    </v-menu>
-
-
+    <!-- this is the list of existing layouts -->
     <v-tab>
       Report
     </v-tab>
@@ -65,6 +74,7 @@
     <v-tab>
       Dashboard
     </v-tab>
+    <!-- end of existing layouts -->
 
     <v-tab-item>
       <v-card flat>
@@ -120,7 +130,19 @@ export default {
   },
   data () {
     return {
-      showNewLayoutMenu: false
+      showNewLayoutDialog: false,
+      layouts: [
+
+      ],
+      newLayoutModel: {},
+      activeLayoutModel: {}
+    }
+  },
+  methods: {
+    saveNewLayout () {
+      // Save the new layout model that gets initial data from the modal, store it, and then
+      // set it to the active layout model to edit.
+      this.showNewLayoutDialog = false
     }
   }
 }

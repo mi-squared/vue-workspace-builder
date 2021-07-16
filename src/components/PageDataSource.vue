@@ -3,7 +3,7 @@
   <v-container>
     <v-card flat>
       <v-toolbar flat>
-        <v-toolbar-title>Schema</v-toolbar-title>
+        <v-toolbar-title>Specification (schema)</v-toolbar-title>
         <v-spacer></v-spacer>
         <v-dialog
             v-model="dialog"
@@ -109,7 +109,7 @@
           </thead>
           <tbody>
           <tr
-              v-for="column in schema.columns"
+              v-for="column in spec.columns"
               :key="column.name"
               :class="{ 'grey': (column.extra.createdBy == 'system')}"
           >
@@ -223,12 +223,15 @@ export default {
   },
   methods:{
     save() {
+      // When the user clicks on the save button on the dialog, we need to create a new column.
+      // This method hides the dialog, then dispatches a message to the store to create the data-source column.
       this.dialog = false
       this.$emit('save', this.model)
       this.$store.dispatch('createDataSourceColumn', {
         workspaceId: this.activeWorkspace,
         column: this.model
       })
+      // Reset the model for the next new column
       this.model = {}
     }
   },
@@ -236,8 +239,8 @@ export default {
     activeWorkspace () {
       return this.$store.state.userState.activeWorkspace
     },
-    schema () {
-      return this.$store.state.workspaces[this.activeWorkspace].dataSource.schema
+    spec () {
+      return this.$store.state.workspaces[this.activeWorkspace].dataSource.spec
     }
   }
 }

@@ -19,24 +19,7 @@
           cols="12"
           sm="4"
       >
-        <v-card
-            flat
-            min-height="268"
-            class="mt-2 p-4"
-        >
-          <v-card-title>Layout Properties <v-spacer></v-spacer><v-btn>Preview</v-btn></v-card-title>
-
-          <v-card-text>
-            <v-text-field
-                label="Title"
-                :rules="rules"
-                hide-details="auto"
-                v-model="this.activeLayoutModel.title"
-            ></v-text-field>
-            <v-text-field label="Another input"></v-text-field>
-
-          </v-card-text>
-        </v-card>
+        <LayoutProperties :layout-model="activeLayoutModel"></LayoutProperties>
 
         <v-card
             rounded="lg"
@@ -63,10 +46,12 @@
 <script>
 import VueGridDesigner from '@thefoot/vue-grid-designer'
 import FormElementSelector from "@/components/FormElementSelector"
+import LayoutProperties from '@/components/LayoutProperties'
 
 export default {
   name: 'LayoutBuilder',
   components: {
+    LayoutProperties,
     FormElementSelector,
     VueGridDesigner
   },

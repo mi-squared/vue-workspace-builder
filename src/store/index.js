@@ -16,7 +16,7 @@ export default new Vuex.Store({
                 title: "CET",
                 administrator: "admin",
                 dataSource: {
-                    schema: {
+                    spec: {
                         columns: {
                             "id" : {
                                 name: "id",

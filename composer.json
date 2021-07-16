@@ -1,0 +1,11 @@
+{
+    "name": "mi-squared/vue-workspace-builder",
+    "description": "Vue Workspace Builder Client",
+    "type": "openemr-module",
+    "authors": [
+        {
+            "name": "Ken Chapple",
+            "email": "ken@mi-squared.com"
+        }
+    ]
+}
