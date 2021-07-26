@@ -116,27 +116,89 @@ export default new Vuex.Store({
                                 key: "PRIMARY",
                                 column: "id",
                             }
-                        ],
-                        options: {
-                            keys: [{
-                                name: 'Choose Key',
-                                id: -99
-                            },{
-                                name: 'Crash Number',
-                                id: 134
-                            },{
-                                name: 'GUID',
-                                id: 87
-                            },{
-                                name: 'Daily Startup',
-                                id: 256
-                            },{
-                                name: 'IP',
-                                id: 121
-                            }]
-                        }
+                        ]
                     }
                 },
+                dashboards: [],
+                forms: [
+                    {
+                        id: 100,
+                        title: "Dashboard Create Form",
+                        // JSON Schema definition utilizing the format required by this library:
+                        // https://koumoul-dev.github.io/vuetify-jsonschema-form/latest/getting-started
+                        formDefinition: {
+                            // Global Options
+                            options: {
+                                "timePickerProps": {
+                                    "format": "24h"
+                                }
+                            },
+                            schema: {
+                                "properties": {
+                                    "stringProp": {
+                                        "type": "string",
+                                        "title": "I'm a string",
+                                        "format": "string",
+                                        "x-cols": 6
+                                    },
+                                    "dateTimeProp": {
+                                        "type": "string",
+                                        "title": "I'm a date-time",
+                                        "format": "date-time",
+                                        "description": "This description is used as a help message.",
+                                        "x-cols": 6
+                                    },
+                                    "stringTextareaProp": {
+                                        "type": "string",
+                                        "title": "I'm a string in a textarea",
+                                        "x-display": "textarea"
+                                    },
+                                    "numberProp": {
+                                        "type": "number",
+                                        "title": "I'm a number"
+                                    },
+                                    "integerProp": {
+                                        "type": "integer",
+                                        "title": "I'm an integer"
+                                    },
+                                    "integerSliderProp": {
+                                        "type": "integer",
+                                        "title": "I'm an integer in a slider",
+                                        "x-display": "slider",
+                                        "minimum": 0,
+                                        "maximum": 5
+                                    },
+                                    "booleanProp": {
+                                        "type": "boolean",
+                                        "title": "I'm a boolean",
+                                        "description": "This description is used as a help message."
+                                    },
+                                    "booleanSwitchProp": {
+                                        "type": "boolean",
+                                        "title": "I'm a boolean with switch display",
+                                        "x-display": "switch",
+                                        "description": "This description is used as a help message."
+                                    },
+                                    "stringArrayProp": {
+                                        "type": "array",
+                                        "title": "I'm an array of strings",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "integerArrayProp": {
+                                        "type": "array",
+                                        "title": "I'm an array of integers",
+                                        "items": {
+                                            "type": "integer"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                    }
+                ],
                 views: [
                     {
                         order: 0,
@@ -175,6 +237,33 @@ export default new Vuex.Store({
                 username: 'mm',
                 displayName: 'Michael'
             },
+        ],
+        lists: [
+            {
+                title: "Address Book Types",
+                id: "abook_type",
+                type: "list_options"
+            },
+            {
+                title: "AHCCCS Behavioral Plan",
+                id: "AHCCCS_Behavioral_Plan",
+                type: "list_options"
+            },
+            {
+                title: "AHCCCS Physical Health",
+                id: "AHCCCS_Physical_Health",
+                type: "list_options"
+            },
+            {
+                title: "Users",
+                id: "__users",
+                type: "custom"
+            },
+            {
+                title: "Facilities",
+                id: "__facilities",
+                type: "custom"
+            }
         ]
     },
     actions: {

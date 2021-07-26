@@ -63,56 +63,18 @@
     <!-- End of the new layout dialog -->
 
     <!-- this is the list of existing layouts -->
-    <v-tab>
-      Report
+    <v-tab v-for="form in forms" :key="form.id">
+        {{ form.title }}
     </v-tab>
+    <!-- end of existing forms -->
 
-    <v-tab>
-      Form
-    </v-tab>
-
-    <v-tab>
-      Dashboard
-    </v-tab>
-    <!-- end of existing layouts -->
-
-    <v-tab-item>
+    <v-tab-item v-for="form in forms" :key="form.id">
       <v-card flat>
-        <layout-builder></layout-builder>
+          Let's Build a Form
+        <LayoutBuilder></LayoutBuilder>
       </v-card>
     </v-tab-item>
 
-    <v-tab-item>
-      <v-card flat>
-        <v-card-text>
-          <p>
-            Morbi nec metus. Suspendisse faucibus, nunc et pellentesque egestas, lacus ante convallis tellus, vitae iaculis lacus elit id tortor. Sed mollis, eros et ultrices tempus, mauris ipsum aliquam libero, non adipiscing dolor urna a orci. Curabitur ligula sapien, tincidunt non, euismod vitae, posuere imperdiet, leo. Nunc sed turpis.
-          </p>
-
-          <p>
-            Suspendisse feugiat. Suspendisse faucibus, nunc et pellentesque egestas, lacus ante convallis tellus, vitae iaculis lacus elit id tortor. Proin viverra, ligula sit amet ultrices semper, ligula arcu tristique sapien, a accumsan nisi mauris ac eros. In hac habitasse platea dictumst. Fusce ac felis sit amet ligula pharetra condimentum.
-          </p>
-
-          <p>
-            Sed consequat, leo eget bibendum sodales, augue velit cursus nunc, quis gravida magna mi a libero. Nam commodo suscipit quam. In consectetuer turpis ut velit. Sed cursus turpis vitae tortor. Aliquam eu nunc.
-          </p>
-
-          <p>
-            Etiam ut purus mattis mauris sodales aliquam. Ut varius tincidunt libero. Aenean viverra rhoncus pede. Duis leo. Fusce fermentum odio nec arcu.
-          </p>
-
-          <p class="mb-0">
-            Donec venenatis vulputate lorem. Aenean viverra rhoncus pede. In dui magna, posuere eget, vestibulum et, tempor auctor, justo. Fusce commodo aliquam arcu. Suspendisse enim turpis, dictum sed, iaculis a, condimentum nec, nisi.
-          </p>
-        </v-card-text>
-      </v-card>
-    </v-tab-item>
-
-    <v-tab-item>
-      <v-card flat>
-        <DashboardBuilder></DashboardBuilder>
-      </v-card>
-    </v-tab-item>
 
   </v-tabs>
 </div>
@@ -120,12 +82,10 @@
 
 <script>
 import LayoutBuilder from './LayoutBuilder'
-import DashboardBuilder from "@/components/DashboardBuilder"
 
 export default {
   name: "PageLayouts",
   components: {
-    DashboardBuilder,
     LayoutBuilder
   },
   data () {
@@ -137,6 +97,14 @@ export default {
       newLayoutModel: {},
       activeLayoutModel: {}
     }
+  },
+  computed: {
+      activeWorkspace () {
+          return this.$store.state.workspaces[this.$store.state.userState.activeWorkspace]
+      },
+     forms () {
+         return this.activeWorkspace.forms
+     }
   },
   methods: {
     saveNewLayout () {
