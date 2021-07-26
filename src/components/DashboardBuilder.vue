@@ -133,6 +133,12 @@ export default {
   components: {
     draggable
   },
+    props: {
+      dashboard: {
+          type: Object,
+          required: true
+      }
+    },
   data() {
     return {
       selectedItem: 1,

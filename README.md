@@ -1,4 +1,4 @@
-# vue-filter-builder
+# vue-workspace-builder
 
 ## Project setup
 ```

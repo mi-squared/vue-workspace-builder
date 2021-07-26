@@ -51,7 +51,7 @@
                       >
                         <v-select
                             v-model="model.type"
-                            :items="['Integer', 'String', 'Long Text', 'Date', 'Date Time', 'Patient', 'User', 'Facility', 'List', ]"
+                            :items="['Integer', 'String', 'Long Text', 'Date', 'Date Time', 'Patient', 'User', 'List', ]"
                             label="Type"
                             :rules="[required]"
                             required

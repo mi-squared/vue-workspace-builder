@@ -1,11 +1,13 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
+import axios from 'axios'
 
 Vue.use(Vuex)
 
 export default new Vuex.Store({
     state: {
         count: 0,
+        metaData: {},
         userState: {
             activeWorkspace: 1,
             userId: 1
@@ -17,8 +19,8 @@ export default new Vuex.Store({
                 administrator: "admin",
                 dataSource: {
                     spec: {
-                        columns: {
-                            "id" : {
+                        columns: [
+                            {
                                 name: "id",
                                 type: "int(11)",
                                 default: "",
@@ -28,7 +30,7 @@ export default new Vuex.Store({
                                     createdDate: '2021-06-20'
                                 }
                             },
-                            "created_date" : {
+                            {
                                 name: "created_date",
                                 type: "datetime",
                                 default: "",
@@ -38,7 +40,7 @@ export default new Vuex.Store({
                                     createdDate: '2021-06-20'
                                 }
                             },
-                            "created_by" : {
+                            {
                                 name: "created_by",
                                 type: "int(11)",
                                 default: "",
@@ -48,7 +50,7 @@ export default new Vuex.Store({
                                     createdDate: '2021-06-20'
                                 }
                             },
-                            "updated_date" : {
+                            {
                                 name: "updated_date",
                                 type: "datetime",
                                 default: "",
@@ -58,7 +60,7 @@ export default new Vuex.Store({
                                     createdDate: '2021-06-20'
                                 }
                             },
-                            "updated_by" : {
+                            {
                                 name: "updated_by",
                                 type: "int(11)",
                                 default: "",
@@ -68,7 +70,37 @@ export default new Vuex.Store({
                                     createdDate: '2021-06-20'
                                 }
                             },
-                            "source" : {
+                            {
+                                name: "dashboard_id",
+                                type: "int(11)",
+                                default: "",
+                                comment: "refers to the dashboard that the entity is currently on",
+                                extra: {
+                                    createdBy: 'system',
+                                    createdDate: '2021-06-20'
+                                }
+                            },
+                            {
+                                name: "moved_to_dashboard_date",
+                                type: "datetime",
+                                default: "",
+                                comment: "datetime that an entity was moved to dashboard",
+                                extra: {
+                                    createdBy: 'system',
+                                    createdDate: '2021-06-20'
+                                }
+                            },
+                            {
+                                name: "moved_to_dashboard_by",
+                                type: "int(11)",
+                                default: "",
+                                comment: "refers to users.id",
+                                extra: {
+                                    createdBy: 'system',
+                                    createdDate: '2021-06-20'
+                                }
+                            },
+                            {
                                 name: "source",
                                 type: "varchar(255)",
                                 default: "",
@@ -78,13 +110,13 @@ export default new Vuex.Store({
                                     createdDate: '2021-06-20'
                                 }
                             }
-                        },
-                        indexes: {
-                            "id" : {
+                        ],
+                        indexes: [
+                            {
                                 key: "PRIMARY",
                                 column: "id",
                             }
-                        },
+                        ],
                         options: {
                             keys: [{
                                 name: 'Choose Key',
@@ -109,7 +141,7 @@ export default new Vuex.Store({
                     {
                         order: 0,
                         title: "CET Triage Board",
-                        type: 'dasbboard',
+                        type: 'dashboard',
                         enabled: true,
                         component: {
                             id: 1001
@@ -118,7 +150,7 @@ export default new Vuex.Store({
                     {
                         order: 1,
                         title: "Cigna Dashboard",
-                        type: 'dasbboard',
+                        type: 'dashboard',
                         enabled: true,
                         component: {
                             id: 1002
@@ -146,6 +178,47 @@ export default new Vuex.Store({
         ]
     },
     actions: {
+        /**
+         * This is the API init call that is required for subsequent calls to the API
+         *
+         * @param state
+         * @param commit
+         * @returns {Promise<unknown>}
+         */
+        init ({state, commit }) {
+            return new Promise(resolve => {
+                axios.get('/interface/modules/custom_modules/oe-workspace-server/init.php')
+                    .then(function (response) {
+                        const metaData = response.data
+                        commit('setMetaData', metaData)
+                        resolve(state.metaData)
+                    })
+            })
+        },
+        fetchWorkspace ({ state, commit }, { workspaceId }) {
+            console.log(workspaceId)
+            if (state.metaData.csrfToken) {
+                return new Promise((resolve) => {
+                    axios.get('/apis/api/dashboard', {
+                        // params: {
+                        //     id: dashboardId
+                        // },
+                        headers: {
+                            'apicsrftoken': state.metaData.csrfToken
+                        }
+                    }).then(function (response) {
+                        const dashboard = response.data
+                        commit('setDashboard', dashboard)
+                        resolve(state.dashboard)
+                    }).catch(function () {
+                        alert("there was an error, you may need to log back in")
+                    })
+                })
+            }
+        },
+        // createWorkspace ({ state, commit }, { workspace }) {
+        //
+        // },
         createDataSourceColumn ({ commit }, { workspaceId, column }) {
             // POST to create new column
 
