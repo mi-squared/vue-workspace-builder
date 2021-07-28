@@ -119,7 +119,7 @@
           <PageDashboards></PageDashboards>
         </v-tab-item>
 
-      <v-tab href="#layouts">
+      <v-tab href="#forms">
           Forms
       </v-tab>
       <v-tab-item :key="`forms`" value="forms">
@@ -171,7 +171,7 @@ import PageDashboards from './components/PageDashboards'
 export default {
   name: 'App',
   components: {
-      PageDashboards,
+    PageDashboards,
     PageForms,
     PageActions,
     PageDataSource,
@@ -201,7 +201,8 @@ export default {
   },
   computed: {
     tabs () {
-      return [this.workspaceTitle, 'Data Source', 'Layouts', 'Filters', 'Actions', 'Revisions']
+      // Tabs have to be in this array for the navigation to work
+      return [this.workspaceTitle, 'Data Source', 'Dashboards', 'Forms', 'Filters', 'Actions']
     },
     selectedTab () {
       if (this.selected === null) {

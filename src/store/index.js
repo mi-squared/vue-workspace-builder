@@ -9,8 +9,7 @@ export default new Vuex.Store({
         count: 0,
         metaData: {},
         userState: {
-            activeWorkspace: 1,
-            userId: 1
+            activeWorkspace: 1
         },
         workspaces: {
             1: {
@@ -119,7 +118,20 @@ export default new Vuex.Store({
                         ]
                     }
                 },
-                dashboards: [],
+                dashboards: [
+                    {
+                        id: 10,
+                        title: "Triage Dashboard"
+                    },
+                    {
+                        id: 11,
+                        title: "Dispatch Dashboard"
+                    },
+                    {
+                        id: 12,
+                        title: "Whiteboard"
+                    },
+                ],
                 forms: [
                     {
                         id: 100,

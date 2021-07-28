@@ -19,7 +19,7 @@
           cols="12"
           sm="4"
       >
-        <LayoutProperties :layout-model="activeLayoutModel"></LayoutProperties>
+        <FormProperties :form-model="activeFormModel"></FormProperties>
 
         <v-card
             rounded="lg"
@@ -46,14 +46,20 @@
 <script>
 import VueGridDesigner from '@thefoot/vue-grid-designer'
 import FormElementSelector from "@/components/FormElementSelector"
-import LayoutProperties from '@/components/LayoutProperties'
+import FormProperties from '@/components/FormProperties'
 
 export default {
   name: 'LayoutBuilder',
   components: {
-    LayoutProperties,
+    FormProperties,
     FormElementSelector,
     VueGridDesigner
+  },
+  props: {
+    form: {
+      type: Object,
+      required: true
+    }
   },
   data: function() {
     return {
@@ -69,7 +75,7 @@ export default {
     }
   },
   computed: {
-    activeLayoutModel () {
+    activeFormModel () {
       return this.layouts[this.activeLayoutIndex]
     },
   },

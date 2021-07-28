@@ -1,10 +1,10 @@
 <template>
 
-<div id="page-layouts">
+<div id="page-forms">
   <!-- This is the dialog at the top for creating a new layout -->
   <v-tabs vertical>
     <v-dialog
-        v-model="showNewLayoutDialog"
+        v-model="showNewFormDialog"
         persistent
         max-width="600px"
     >
@@ -18,27 +18,21 @@
           <v-icon left>
             mdi-plus
           </v-icon>
-          New Layout
+          New Form
         </v-btn>
       </template>
 
       <v-card>
         <v-card-title>
-          <span class="text-h5">New Layout</span>
+          <span class="text-h5">New Form</span>
         </v-card-title>
         <v-card-text>
           <v-container>
             <v-text-field
-                v-model="newLayoutModel.title"
-                label="Layout Title*"
+                v-model="newFormModel.title"
+                label="Form Title*"
                 required
             ></v-text-field>
-            <v-select
-                v-model="newLayoutModel.type"
-                :items="['Dashboard', 'Form', 'Read-only', 'Report']"
-                label="Type*"
-                required
-            ></v-select>
           </v-container>
         </v-card-text>
         <v-card-actions>
@@ -46,14 +40,14 @@
           <v-btn
               color="blue darken-1"
               text
-              @click="showNewLayoutDialog = false"
+              @click="showNewFormDialog = false"
           >
             Close
           </v-btn>
           <v-btn
               color="blue darken-1"
               text
-              @click="saveNewLayout"
+              @click="saveNewForm"
           >
             Save
           </v-btn>
@@ -70,8 +64,7 @@
 
     <v-tab-item v-for="form in forms" :key="form.id">
       <v-card flat>
-          Let's Build a Form
-        <LayoutBuilder></LayoutBuilder>
+        <FormBuilder :form="form"></FormBuilder>
       </v-card>
     </v-tab-item>
 
@@ -81,21 +74,21 @@
 </template>
 
 <script>
-import LayoutBuilder from './LayoutBuilder'
+import FormBuilder from './FormBuilder'
 
 export default {
-  name: "PageLayouts",
+  name: "PageForms",
   components: {
-    LayoutBuilder
+    FormBuilder
   },
   data () {
     return {
-      showNewLayoutDialog: false,
+      showNewFormDialog: false,
       layouts: [
 
       ],
-      newLayoutModel: {},
-      activeLayoutModel: {}
+      newFormModel: {},
+      activeFormModel: {}
     }
   },
   computed: {
@@ -107,11 +100,14 @@ export default {
      }
   },
   methods: {
-    saveNewLayout () {
+    saveNewForm () {
       // Save the new layout model that gets initial data from the modal, store it, and then
       // set it to the active layout model to edit.
-      this.showNewLayoutDialog = false
+      this.showNewFormDialog = false
     }
+  },
+  mounted () {
+    console.log("Forms mounted")
   }
 }
 </script>
