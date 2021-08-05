@@ -51,7 +51,7 @@
                       >
                         <v-select
                             v-model="model.type"
-                            :items="['Integer', 'String', 'Long Text', 'Date', 'Date Time', 'Patient', 'User', 'List', ]"
+                            :items="['Integer', 'String', 'Long Text', 'Date', 'Date Time', 'Patient', 'User', 'List']"
                             label="Type"
                             :rules="[required]"
                             required
@@ -122,90 +122,6 @@
       </v-simple-table>
     </v-card>
   </v-container>
-
-<!--
-  <div class="container text-left">
-
-    <legend id="headingOne" class="mt-xl-5">Table Structure<button type="button" class="pull-right m-1 btn btn-primary" data-toggle="modal" data-target="#noteModal"><i class="fa fa-plus"></i> New</button>
-    </legend>
-
-    <table class="table table-hover">
-      <thead>
-      <tr>
-        <th scope="col">Column</th>
-        <th scope="col">Type</th>
-        <th scope="col">Comment</th>
-      </tr>
-      </thead>
-      <tbody>
-      <tr class="table-secondary">
-        <th scope="row">id</th>
-        <td>Integer</td>
-        <td></td>
-      </tr>
-      <tr class="table-secondary">
-        <th scope="row">date_created</th>
-        <td>Datetime</td>
-        <td></td>
-      </tr>
-      <tr class="table-secondary">
-        <th scope="row">created_by</th>
-        <td>Integer</td>
-        <td>references users.id</td>
-      </tr>
-      <tr class="table-secondary">
-        <th scope="row">date_updated</th>
-        <td>Datetime</td>
-        <td></td>
-      </tr>
-      <tr class="table-secondary">
-        <th scope="row">updated_by</th>
-        <td>Datetime</td>
-        <td>references users.id</td>
-      </tr>
-      <tr class="table-secondary">
-        <th scope="row">initial_status</th>
-        <td>String</td>
-        <td>status of the entity when added</td>
-      </tr>
-      <tr class="table-secondary">
-        <th scope="row">status</th>
-        <td>String</td>
-        <td>current status</td>
-      </tr>
-      <tr>
-        <th scope="row">facility</th>
-        <td>String</td>
-        <td>Facility we're sending client to</td>
-      </tr>
-      <tr>
-        <th scope="row">date_sent</th>
-        <td>Datetime</td>
-        <td>Time sent to facility</td>
-      </tr>
-      </tbody>
-    </table>
-
-    <legend id="headingOne" class="mt-xl-5">Indexes</legend>
-
-    <table class="table table-hover">
-      <thead>
-      <tr>
-        <th scope="col">Type</th>
-        <th scope="col">Column</th>
-        <th scope="col">Name</th>
-      </tr>
-      </thead>
-      <tbody>
-      <tr>
-        <th scope="row">PRIMARY</th>
-        <td>id</td>
-        <td>PRIMARY</td>
-      </tr>
-      </tbody>
-    </table>
-  </div>
-  -->
 </template>
 
 <script>
@@ -217,11 +133,11 @@ export default {
       valid: false,
       model: {},
       max25chars: v => v.length <= 25 || 'Input too long!',
-      noSpaces: v => v.split(' ').length - 1 === 0 || 'No spaces allowed',
+      noSpaces: v => (v || '').indexOf(' ') < 0 || 'No spaces allowed',
       required: v => !!v || 'Field cannot be empty'
     }
   },
-  methods:{
+  methods: {
     save() {
       // When the user clicks on the save button on the dialog, we need to create a new column.
       // This method hides the dialog, then dispatches a message to the store to create the data-source column.

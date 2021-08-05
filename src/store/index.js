@@ -334,7 +334,7 @@ export default new Vuex.Store({
     mutations: {
         appendDataSourceColumn (state, { workspaceId, column }) {
             // The column name is the index and the column is the model
-            Vue.set(state.workspaces[workspaceId].dataSource.schema.columns, column.name, column)
+            Vue.set(state.workspaces[workspaceId].dataSource.spec.columns, column.name, column)
         },
         increment (state) {
             state.count++
