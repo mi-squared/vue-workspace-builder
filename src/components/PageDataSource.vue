@@ -131,7 +131,11 @@ export default {
     return {
       dialog: false,
       valid: false,
-      model: {},
+      model: {
+        name: '',
+        type: '',
+        comment: ''
+      },
       max25chars: v => v.length <= 25 || 'Input too long!',
       noSpaces: v => (v || '').indexOf(' ') < 0 || 'No spaces allowed',
       required: v => !!v || 'Field cannot be empty'
@@ -148,7 +152,11 @@ export default {
         column: this.model
       })
       // Reset the model for the next new column
-      this.model = {}
+      this.model = {
+        name: '',
+        type: '',
+        comment: ''
+      }
     }
   },
   computed: {

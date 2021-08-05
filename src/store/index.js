@@ -18,8 +18,8 @@ export default new Vuex.Store({
                 administrator: "admin",
                 dataSource: {
                     spec: {
-                        columns: [
-                            {
+                        columns: {
+                            "id" : {
                                 name: "id",
                                 type: "int(11)",
                                 default: "",
@@ -29,7 +29,7 @@ export default new Vuex.Store({
                                     createdDate: '2021-06-20'
                                 }
                             },
-                            {
+                            "created_date" : {
                                 name: "created_date",
                                 type: "datetime",
                                 default: "",
@@ -39,7 +39,7 @@ export default new Vuex.Store({
                                     createdDate: '2021-06-20'
                                 }
                             },
-                            {
+                            "created_by" : {
                                 name: "created_by",
                                 type: "int(11)",
                                 default: "",
@@ -49,7 +49,7 @@ export default new Vuex.Store({
                                     createdDate: '2021-06-20'
                                 }
                             },
-                            {
+                            "updated_date" : {
                                 name: "updated_date",
                                 type: "datetime",
                                 default: "",
@@ -59,7 +59,7 @@ export default new Vuex.Store({
                                     createdDate: '2021-06-20'
                                 }
                             },
-                            {
+                            "updated_by" : {
                                 name: "updated_by",
                                 type: "int(11)",
                                 default: "",
@@ -69,37 +69,7 @@ export default new Vuex.Store({
                                     createdDate: '2021-06-20'
                                 }
                             },
-                            {
-                                name: "dashboard_id",
-                                type: "int(11)",
-                                default: "",
-                                comment: "refers to the dashboard that the entity is currently on",
-                                extra: {
-                                    createdBy: 'system',
-                                    createdDate: '2021-06-20'
-                                }
-                            },
-                            {
-                                name: "moved_to_dashboard_date",
-                                type: "datetime",
-                                default: "",
-                                comment: "datetime that an entity was moved to dashboard",
-                                extra: {
-                                    createdBy: 'system',
-                                    createdDate: '2021-06-20'
-                                }
-                            },
-                            {
-                                name: "moved_to_dashboard_by",
-                                type: "int(11)",
-                                default: "",
-                                comment: "refers to users.id",
-                                extra: {
-                                    createdBy: 'system',
-                                    createdDate: '2021-06-20'
-                                }
-                            },
-                            {
+                            "source" : {
                                 name: "source",
                                 type: "varchar(255)",
                                 default: "",
@@ -109,13 +79,13 @@ export default new Vuex.Store({
                                     createdDate: '2021-06-20'
                                 }
                             }
-                        ],
-                        indexes: [
-                            {
+                        },
+                        indexes: {
+                            "id": {
                                 key: "PRIMARY",
                                 column: "id",
                             }
-                        ]
+                        }
                     }
                 },
                 dashboards: [
