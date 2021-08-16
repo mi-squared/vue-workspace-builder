@@ -88,7 +88,7 @@ export default {
     },
   },
   mounted() {
-    this.index = this.layout.length;
+    this.index = this.grid.length;
   },
   methods: {
     addItem: function() {
