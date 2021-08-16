@@ -3,7 +3,51 @@
     <v-container>
       <v-row>
         <v-col cols="12" sm="8">
-          <v-btn @click="addItem">Add Form Element</v-btn>
+          <!-- <v-btn @click="addItem">Add Form Element</v-btn> -->
+          <v-dialog v-model="showFormElementSelector" width="500">
+            <template v-slot:activator="{ on, attrs }">
+              <v-btn color="red lighten-2" dark v-bind="attrs" v-on="on">
+                + Element
+              </v-btn>
+            </template>
+
+            <v-card>
+              <v-card-title class="text-h5 grey lighten-2">
+                Add Form Element
+              </v-card-title>
+
+              <v-card-text>
+                <v-list-item
+                  two-line
+                  v-for="(column, i) in columns"
+                  :key="i"
+                  link
+                  @click="addItem(column)"
+                >
+                  <v-list-item-content>
+                    <v-list-item-title>{{ column.name }}</v-list-item-title>
+                    <v-list-item-subtitle>{{
+                      column.comment
+                    }}</v-list-item-subtitle>
+                  </v-list-item-content>
+                </v-list-item>
+              </v-card-text>
+
+              <v-divider></v-divider>
+
+              <v-card-actions>
+                <v-spacer></v-spacer>
+                <v-btn
+                  color="primary"
+                  text
+                  @click="showFormElementSelector = false"
+                >
+                  Close
+                </v-btn>
+              </v-card-actions>
+            </v-card>
+          </v-dialog>
+
           <v-sheet rounded="lg" min-height="268" elevation="1">
             <grid-layout
               :layout.sync="grid"
@@ -25,7 +69,7 @@
                 :i="item.i"
                 :key="item.i"
               >
-                {{ item.i }}
+                {{ item.name }}
               </grid-item>
             </grid-layout>
           </v-sheet>
@@ -41,24 +85,19 @@
         </v-col>
       </v-row>
     </v-container>
-
-    <v-dialog v-model="showFormElementSelector">
-      <FormElementSelector></FormElementSelector>
-    </v-dialog>
   </div>
 </template>
 
 <script>
+import { get } from "vuex-pathify";
+
 import VueGridLayout from "vue-grid-layout";
-import FormElementSelector from "@/components/FormElementSelector";
 import FormProperties from "@/components/FormProperties";
 
 export default {
   name: "LayoutBuilder",
   components: {
     FormProperties,
-    FormElementSelector,
-    // VueGridDesigner,
     GridLayout: VueGridLayout.GridLayout,
     GridItem: VueGridLayout.GridItem,
   },
@@ -86,14 +125,14 @@ export default {
     activeFormModel() {
       return this.layouts[this.activeLayoutIndex];
     },
+    columns: get("workspaces[1].dataSource.spec.columns"),
   },
   mounted() {
     this.index = this.grid.length;
   },
   methods: {
-    addItem: function() {
-      this.showFormElementSelector = true;
-      // this.$refs.foo.show("example-modal");
+    addItem: function(column) {
+      console.log(column);
 
       // Add a new item. It must have a unique key!
       this.grid.push({
@@ -102,9 +141,12 @@ export default {
         w: 12,
         h: 2,
         i: this.index,
+        name: column.name,
       });
       // Increment the counter to ensure key is always unique.
       this.index++;
+      // close the dialog
+      this.showFormElementSelector = false;
     },
   },
 };

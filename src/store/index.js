@@ -1,10 +1,14 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
 import axios from 'axios'
+import pathify from "vuex-pathify";
 
 Vue.use(Vuex)
 
+// pathify.debug()
+
 export default new Vuex.Store({
+    plugins: [ pathify.plugin ],
     state: {
         count: 0,
         metaData: {},
