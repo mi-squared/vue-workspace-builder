@@ -32,6 +32,11 @@ export default new Vuex.Store({
                   createdBy: "system",
                   createdDate: "2021-06-20",
                 },
+                schema: {
+                  type: "integer",
+                  title: "ID",
+                  description: "Unique ID",
+                },
               },
               created_date: {
                 name: "created_date",
@@ -41,6 +46,12 @@ export default new Vuex.Store({
                 extra: {
                   createdBy: "system",
                   createdDate: "2021-06-20",
+                },
+                schema: {
+                  type: "string",
+                  title: "Created Date",
+                  format: "date-time",
+                  description: "This description is used as a help message.",
                 },
               },
               created_by: {
@@ -52,6 +63,14 @@ export default new Vuex.Store({
                   createdBy: "system",
                   createdDate: "2021-06-20",
                 },
+                schema: {
+                  type: "integer",
+                  title: "Created By",
+                  "x-fromData": "context.users",
+                  "x-itemKey": "val",
+                  "x-itemTitle": "label",
+                  description: "This description is used as a help message.",
+                },
               },
               updated_date: {
                 name: "updated_date",
@@ -61,6 +80,12 @@ export default new Vuex.Store({
                 extra: {
                   createdBy: "system",
                   createdDate: "2021-06-20",
+                },
+                schema: {
+                  type: "string",
+                  title: "Updated Date",
+                  format: "date-time",
+                  description: "This description is used as a help message.",
                 },
               },
               updated_by: {
@@ -72,6 +97,14 @@ export default new Vuex.Store({
                   createdBy: "system",
                   createdDate: "2021-06-20",
                 },
+                schema: {
+                  type: "integer",
+                  title: "Updated By",
+                  "x-fromData": "context.users",
+                  "x-itemKey": "val",
+                  "x-itemTitle": "label",
+                  description: "This description is used as a help message.",
+                },
               },
               source: {
                 name: "source",
@@ -81,6 +114,11 @@ export default new Vuex.Store({
                 extra: {
                   createdBy: "system",
                   createdDate: "2021-06-20",
+                },
+                schema: {
+                  type: "string",
+                  title: "Source",
+                  description: "Source",
                 },
               },
             },
@@ -117,6 +155,18 @@ export default new Vuex.Store({
               options: {
                 timePickerProps: {
                   format: "24h",
+                },
+                context: {
+                  users: [
+                    {
+                      val: "1",
+                      label: "User 1",
+                    },
+                    {
+                      val: "2",
+                      label: "User 2",
+                    },
+                  ],
                 },
               },
               schema: {

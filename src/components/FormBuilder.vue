@@ -155,8 +155,7 @@ export default {
       for (const row of this.grid) {
         const column = this.columns[row.name];
         schema.properties[row.name] = {
-          type: "string", //column.type,
-          description: column.comment,
+          ...column.schema,
           // format: "date",
           "x-cols": row.w,
         };
