@@ -44,6 +44,7 @@
 import { get } from "vuex-pathify";
 
 import VJsf from "@koumoul/vjsf/lib/VJsf.js";
+import "@koumoul/vjsf/dist/main.css";
 
 export default {
   name: "FormProperties",

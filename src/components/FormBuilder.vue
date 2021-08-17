@@ -59,6 +59,7 @@
               :vertical-compact="true"
               :margin="[10, 10]"
               :use-css-transforms="true"
+              @layout-updated="updateFormSchema"
             >
               <grid-item
                 v-for="item in grid"
@@ -147,6 +148,25 @@ export default {
       this.index++;
       // close the dialog
       this.showFormElementSelector = false;
+    },
+    updateFormSchema() {
+      let schema = { properties: {} };
+
+      for (const row of this.grid) {
+        const column = this.columns[row.name];
+        schema.properties[row.name] = {
+          type: "string", //column.type,
+          description: column.comment,
+          // format: "date",
+          "x-cols": row.w,
+        };
+      }
+
+      this.$store.commit("setFormSchema", {
+        workspaceId: 1,
+        formId: 0,
+        schema: schema,
+      });
     },
   },
 };
