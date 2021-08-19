@@ -1,126 +1,124 @@
 <template>
-  <div id="layout-builder">
-    <v-container>
-      <v-row>
-        <v-col cols="12" sm="8">
-          <!-- <v-btn @click="addItem">Add Form Element</v-btn> -->
-          <v-dialog v-model="showFormElementSelector" width="500">
-            <template v-slot:activator="{ on, attrs }">
-              <v-btn color="red lighten-2" dark v-bind="attrs" v-on="on">
-                + Element
-              </v-btn>
-            </template>
+  <v-container>
+    <v-row>
+      <v-col cols="12" sm="8">
+        <!-- <v-btn @click="addItem">Add Form Element</v-btn> -->
+        <v-dialog v-model="showFormElementSelector" width="500">
+          <template v-slot:activator="{ on, attrs }">
+            <v-btn color="red lighten-2" dark v-bind="attrs" v-on="on">
+              + Element
+            </v-btn>
+          </template>
 
-            <v-card>
-              <v-card-title class="text-h5 grey lighten-2">
-                Add Form Element
-              </v-card-title>
+          <v-card>
+            <v-card-title class="text-h5 grey lighten-2">
+              Add Form Element
+            </v-card-title>
 
-              <v-card-text>
-                <v-list-item
-                  two-line
-                  v-for="(column, i) in columns"
-                  :key="i"
-                  link
-                  @click="addItem(column)"
-                >
-                  <v-list-item-content>
-                    <v-list-item-title>{{ column.name }}</v-list-item-title>
-                    <v-list-item-subtitle>{{
-                      column.comment
-                    }}</v-list-item-subtitle>
-                  </v-list-item-content>
-                </v-list-item>
-              </v-card-text>
-
-              <v-divider></v-divider>
-
-              <v-card-actions>
-                <v-spacer></v-spacer>
-                <v-btn
-                  color="primary"
-                  text
-                  @click="showFormElementSelector = false"
-                >
-                  Close
-                </v-btn>
-              </v-card-actions>
-            </v-card>
-          </v-dialog>
-
-          <v-sheet rounded="lg" min-height="268" elevation="1">
-            <grid-layout
-              :layout.sync="grid"
-              :col-num="12"
-              :row-height="30"
-              :is-draggable="true"
-              :is-resizable="true"
-              :is-mirrored="false"
-              :vertical-compact="true"
-              :margin="[10, 10]"
-              :use-css-transforms="true"
-              @layout-updated="updateFormSchema"
-            >
-              <grid-item
-                v-for="item in grid"
-                :x="item.x"
-                :y="item.y"
-                :w="item.w"
-                :h="item.h"
-                :i="item.i"
-                :key="item.i"
-              >
-                {{ item.name }}
-                <v-btn
-                  color="red lighten-2"
-                  dark
-                  @click="setSelectedElement(item.name)"
-                >
-                  Edit
-                </v-btn>
-              </grid-item>
-            </grid-layout>
-          </v-sheet>
-        </v-col>
-
-        <v-col cols="12" sm="4">
-          <FormProperties :form-model="activeFormModel"></FormProperties>
-
-          <v-card
-            rounded="lg"
-            min-height="268"
-            class="mt-0 p-4"
-            v-if="selectedElement"
-          >
-            <v-card-title>Element Properties</v-card-title>
             <v-card-text>
-              <v-text-field
-                :value="selectedElement.type"
-                label="Type"
-                readonly
-              ></v-text-field>
-              <v-text-field
-                v-model="selectedElement.schema.title"
-                label="Label"
-                @change="syncSelectedElement"
-              ></v-text-field>
-              <v-text-field
-                v-model="selectedElement.schema.description"
-                label="Description"
-                @change="syncSelectedElement"
-              ></v-text-field>
-              <v-checkbox
-                v-model="selectedElement.schema.readOnly"
-                :readonly="selectedElement.extra.createdBy == 'system'"
-                label="Read-Only"
-              ></v-checkbox>
-              <v-checkbox label="Show on Read-Only View"></v-checkbox>
+              <v-list-item
+                two-line
+                v-for="(column, i) in columns"
+                :key="i"
+                link
+                @click="addItem(column)"
+              >
+                <v-list-item-content>
+                  <v-list-item-title>{{ column.name }}</v-list-item-title>
+                  <v-list-item-subtitle>{{
+                    column.comment
+                  }}</v-list-item-subtitle>
+                </v-list-item-content>
+              </v-list-item>
             </v-card-text>
+
+            <v-divider></v-divider>
+
+            <v-card-actions>
+              <v-spacer></v-spacer>
+              <v-btn
+                color="primary"
+                text
+                @click="showFormElementSelector = false"
+              >
+                Close
+              </v-btn>
+            </v-card-actions>
           </v-card>
-        </v-col>
-      </v-row>
-    </v-container>
-  </div>
+        </v-dialog>
+
+        <v-sheet rounded="lg" min-height="268" elevation="1">
+          <grid-layout
+            :layout.sync="grid"
+            :col-num="12"
+            :row-height="30"
+            :is-draggable="true"
+            :is-resizable="true"
+            :is-mirrored="false"
+            :vertical-compact="true"
+            :margin="[10, 10]"
+            :use-css-transforms="true"
+            @layout-updated="updateFormSchema"
+          >
+            <grid-item
+              v-for="item in grid"
+              :x="item.x"
+              :y="item.y"
+              :w="item.w"
+              :h="item.h"
+              :i="item.i"
+              :key="item.i"
+            >
+              {{ item.name }}
+              <v-btn
+                color="red lighten-2"
+                dark
+                @click="setSelectedElement(item.name)"
+              >
+                Edit
+              </v-btn>
+            </grid-item>
+          </grid-layout>
+        </v-sheet>
+      </v-col>
+
+      <v-col cols="12" sm="4">
+        <FormProperties :form-model="activeFormModel"></FormProperties>
+
+        <v-card
+          rounded="lg"
+          min-height="268"
+          class="mt-0 p-4"
+          v-if="selectedElement"
+        >
+          <v-card-title>Element Properties</v-card-title>
+          <v-card-text>
+            <v-text-field
+              :value="selectedElement.type"
+              label="Type"
+              readonly
+            ></v-text-field>
+            <v-text-field
+              v-model="selectedElement.schema.title"
+              label="Label"
+              @change="syncSelectedElement"
+            ></v-text-field>
+            <v-text-field
+              v-model="selectedElement.schema.description"
+              label="Description"
+              @change="syncSelectedElement"
+            ></v-text-field>
+            <v-checkbox
+              v-model="selectedElement.schema.readOnly"
+              :readonly="selectedElement.extra.createdBy == 'system'"
+              label="Read-Only"
+            ></v-checkbox>
+            <v-checkbox label="Show on Read-Only View"></v-checkbox>
+          </v-card-text>
+        </v-card>
+      </v-col>
+    </v-row>
+  </v-container>
 </template>
 
 <script>
@@ -227,14 +225,4 @@ export default {
 };
 </script>
 
-<style>
-/*
-  Put the little rectangular toolbar, with the "expand +", "shrink -" and "remove X" buttons in the top right.
-  This is so when you click the "+" or "-" that the box doesn't shift away frm the user's mouse :)
-  FYI, this doesn't appear to work if style is 'scoped', because of the more targeted CSS dynamically generated for the element
- */
-#layout-builder .vgd__block__toolbar {
-  left: 38px;
-  top: 15px;
-}
-</style>
+<style></style>
