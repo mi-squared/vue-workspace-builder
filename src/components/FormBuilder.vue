@@ -71,6 +71,13 @@
                 :key="item.i"
               >
                 {{ item.name }}
+                <v-btn
+                  color="red lighten-2"
+                  dark
+                  @click="setSelectedElement(item.name)"
+                >
+                  Edit
+                </v-btn>
               </grid-item>
             </grid-layout>
           </v-sheet>
@@ -79,9 +86,36 @@
         <v-col cols="12" sm="4">
           <FormProperties :form-model="activeFormModel"></FormProperties>
 
-          <v-card rounded="lg" min-height="268" class="mt-0 p-4">
+          <v-card
+            rounded="lg"
+            min-height="268"
+            class="mt-0 p-4"
+            v-if="selectedElement"
+          >
             <v-card-title>Element Properties</v-card-title>
-            <v-card-text> </v-card-text>
+            <v-card-text>
+              <v-text-field
+                :value="selectedElement.type"
+                label="Type"
+                readonly
+              ></v-text-field>
+              <v-text-field
+                v-model="selectedElement.schema.title"
+                label="Label"
+                @change="syncSelectedElement"
+              ></v-text-field>
+              <v-text-field
+                v-model="selectedElement.schema.description"
+                label="Description"
+                @change="syncSelectedElement"
+              ></v-text-field>
+              <v-checkbox
+                v-model="selectedElement.schema.readOnly"
+                :readonly="selectedElement.extra.createdBy == 'system'"
+                label="Read-Only"
+              ></v-checkbox>
+              <v-checkbox label="Show on Read-Only View"></v-checkbox>
+            </v-card-text>
           </v-card>
         </v-col>
       </v-row>
@@ -120,6 +154,7 @@ export default {
       ],
       grid: [],
       index: 0,
+      selectedElement: null,
     };
   },
   computed: {
@@ -127,7 +162,15 @@ export default {
       return this.layouts[this.activeLayoutIndex];
     },
     columns: get("workspaces[1].dataSource.spec.columns"),
+    // selectedElement() {
+    //   if (this.selected !== null) {
+    //     return this.columns[this.selected];
+    //   }
+
+    //   return null;
+    // },
   },
+
   mounted() {
     this.index = this.grid.length;
   },
@@ -148,6 +191,19 @@ export default {
       this.index++;
       // close the dialog
       this.showFormElementSelector = false;
+    },
+    setSelectedElement(name) {
+      this.selectedElement = JSON.parse(JSON.stringify(this.columns[name]));
+    },
+    syncSelectedElement() {
+      // sync the selected element to the vuex store on change
+      this.$store.commit("setDataSourceColumn", {
+        workspaceId: 1,
+        column: this.selectedElement,
+      });
+
+      // update the form schema so the preview looks correct
+      this.updateFormSchema();
     },
     updateFormSchema() {
       let schema = { properties: {} };

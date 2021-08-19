@@ -36,6 +36,7 @@ export default new Vuex.Store({
                   type: "integer",
                   title: "ID",
                   description: "Unique ID",
+                  readOnly: true,
                 },
               },
               created_date: {
@@ -52,6 +53,7 @@ export default new Vuex.Store({
                   title: "Created Date",
                   format: "date-time",
                   description: "This description is used as a help message.",
+                  readOnly: true,
                 },
               },
               created_by: {
@@ -70,6 +72,7 @@ export default new Vuex.Store({
                   "x-itemKey": "val",
                   "x-itemTitle": "label",
                   description: "This description is used as a help message.",
+                  readOnly: true,
                 },
               },
               updated_date: {
@@ -86,6 +89,7 @@ export default new Vuex.Store({
                   title: "Updated Date",
                   format: "date-time",
                   description: "This description is used as a help message.",
+                  readOnly: true,
                 },
               },
               updated_by: {
@@ -104,6 +108,7 @@ export default new Vuex.Store({
                   "x-itemKey": "val",
                   "x-itemTitle": "label",
                   description: "This description is used as a help message.",
+                  readOnly: true,
                 },
               },
               source: {
@@ -119,6 +124,7 @@ export default new Vuex.Store({
                   type: "string",
                   title: "Source",
                   description: "Source",
+                  readOnly: true,
                 },
               },
             },
@@ -369,6 +375,11 @@ export default new Vuex.Store({
         column.name,
         column
       );
+    },
+    setDataSourceColumn(state, { workspaceId, column }) {
+      state.workspaces[workspaceId].dataSource.spec.columns[
+        column.name
+      ] = column;
     },
     increment(state) {
       state.count++;
