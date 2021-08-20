@@ -145,23 +145,9 @@
 </template>
 
 <script>
-// import PageWorkspace from "./components/PageWorkspace";
-// import PageFilters from "./components/PageFilters";
-// import PageDataSource from "./components/PageDataSource";
-// import PageActions from "./components/PageActions";
-// import PageForms from "@/components/PageForms";
-// import PageDashboards from "./components/PageDashboards";
-
 export default {
   name: "App",
-  components: {
-    // PageDashboards,
-    // PageForms,
-    // PageActions,
-    // PageDataSource,
-    // PageFilters,
-    // PageWorkspace,
-  },
+  components: {},
   data() {
     return {
       selected: null,

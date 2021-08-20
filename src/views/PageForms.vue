@@ -58,7 +58,7 @@
 </template>
 
 <script>
-import FormBuilder from "./FormBuilder";
+import FormBuilder from "@/components/FormBuilder";
 
 export default {
   name: "PageForms",
