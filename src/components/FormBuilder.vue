@@ -135,8 +135,12 @@ export default {
     GridItem: VueGridLayout.GridItem,
   },
   props: {
-    form: {
-      type: Object,
+    formId: {
+      type: Number,
+      required: true,
+    },
+    workspaceId: {
+      type: Number,
       required: true,
     },
   },
@@ -217,7 +221,7 @@ export default {
 
       this.$store.commit("setFormSchema", {
         workspaceId: 1,
-        formId: 0,
+        formId: this.formId,
         schema: schema,
       });
     },

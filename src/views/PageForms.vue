@@ -1,70 +1,91 @@
 <template>
   <v-container>
-    <!-- This is the dialog at the top for creating a new layout -->
-    <v-tabs vertical>
-      <v-dialog v-model="showNewFormDialog" persistent max-width="600px">
-        <template v-slot:activator="{ on, attrs }">
-          <v-btn text class="align-self-center mr-4" v-bind="attrs" v-on="on">
-            <v-icon left>
-              mdi-plus
-            </v-icon>
-            New Form
-          </v-btn>
-        </template>
-
-        <v-card>
-          <v-card-title>
-            <span class="text-h5">New Form</span>
-          </v-card-title>
-          <v-card-text>
-            <v-container>
-              <v-text-field
-                v-model="newFormModel.title"
-                label="Form Title*"
-                required
-              ></v-text-field>
-            </v-container>
-          </v-card-text>
-          <v-card-actions>
-            <v-spacer></v-spacer>
-            <v-btn
-              color="blue darken-1"
-              text
-              @click="showNewFormDialog = false"
+    <v-row>
+      <v-col cols="3">
+        <v-sheet rounded elevation="1">
+          <v-list>
+            <v-subheader>FORMS</v-subheader>
+            <v-list-item
+              v-for="(form, i) in forms"
+              :key="i"
+              :to="`/workspace/${activeWorkspace.id}/forms/${i}`"
             >
-              Close
-            </v-btn>
-            <v-btn color="blue darken-1" text @click="saveNewForm">
-              Save
-            </v-btn>
-          </v-card-actions>
-        </v-card>
-      </v-dialog>
-      <!-- End of the new layout dialog -->
+              <v-list-item-content>
+                <v-list-item-title> {{ form.title }} </v-list-item-title>
+              </v-list-item-content>
+            </v-list-item>
 
-      <!-- this is the list of existing layouts -->
-      <v-tab v-for="form in forms" :key="form.id">
-        {{ form.title }}
-      </v-tab>
-      <!-- end of existing forms -->
+            <v-divider class="my-2"></v-divider>
 
-      <v-tab-item v-for="form in forms" :key="form.id">
-        <v-card flat>
-          <FormBuilder :form="form"></FormBuilder>
-        </v-card>
-      </v-tab-item>
-    </v-tabs>
+            <v-list-item link color="grey lighten-4">
+              <v-list-item-content>
+                <v-dialog
+                  v-model="showNewFormDialog"
+                  persistent
+                  max-width="600px"
+                >
+                  <template v-slot:activator="{ on, attrs }">
+                    <v-btn
+                      text
+                      class="align-self-center mr-4"
+                      v-bind="attrs"
+                      v-on="on"
+                    >
+                      <v-icon left>
+                        mdi-plus
+                      </v-icon>
+                      New Form
+                    </v-btn>
+                  </template>
+
+                  <v-card>
+                    <v-card-title>
+                      <span class="text-h5">New Form</span>
+                    </v-card-title>
+                    <v-card-text>
+                      <v-container>
+                        <v-text-field
+                          v-model="newFormModel.title"
+                          label="Form Title*"
+                          required
+                        ></v-text-field>
+                      </v-container>
+                    </v-card-text>
+                    <v-card-actions>
+                      <v-spacer></v-spacer>
+                      <v-btn
+                        color="blue darken-1"
+                        text
+                        @click="showNewFormDialog = false"
+                      >
+                        Close
+                      </v-btn>
+                      <v-btn color="blue darken-1" text @click="saveNewForm">
+                        Save
+                      </v-btn>
+                    </v-card-actions>
+                  </v-card>
+                </v-dialog>
+                <!-- End of the new layout dialog -->
+              </v-list-item-content>
+            </v-list-item>
+          </v-list>
+        </v-sheet>
+      </v-col>
+
+      <v-col>
+        <v-sheet min-height="70vh" rounded="lg">
+          <router-view></router-view>
+        </v-sheet>
+      </v-col>
+    </v-row>
   </v-container>
 </template>
 
 <script>
-import FormBuilder from "@/components/FormBuilder";
-
 export default {
   name: "PageForms",
-  components: {
-    FormBuilder,
-  },
+  components: {},
   data() {
     return {
       showNewFormDialog: false,

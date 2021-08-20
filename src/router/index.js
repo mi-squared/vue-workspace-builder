@@ -8,12 +8,32 @@ import PageFilters from "@/views/PageFilters";
 import PageDashboards from "@/views/PageDashboards";
 import PageActions from "@/views/PageActions";
 
+import FormBuilder from "@/components/FormBuilder";
+
 Vue.use(VueRouter);
 
 const routes = [
   { path: "/", component: PageWorkspace },
   { path: "/workspace/:workspaceId/data-source", component: PageDataSource },
-  { path: "/workspace/:workspaceId/forms", component: PageForms },
+  {
+    path: "/workspace/:workspaceId/forms",
+    component: PageForms,
+    props: ({ params }) => ({
+      workspaceId: Number.parseInt(params.workspaceId, 10) || 0,
+    }),
+    children: [
+      {
+        // UserProfile will be rendered inside User's <router-view>
+        // when /user/:id/profile is matched
+        path: ":formId(\\d+)",
+        component: FormBuilder,
+        props: ({ params }) => ({
+          formId: Number.parseInt(params.formId, 10) || 0,
+          workspaceId: Number.parseInt(params.workspaceId, 10) || 0,
+        }),
+      },
+    ],
+  },
   { path: "/filters", component: PageFilters },
   { path: "/dashboards", component: PageDashboards },
   { path: "/actions", component: PageActions },
