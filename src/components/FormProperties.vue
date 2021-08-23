@@ -7,7 +7,7 @@
         label="Title"
         :rules="['required']"
         hide-details="auto"
-        v-model="formModel.title"
+        v-model="form.title"
       ></v-text-field>
     </v-card-text>
 
@@ -50,18 +50,24 @@ export default {
   name: "FormProperties",
   components: { VJsf },
   props: {
-    formModel: {
-      type: Object,
+    formId: {
+      type: Number,
+      required: true,
+    },
+    workspaceId: {
+      type: Number,
       required: true,
     },
   },
-  methods: {
-    showPreview() {
-      console.log("preview1");
-    },
-  },
+  methods: {},
   computed: {
-    schema: get("workspaces[1].forms[0].formDefinition.schema"),
+    schema() {
+      return this.$store.getters.getFormById(this.workspaceId, this.formId)
+        .formDefinition.schema;
+    },
+    form() {
+      return this.$store.getters.getFormById(this.workspaceId, this.formId);
+    },
     options: get("workspaces[1].forms[0].formDefinition.options"),
   },
   data: () => ({

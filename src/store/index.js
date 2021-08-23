@@ -367,6 +367,11 @@ export default new Vuex.Store({
       });
     },
   },
+  getters: {
+    getFormById: (state) => (workspaceId, id) => {
+      return state.workspaces[workspaceId].forms.find((form) => form.id === id);
+    },
+  },
   mutations: {
     appendDataSourceColumn(state, { workspaceId, column }) {
       // The column name is the index and the column is the model
@@ -385,9 +390,13 @@ export default new Vuex.Store({
       state.count++;
     },
     setFormSchema(state, { workspaceId, formId, schema }) {
-      state.workspaces[workspaceId].forms[
-        formId
-      ].formDefinition.schema = schema;
+      // state.workspaces[workspaceId].forms[
+      //   formId
+      // ].formDefinition.schema = schema;
+      let form = state.workspaces[workspaceId].forms.find(
+        (form) => form.id === formId
+      );
+      form.formDefinition.schema = schema;
     },
   },
 });

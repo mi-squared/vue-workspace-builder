@@ -83,7 +83,10 @@
       </v-col>
 
       <v-col cols="12" sm="4">
-        <FormProperties :form-model="activeFormModel"></FormProperties>
+        <FormProperties
+          :formId="formId"
+          :workspaceId="workspaceId"
+        ></FormProperties>
 
         <v-card
           rounded="lg"
