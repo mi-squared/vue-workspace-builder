@@ -3,6 +3,8 @@ import Vuex from "vuex";
 import axios from "axios";
 import pathify from "vuex-pathify";
 
+import { createForm } from "../api";
+
 Vue.use(Vuex);
 
 // pathify.debug()
@@ -366,6 +368,10 @@ export default new Vuex.Store({
         column: column,
       });
     },
+    createForm({ commit }, { workspaceId, form }) {
+      const newForm = createForm(workspaceId, form);
+      commit("addForm", { workspaceId: workspaceId, form: newForm });
+    },
   },
   getters: {
     getFormById: (state) => (workspaceId, id) => {
@@ -397,6 +403,9 @@ export default new Vuex.Store({
         (form) => form.id === formId
       );
       form.formDefinition.schema = schema;
+    },
+    addForm(state, { workspaceId, form }) {
+      state.workspaces[workspaceId].forms.push(form);
     },
   },
 });

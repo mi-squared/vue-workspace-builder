@@ -109,7 +109,12 @@ export default {
     saveNewForm() {
       // Save the new layout model that gets initial data from the modal, store it, and then
       // set it to the active layout model to edit.
+      console.log("save new form!");
       this.showNewFormDialog = false;
+      this.$store.dispatch("createForm", {
+        workspaceId: this.$route.params.workspaceId,
+        form: this.newFormModel,
+      });
     },
   },
   mounted() {

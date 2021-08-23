@@ -41,8 +41,6 @@
 </template>
 
 <script>
-import { get } from "vuex-pathify";
-
 import VJsf from "@koumoul/vjsf/lib/VJsf.js";
 import "@koumoul/vjsf/dist/main.css";
 
@@ -68,7 +66,10 @@ export default {
     form() {
       return this.$store.getters.getFormById(this.workspaceId, this.formId);
     },
-    options: get("workspaces[1].forms[0].formDefinition.options"),
+    options() {
+      return this.$store.getters.getFormById(this.workspaceId, this.formId)
+        .formDefinition.options;
+    },
   },
   data: () => ({
     model: {},
