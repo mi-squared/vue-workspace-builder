@@ -4,6 +4,7 @@ export function createForm(workspaceId, formData) {
     workspaceId: workspaceId,
     title: "[New Form]",
     formDefinition: {
+      grid: [],
       schema: {
         properties: {},
       },

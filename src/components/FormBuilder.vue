@@ -176,8 +176,12 @@ export default {
     // },
   },
 
-  mounted() {
-    this.index = this.grid.length;
+  created() {
+    this.fetchData();
+  },
+  watch: {
+    // call again the method if the route changes
+    $route: "fetchData",
   },
   methods: {
     addItem: function(column) {
@@ -197,13 +201,23 @@ export default {
       // close the dialog
       this.showFormElementSelector = false;
     },
+    fetchData() {
+      console.log("fetchData!");
+      this.grid = this.$store.getters.getFormById(
+        this.workspaceId,
+        this.formId
+      ).formDefinition.grid;
+
+      console.log(this.grid);
+      this.index = this.grid.length;
+    },
     setSelectedElement(name) {
       this.selectedElement = JSON.parse(JSON.stringify(this.columns[name]));
     },
     syncSelectedElement() {
       // sync the selected element to the vuex store on change
       this.$store.commit("setDataSourceColumn", {
-        workspaceId: 1,
+        workspaceId: this.workspaceId,
         column: this.selectedElement,
       });
 
@@ -221,6 +235,12 @@ export default {
           "x-cols": row.w,
         };
       }
+
+      this.$store.commit("setFormGrid", {
+        workspaceId: this.workspaceId,
+        formId: this.formId,
+        grid: this.grid,
+      });
 
       this.$store.commit("setFormSchema", {
         workspaceId: 1,

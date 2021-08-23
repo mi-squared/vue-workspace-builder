@@ -160,6 +160,7 @@ export default new Vuex.Store({
             // https://koumoul-dev.github.io/vuetify-jsonschema-form/latest/getting-started
             formDefinition: {
               // Global Options
+              grid: [],
               options: {
                 timePickerProps: {
                   format: "24h",
@@ -403,6 +404,12 @@ export default new Vuex.Store({
         (form) => form.id === formId
       );
       form.formDefinition.schema = schema;
+    },
+    setFormGrid(state, { workspaceId, formId, grid }) {
+      let form = state.workspaces[workspaceId].forms.find(
+        (form) => form.id === formId
+      );
+      form.formDefinition.grid = grid;
     },
     addForm(state, { workspaceId, form }) {
       state.workspaces[workspaceId].forms.push(form);
