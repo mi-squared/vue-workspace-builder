@@ -1,126 +1,115 @@
 <template>
-  <div class="container text-left">
-    <FilterTree></FilterTree>
-
-    <legend id="headingOne" class="mt-xl-5">
-      Custom Filters<button
-        type="button"
-        class="pull-right m-1 btn btn-primary"
-        data-toggle="modal"
-        data-target="#noteModal"
+  <div id="filter-builder">
+    <!-- This is the dialog at the top for creating a new layout -->
+    <v-tabs vertical>
+      <v-dialog
+          v-model="showNewFilterDialog"
+          persistent
+          max-width="600px"
       >
-        <i class="fa fa-plus"></i> New
-      </button>
-    </legend>
+        <template v-slot:activator="{ on, attrs }">
+          <v-btn
+              text
+              class="align-self-center mr-4"
+              v-bind="attrs"
+              v-on="on"
+          >
+            <v-icon left>
+              mdi-plus
+            </v-icon>
+            New Filter
+          </v-btn>
+        </template>
 
-    <table class="table table-hover">
-      <thead>
-        <tr>
-          <th scope="col">#</th>
-          <th scope="col">Title</th>
-          <th scope="col">Type</th>
-          <th scope="col">Enabled</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <th scope="row">1</th>
-          <td>Triage</td>
-          <td>Main Dashboard</td>
-          <td><i class="fa fa-check"></i></td>
-        </tr>
-        <tr>
-          <th scope="row">2</th>
-          <td>CET</td>
-          <td>Dashboard</td>
-          <td><i class="fa fa-check"></i></td>
-        </tr>
-        <tr>
-          <th scope="row">3</th>
-          <td>Cigna</td>
-          <td>Dashboard</td>
-          <td><i class="fa fa-times"></i></td>
-        </tr>
-      </tbody>
-    </table>
+        <v-card>
+          <v-card-title>
+            <span class="text-h5">New Filter</span>
+          </v-card-title>
+          <v-card-text>
+            <v-container>
+              <v-text-field
+                  v-model="newFilterModel.title"
+                  label="Filter Title*"
+                  required
+              ></v-text-field>
+            </v-container>
+          </v-card-text>
+          <v-card-actions>
+            <v-spacer></v-spacer>
+            <v-btn
+                color="blue darken-1"
+                text
+                @click="showNewFilterDialog = false"
+            >
+              Close
+            </v-btn>
+            <v-btn
+                color="blue darken-1"
+                text
+                @click="saveNewFilter"
+            >
+              Save
+            </v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
+      <!-- End of the new layout dialog -->
 
-    <legend id="headingOne" class="mt-xl-5">Built-in Filters</legend>
+      <!-- this is the list of existing layouts -->
+      <v-tab v-for="filter in filters" :key="filter.id">
+        {{ filter.title }}
+      </v-tab>
+      <!-- end of existing forms -->
 
-    <table class="table table-hover">
-      <thead>
-        <tr>
-          <th scope="col">#</th>
-          <th scope="col">Title</th>
-          <th scope="col">Description</th>
-          <th scope="col">In Use By</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <th scope="row">1</th>
-          <td>Is High Utilizer?</td>
-          <td>If the client passes high-utilizer criteria</td>
-          <td><i class="fa fa-check"></i></td>
-        </tr>
-        <tr>
-          <th scope="row">2</th>
-          <td>DUP Check</td>
-          <td>
-            Check if the entry is a potential duplicate give fname, lname and
-            DOB
-          </td>
-          <td><i class="fa fa-check"></i></td>
-        </tr>
-        <tr>
-          <th scope="row">3</th>
-          <td>Attrition</td>
-          <td>How old the entry is</td>
-          <td><i class="fa fa-times"></i></td>
-        </tr>
-      </tbody>
-    </table>
+      <v-tab-item v-for="filter in filters" :key="filter.id">
+        <v-card flat>
+          <FilterTree></FilterTree>
+        </v-card>
+      </v-tab-item>
 
-    <div class="row">
-      <div class="col-8">
-        <FilterBuilder></FilterBuilder>
-      </div>
-      <div class="col">
-        <form>
-          <div class="form-group">
-            <label for="inputEmail3">Title</label>
-            <input
-              type="email"
-              class="form-control"
-              id="inputEmail3"
-              placeholder="Email"
-            />
-          </div>
-          <div class="form-group">
-            <label for="inputPassword3">Property</label>
-            <input
-              type="password"
-              class="form-control"
-              id="inputPassword3"
-              placeholder="Password"
-            />
-          </div>
-        </form>
-      </div>
-    </div>
+
+    </v-tabs>
+
+
   </div>
 </template>
 
 <script>
-import FilterBuilder from "@/components/FilterBuilder";
-import FilterTree from "@/components/FilterTree";
+import FilterTree from "@/components/FilterTree"
 
 export default {
   name: "PageFilters",
   components: {
-    FilterTree,
-    FilterBuilder,
+    FilterTree
   },
-};
+  data () {
+    return {
+      showNewFilterDialog: false,
+      newFilterModel: {},
+      activeFilterModel: {}
+    }
+  },
+  computed: {
+    activeWorkspace () {
+      return this.$store.state.workspaces[this.$store.state.userState.activeWorkspace]
+    },
+    filters () {
+      return this.activeWorkspace.filters
+    }
+  },
+  methods: {
+    saveNewFilter () {
+      // Save the new filter model that gets initial data from the modal, store it, and then
+      // set it to the active filter model to edit.
+      this.showNewFilterDialog = false
+    }
+  },
+  mounted () {
+    console.log("Filters mounted")
+  }
+}
 </script>
 
-<style scoped></style>
+<style scoped>
+
+</style>
