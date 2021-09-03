@@ -102,7 +102,7 @@
             Data Source
           </v-tab>
 
-          <v-tab to="/dashboards">
+          <v-tab :to="`/workspace/${activeWorkspace.id}/dashboards`">
             Dashboards
           </v-tab>
 

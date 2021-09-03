@@ -9,6 +9,7 @@ import PageDashboards from "@/views/PageDashboards";
 import PageActions from "@/views/PageActions";
 
 import FormBuilder from "@/components/FormBuilder";
+import DashboardBuilder from '@/components/DashboardBuilder'
 
 Vue.use(VueRouter);
 
@@ -35,7 +36,25 @@ const routes = [
     ],
   },
   { path: "/filters", component: PageFilters },
-  { path: "/dashboards", component: PageDashboards },
+  {
+    path: "/workspace/:workspaceId/dashboards",
+    component: PageDashboards,
+    props: ({ params }) => ({
+      workspaceId: Number.parseInt(params.workspaceId, 10) || 0,
+    }),
+    children: [
+      {
+        // DashboardVuilder will be rendered inside PageDashboard's <router-view>
+        // when /dashboard/:id/profile is matched
+        path: ":dashboardId(\\d+)",
+        component: DashboardBuilder,
+        props: ({ params }) => ({
+          dashboardId: Number.parseInt(params.dashboardId, 10) || 0,
+          workspaceId: Number.parseInt(params.workspaceId, 10) || 0,
+        }),
+      },
+    ],
+  },
   { path: "/actions", component: PageActions },
   // {
   //   path: '/',

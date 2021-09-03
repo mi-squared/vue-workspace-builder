@@ -142,14 +142,45 @@ export default new Vuex.Store({
           {
             id: 10,
             title: "Triage Dashboard",
+            filters: [
+              {
+                field: 'status',
+              }
+            ],
+            headers: [
+              {
+                text: 'Created',
+                value: 'timestamp'
+              },
+              {
+                text: 'First Name',
+                align: 'start',
+                value: 'firstName',
+              },
+              {
+                text: 'Last Name',
+                align: 'start',
+                value: 'lastName',
+              },
+              {text: 'DOB', value: 'DOB'},
+              {text: 'Facility', value: 'facility'},
+              {text: 'Status', value: 'status'},
+              {text: 'Completion (%)', value: 'completion'},
+              {text: '', value: 'data-table-expand', groupable: false},
+              {text: '', value: 'data-menu', groupable: false, sortable: false},
+            ],
           },
           {
             id: 11,
             title: "Dispatch Dashboard",
+            filters: [],
+            headers: []
           },
           {
             id: 12,
             title: "Whiteboard",
+            filters: [],
+            headers: []
           },
         ],
         forms: [
@@ -405,6 +436,13 @@ export default new Vuex.Store({
         column: column,
       });
     },
+    // createDashboard({ commit }, { workspaceId, dashboardId, dashboard }) {
+    //
+    // },
+    updateDashboard({ commit }, { workspaceId, dashboardId, dashboard }) {
+      // Make a POST to server, then update VUEX
+      commit('setDashboard', { workspaceId, dashboardId, dashboard })
+    },
     createForm({ commit }, { workspaceId, form }) {
       const newForm = createForm(workspaceId, form);
       commit("addForm", { workspaceId: workspaceId, form: newForm });
@@ -429,8 +467,11 @@ export default new Vuex.Store({
         column.name
       ] = column;
     },
-    increment(state) {
-      state.count++;
+    setDashboard(state, { workspaceId, dashboardId, dashboard} ) {
+      const vuexDashbaord = state.workspaces[workspaceId].dashboards.find( d => d.id === dashboardId)
+      Vue.set(vuexDashbaord, 'title', dashboard.title)
+      Vue.set(vuexDashbaord, 'filters', dashboard.filters)
+      Vue.set(vuexDashbaord, 'headers', dashboard.headers)
     },
     setFormSchema(state, { workspaceId, formId, schema }) {
       // state.workspaces[workspaceId].forms[
