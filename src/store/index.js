@@ -16,6 +16,9 @@ export default new Vuex.Store({
     metaData: {},
     userState: {
       activeWorkspace: 1,
+      dashboards: {
+
+      }
     },
     workspaces: {
       1: {

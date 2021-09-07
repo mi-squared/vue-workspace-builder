@@ -5,12 +5,23 @@
         cols="8"
     >
 
-      <v-expansion-panels
-          multiple
+      <v-tabs
+          v-model="tab"
+          icons-and-text
       >
-        <v-expansion-panel>
-          <v-expansion-panel-header>{{ this.dashboard.title }} Properties</v-expansion-panel-header>
-          <v-expansion-panel-content>
+        <v-tab :key="'tab-properties'">
+          Properties
+          <v-icon>mdi-settings</v-icon>
+        </v-tab>
+        <v-tab :key="'tab-columns'">
+          Columns
+          <v-icon>mdi-table</v-icon>
+        </v-tab>
+      </v-tabs>
+
+      <v-tabs-items v-model="tab">
+        <v-tab-item :key="'tab-properties'">
+          <v-container>
             <v-text-field
                 label="Title"
                 hide-details="auto"
@@ -18,47 +29,96 @@
                 required
             ></v-text-field>
             <v-text-field label="Another input"></v-text-field>
-          </v-expansion-panel-content>
-        </v-expansion-panel>
+            <v-switch
+                v-model="durationSwitch"
+                :label="`Display Date Added: ${durationSwitch.toString()}`"
+            ></v-switch>
+            <v-divider></v-divider>
+            <v-row>
+              <v-col cols="8">
 
-        <v-expansion-panel>
-          <v-expansion-panel-header>{{ this.dashboard.title }} Columns</v-expansion-panel-header>
-          <v-expansion-panel-content>
-            <v-list>
-              <v-list-item-group
-                  color="primary"
-              >
-                <draggable
-                    id="first"
-                    :list="dashboardColumns"
-                    draggable=".v-list-item"
-                    group="a"
+                <v-range-slider
+                    v-model="range"
+                    :max="max"
+                    :min="min"
+                    hide-details
+                    class="align-center"
                 >
-                  <v-list-item
-                      v-for="element in dashboardColumns"
-                      :key="element.text"
-                      @click="dashboardElementClicked(element)"
-                      color="primary"
-                  >
-                    <v-list-item-icon>
-                      <v-icon>mdi-drag-vertical</v-icon>
-                    </v-list-item-icon>
-                    <v-list-item-content>
-                      <v-list-item-title v-text="element.text"></v-list-item-title>
-                    </v-list-item-content>
-                  </v-list-item>
-                </draggable>
+                  <template v-slot:prepend>
+                    <v-text-field
+                        :value="range[0]"
+                        class="mt-0 pt-0"
+                        hide-details
+                        single-line
+                        type="number"
+                        style="width: 60px"
+                        @change="$set(range, 0, $event)"
+                    ></v-text-field>
+                  </template>
+                  <template v-slot:append>
+                    <v-text-field
+                        :value="range[1]"
+                        class="mt-0 pt-0"
+                        hide-details
+                        single-line
+                        type="number"
+                        style="width: 60px"
+                        @change="$set(range, 1, $event)"
+                    ></v-text-field>
+                  </template>
+                </v-range-slider>
+              </v-col>
+              <v-col>
+                <v-select :items="units" label="Units"></v-select>
+              </v-col>
 
-              </v-list-item-group>
+            </v-row>
 
-              <v-list-item>
-                <!-- Button to add a new dashboard column -->
-                <v-btn @click="add">Add</v-btn>
-              </v-list-item>
-            </v-list>
-          </v-expansion-panel-content>
-        </v-expansion-panel>
-      </v-expansion-panels>
+            <v-color-picker
+                class="ma-2"
+                hide-canvas
+            ></v-color-picker>
+
+          </v-container>
+        </v-tab-item>
+
+        <!-- Column list -->
+        <v-tab-item :key="'tab-columns'">
+          <v-list>
+            <v-list-item-group
+                color="primary"
+            >
+              <draggable
+                  id="first"
+                  :list="dashboardColumns"
+                  draggable=".v-list-item"
+                  group="a"
+              >
+                <v-list-item
+                    v-for="element in dashboardColumns"
+                    :key="element.text"
+                    @click="dashboardElementClicked(element)"
+                    color="primary"
+                >
+                  <v-list-item-icon>
+                    <v-icon>mdi-drag-vertical</v-icon>
+                  </v-list-item-icon>
+                  <v-list-item-content>
+                    <v-list-item-title v-text="element.text"></v-list-item-title>
+                  </v-list-item-content>
+                </v-list-item>
+              </draggable>
+
+            </v-list-item-group>
+
+            <v-list-item>
+              <!-- Button to add a new dashboard column -->
+              <v-btn @click="add">Add</v-btn>
+            </v-list-item>
+          </v-list>
+        </v-tab-item>
+      </v-tabs-items>
+
     </v-col>
     <!-- end dashboard properties -->
 
@@ -157,13 +217,21 @@ export default {
   },
   data() {
     return {
+      tab: null,
       selectedItem: 1,
       drawer: null,
       activeDashboardElement: {},
       validElement: true,
       dashboardModel: {
 
-      }
+      },
+      durationSwitch: true,
+      min: -50,
+      max: 90,
+      range: [-20, 70],
+      units: [
+          'Minutes', 'Hours', 'Days'
+      ]
     }
   },
   computed: {
