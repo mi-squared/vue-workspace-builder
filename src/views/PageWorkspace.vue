@@ -19,7 +19,7 @@
 
     <v-card flat>
       <v-toolbar flat>
-        <v-toolbar-title>Layouts</v-toolbar-title>
+        <v-toolbar-title>Menu Items</v-toolbar-title>
         <v-spacer></v-spacer>
         <v-menu>
           <template v-slot:activator="{ on, attrs }">

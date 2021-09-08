@@ -94,9 +94,10 @@
                   draggable=".v-list-item"
                   group="a"
               >
+                <!-- use value for key because it's unique -->
                 <v-list-item
                     v-for="element in dashboardColumns"
-                    :key="element.text"
+                    :key="element.value"
                     @click="dashboardElementClicked(element)"
                     color="primary"
                 >
