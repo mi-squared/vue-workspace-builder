@@ -13,6 +13,8 @@ import DashboardBuilder from '@/components/DashboardBuilder'
 import Builder from '@/views/Builder'
 import PageDashboard from '@/views/dashboard/PageDashboard'
 import PageForm from '@/views/form/PageForm'
+import Dashboard from '../views/Dashboard'
+import Form from '../views/Form'
 
 Vue.use(VueRouter);
 
@@ -72,16 +74,24 @@ const routes = [{
     ]
   },
   {
-    path: '/dashboard/:id',
-    name: 'Dashboard',
-    component: PageDashboard,
-    props: true
+      path: "/dashboard",
+      component: Dashboard,
+      children: [{
+        path: ':id',
+        name: 'Dashboard',
+        component: PageDashboard,
+        props: true
+      }]
   },
   {
-    path: '/form/:id',
-    name: 'Form',
-    component: PageForm,
-    props: true
+      path: "/form",
+      component: Form,
+      children: [{
+        path: ':id',
+        name: 'Form',
+        component: PageForm,
+        props: true
+     }]
   },
 ];
 
