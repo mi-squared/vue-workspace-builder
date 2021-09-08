@@ -8,7 +8,7 @@
             <v-list-item
               v-for="(form, i) in forms"
               :key="i"
-              :to="`/workspace/${activeWorkspace.id}/forms/${form.id}`"
+              :to="`/builder/workspace/${activeWorkspace.id}/forms/${form.id}`"
             >
               <v-list-item-content>
                 <v-list-item-title> {{ form.title }} </v-list-item-title>

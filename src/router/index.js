@@ -20,8 +20,14 @@ const routes = [{
     path: "/builder",
     component: Builder,
     children: [
-      { path: "workspace/:workspaceId/home", component: PageWorkspace },
-      { path: "workspace/:workspaceId/data-source", component: PageDataSource },
+      {
+          path: "workspace/:workspaceId/home",
+          component: PageWorkspace
+      },
+      {
+          path: "workspace/:workspaceId/data-source",
+          component: PageDataSource
+      },
       {
         path: "workspace/:workspaceId/forms",
         component: PageForms,
@@ -50,9 +56,10 @@ const routes = [{
         }),
         children: [
           {
-            // DashboardVuilder will be rendered inside PageDashboard's <router-view>
+            // Dashboard will be rendered inside PageDashboard's <router-view>
             // when /dashboard/:id/profile is matched
             path: ":dashboardId(\\d+)",
+            name: "builder-dashboard",
             component: DashboardBuilder,
             props: ({ params }) => ({
               dashboardId: Number.parseInt(params.dashboardId, 10) || 0,

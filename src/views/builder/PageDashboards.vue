@@ -61,7 +61,7 @@
 
       <!-- this is the list of existing dashboards -->
       <v-list-item-group color="primary">
-        <v-list-item v-for="dashboard in dashboards" :key="dashboard.id" :to="`/workspace/${activeWorkspace.id}/dashboards/${dashboard.id}`">
+        <v-list-item v-for="dashboard in dashboards" :key="dashboard.id" :to="`/builder/workspace/${activeWorkspace.id}/dashboards/${dashboard.id}`">
           {{ dashboard.title }}
         </v-list-item>
       </v-list-item-group>

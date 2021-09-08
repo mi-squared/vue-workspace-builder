@@ -200,7 +200,7 @@ export default {
   },
   mounted () {
     // When builder component load is done loading, redirect to the active workspace home page
-    this.$router.push({ path: `/builder/workspace/${this.activeWorkspaceId}/home` }) // -> /user/123
+    // this.$router.push({ path: `/builder/workspace/${this.activeWorkspaceId}/home` })
   }
 }
 </script>
