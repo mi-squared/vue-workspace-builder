@@ -5,7 +5,10 @@
 <script>
 export default {
   name: "App",
-  components: {}
+  components: {},
+  mounted () {
+      document.title = "This is the new title"
+  }
 }
 </script>
 

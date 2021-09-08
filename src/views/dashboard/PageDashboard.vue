@@ -378,7 +378,7 @@ export default {
     },
     getColor(timestamp) {
       let a = moment()
-      let b = moment(timestamp, 'X');
+      let b = moment(timestamp);
       let seconds = a.diff(b, 'seconds')
       for (const attr in this.attrition) {
         // Convert our ranges to seconds

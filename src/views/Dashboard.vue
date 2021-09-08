@@ -21,6 +21,7 @@ export default {
           console.log(response)
           // Fetch the dashboard from the server given an ID
           this.dashboardId = this.$route.params.id
+            console.log(this.$route.params)
           this.$store.dispatch('fetchDashboard', { dashboardId: this.dashboardId })
               .then(dashboard => {
                 document.title = dashboard.title

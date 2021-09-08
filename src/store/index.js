@@ -674,6 +674,10 @@ export default new Vuex.Store({
     },
   },
   mutations: {
+    setMetaData (state, metaData) {
+      Vue.set(state, 'metaData', metaData)
+    },
+    // DataSource Builder Mutations
     appendDataSourceColumn(state, { workspaceId, column }) {
       // The column name is the index and the column is the model
       Vue.set(
@@ -687,12 +691,14 @@ export default new Vuex.Store({
         column.name
       ] = column;
     },
+    // Dashboard Builder Mutations
     setDashboard(state, { workspaceId, dashboardId, dashboard} ) {
       const vuexDashbaord = state.workspaces[workspaceId].dashboards.find( d => d.id === dashboardId)
       Vue.set(vuexDashbaord, 'title', dashboard.title)
       Vue.set(vuexDashbaord, 'filters', dashboard.filters)
       Vue.set(vuexDashbaord, 'headers', dashboard.headers)
     },
+    // Form Builder Mutations
     setFormSchema(state, { workspaceId, formId, schema }) {
       // state.workspaces[workspaceId].forms[
       //   formId
@@ -706,7 +712,7 @@ export default new Vuex.Store({
       let form = state.workspaces[workspaceId].forms.find(
         (form) => form.id === formId
       );
-      form.formDefinition.grid = grid;
+      form.formDefinition.grid = grid
     },
     addForm(state, { workspaceId, form }) {
       state.workspaces[workspaceId].forms.push(form);

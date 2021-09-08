@@ -15,7 +15,7 @@ export default {
     humanFriendlyDate (ts) {
       let formatted = ''
       const rightNow = moment().toISOString()
-      const timestamp = moment(ts, 'X').toISOString()
+      const timestamp = moment(ts).toISOString()
       if (moment(timestamp).isSame(rightNow, 'hour')) {
         formatted = moment(timestamp).fromNow()
       } else if (moment(timestamp).isSame(rightNow, 'day')) {
