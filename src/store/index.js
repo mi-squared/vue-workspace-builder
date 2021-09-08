@@ -9,6 +9,7 @@ Vue.use(Vuex);
 
 // pathify.debug()
 
+
 export default new Vuex.Store({
   plugins: [pathify.plugin],
   state: {
@@ -450,6 +451,43 @@ export default new Vuex.Store({
       const newForm = createForm(workspaceId, form);
       commit("addForm", { workspaceId: workspaceId, form: newForm });
     },
+
+    /**
+     * TODO Dashboard Module Actions
+     */
+
+    /**
+     * Fetch a dashboard from the server given a dashboard ID and commit it to the state
+     *
+     * @param state
+     * @param commit
+     * @param dashboardId
+     * @returns {Promise<unknown>}
+     */
+    fetchDashboard ({ state, commit }, { dashboardId }) {
+      console.log(dashboardId)
+      if (state.metaData.csrfToken) {
+        return new Promise((resolve) => {
+          axios.get('/apis/api/dashboard', {
+            // params: {
+            //     id: dashboardId
+            // },
+            headers: {
+              'apicsrftoken': state.metaData.csrfToken
+            }
+          }).then(function (response) {
+            const dashboard = response.data
+            commit('dSetDashboard', dashboard)
+            resolve(state.dashboard)
+          }).catch(function () {
+            alert("there was an error, you may need to log back in")
+          })
+        })
+      }
+    },
+    fetchRows () {
+
+    }
   },
   getters: {
     getFormById: (state) => (workspaceId, id) => {
@@ -494,5 +532,13 @@ export default new Vuex.Store({
     addForm(state, { workspaceId, form }) {
       state.workspaces[workspaceId].forms.push(form);
     },
+
+    /**
+     * TODO Dashboard Module
+     */
+    dSetDashboard (state, dashboard) {
+      // set the new dashboard in the state
+      Vue.set(state, 'dashboard', dashboard)
+    }
   },
 });
