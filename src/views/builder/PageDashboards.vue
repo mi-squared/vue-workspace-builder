@@ -1,22 +1,19 @@
 <template>
 
 <div id="page-dashboards">
-
-    <!-- This is the dialog at the top for creating a new layout -->
-  <v-row>
-    <v-col height="100%" cols="3">
-      <v-list shaped>
+  <v-navigation-drawer app clipped v-model="drawer">
+    <v-list shaped>
       <v-dialog
-          v-model="showNewDashboardDialog"
-          persistent
-          max-width="600px"
+        v-model="showNewDashboardDialog"
+        persistent
+        max-width="600px"
       >
         <template v-slot:activator="{ on, attrs }">
           <v-btn
-              text
-              class="align-self-center mr-4"
-              v-bind="attrs"
-              v-on="on"
+            text
+            class="align-self-center mr-4"
+            v-bind="attrs"
+            v-on="on"
           >
             <v-icon left>
               mdi-plus
@@ -32,25 +29,25 @@
           <v-card-text>
             <v-container>
               <v-text-field
-                  v-model="newDashboardModel.title"
-                  label="Dashboard Title*"
-                  required
+                v-model="newDashboardModel.title"
+                label="Dashboard Title*"
+                required
               ></v-text-field>
             </v-container>
           </v-card-text>
           <v-card-actions>
             <v-spacer></v-spacer>
             <v-btn
-                color="blue darken-1"
-                text
-                @click="showNewDashboardDialog = false"
+              color="blue darken-1"
+              text
+              @click="showNewDashboardDialog = false"
             >
               Close
             </v-btn>
             <v-btn
-                color="blue darken-1"
-                text
-                @click="saveNewLayout"
+              color="blue darken-1"
+              text
+              @click="saveNewLayout"
             >
               Save
             </v-btn>
@@ -66,17 +63,13 @@
         </v-list-item>
       </v-list-item-group>
       <!-- end of existing dashboards -->
-      </v-list>
-    </v-col>
+    </v-list>
+  </v-navigation-drawer>
 
-    <!-- Next column contains the DashboardBuilder component via router -->
-    <v-col>
-      <v-sheet min-height="70vh" rounded="lg">
-        <router-view></router-view>
-      </v-sheet>
-    </v-col>
+  <v-main>
+    <router-view @hamburger-navigation-clicked="onNavigationClicked"></router-view>
+  </v-main>
 
-  </v-row>
 </div>
 </template>
 
@@ -89,6 +82,7 @@ export default {
   },
   data () {
     return {
+      drawer: true,
       showNewDashboardDialog: false,
       layouts: [
 
@@ -108,6 +102,9 @@ export default {
     }
   },
   methods: {
+    onNavigationClicked() {
+      this.drawer = !this.drawer
+    },
     saveNewLayout () {
       // Save the new layout model that gets initial data from the modal, store it, and then
       // set it to the active layout model to edit.
@@ -124,6 +121,10 @@ export default {
 }
 
 .v-window-item {
+  height: 100%;
+}
+
+.v-main {
   height: 100%;
 }
 </style>

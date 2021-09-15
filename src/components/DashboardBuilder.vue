@@ -1,24 +1,19 @@
 <template>
-  <v-row height="1000">
+  <v-container  height="1000">
 
-    <!-- column for holding the dashboard properties -->
-    <v-col
-        cols="10"
-    >
+    <v-toolbar dense flat>
+      <v-app-bar-nav-icon @click="navigationHamburgerClicked"></v-app-bar-nav-icon>
 
-      <v-toolbar dense flat>
-        <v-app-bar-nav-icon></v-app-bar-nav-icon>
+      <v-toolbar-title>{{ this.dashboard.title }}</v-toolbar-title>
 
-        <v-toolbar-title>{{ this.dashboard.title }}</v-toolbar-title>
+      <v-spacer></v-spacer>
 
-        <v-spacer></v-spacer>
+      <v-btn color="success" :disabled="!isDirty">
+        <v-icon>mdi-floppy</v-icon>
+        <div>Save</div>
+      </v-btn>
 
-        <v-btn color="success" icon :disabled="!isDirty">
-          <v-icon>mdi-floppy</v-icon>
-          save
-        </v-btn>
-
-      </v-toolbar>
+    </v-toolbar>
 
       <v-tabs
           v-model="tab"
@@ -108,12 +103,12 @@
         </v-tab-item>
       </v-tabs-items>
 
-    </v-col>
     <!-- end dashboard properties -->
 
     <!-- when an element is clicked, this should slide out -->
       <v-navigation-drawer
           v-model="drawer"
+          app
           absolute
           right
           temporary
@@ -144,28 +139,6 @@
                 required
             ></v-text-field>
 
-<!--            <v-text-field-->
-<!--                v-model="email"-->
-<!--                :rules="emailRules"-->
-<!--                label="E-mail"-->
-<!--                required-->
-<!--            ></v-text-field>-->
-
-<!--            <v-select-->
-<!--                v-model="select"-->
-<!--                :items="items"-->
-<!--                :rules="[v => !!v || 'Item is required']"-->
-<!--                label="Item"-->
-<!--                required-->
-<!--            ></v-select>-->
-
-<!--            <v-checkbox-->
-<!--                v-model="checkbox"-->
-<!--                :rules="[v => !!v || 'You must agree to continue!']"-->
-<!--                label="Do you agree?"-->
-<!--                required-->
-<!--            ></v-checkbox>-->
-
             <v-btn
                 color="success"
                 class="mr-4"
@@ -183,7 +156,7 @@
           </v-container>
         </v-form>
       </v-navigation-drawer>
-  </v-row>
+  </v-container>
 
 </template>
 
@@ -284,6 +257,9 @@ export default {
         dashboard: this.dashboard
       })
       this.drawer = false
+    },
+    navigationHamburgerClicked() {
+      this.$emit('hamburger-navigation-clicked')
     }
   }
 }
