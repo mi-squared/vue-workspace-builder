@@ -1,5 +1,20 @@
 <template>
   <v-container>
+    <v-toolbar dense flat>
+
+      <v-app-bar-nav-icon @click="navigationHamburgerClicked"></v-app-bar-nav-icon>
+
+      <v-toolbar-title>{{ this.activeFormModel.title }}</v-toolbar-title>
+
+      <v-spacer></v-spacer>
+
+      <v-btn color="success" :disabled="!isDirty">
+        <v-icon>mdi-floppy</v-icon>
+        <div>Save</div>
+      </v-btn>
+
+    </v-toolbar>
+
     <v-row>
       <v-col cols="12" sm="8">
         <!-- <v-btn @click="addItem">Add Form Element</v-btn> -->
@@ -26,8 +41,8 @@
                 <v-list-item-content>
                   <v-list-item-title>{{ column.name }}</v-list-item-title>
                   <v-list-item-subtitle>{{
-                    column.comment
-                  }}</v-list-item-subtitle>
+                      column.comment
+                    }}</v-list-item-subtitle>
                 </v-list-item-content>
               </v-list-item>
             </v-card-text>
@@ -248,6 +263,9 @@ export default {
         schema: schema,
       });
     },
+    navigationHamburgerClicked() {
+      this.$emit('hamburger-navigation-clicked')
+    }
   },
 };
 </script>
