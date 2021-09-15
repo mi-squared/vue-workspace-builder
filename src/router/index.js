@@ -61,7 +61,7 @@ const routes = [{
             // Dashboard will be rendered inside PageDashboard's <router-view>
             // when /dashboard/:id/profile is matched
             path: ":dashboardId(\\d+)",
-            name: "builder-dashboard",
+            name: "DashboardBuilder",
             component: DashboardBuilder,
             props: ({ params }) => ({
               dashboardId: Number.parseInt(params.dashboardId, 10) || 0,

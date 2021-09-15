@@ -10,6 +10,9 @@
                 <v-form>
                   <v-text-field label="Title" :value="title"></v-text-field>
                   <v-select label="Administrator" :items="administrators" item-text="displayName" item-value="userId" hint="The administrator of this workspace" persistent-hint></v-select>
+                  <v-switch
+                    label="Display as patient menu item"
+                    ></v-switch>
                 </v-form>
               </v-card-text>
             </v-col>

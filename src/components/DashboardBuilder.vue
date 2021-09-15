@@ -1,9 +1,24 @@
 <template>
   <v-row height="1000">
+
     <!-- column for holding the dashboard properties -->
     <v-col
-        cols="8"
+        cols="10"
     >
+
+      <v-toolbar dense flat>
+        <v-app-bar-nav-icon></v-app-bar-nav-icon>
+
+        <v-toolbar-title>{{ this.dashboard.title }}</v-toolbar-title>
+
+        <v-spacer></v-spacer>
+
+        <v-btn color="success" icon :disabled="!isDirty">
+          <v-icon>mdi-floppy</v-icon>
+          save
+        </v-btn>
+
+      </v-toolbar>
 
       <v-tabs
           v-model="tab"
@@ -17,6 +32,7 @@
           Columns
           <v-icon>mdi-table</v-icon>
         </v-tab>
+
       </v-tabs>
 
       <v-tabs-items v-model="tab">
@@ -28,56 +44,28 @@
                 v-model="this.dashboard.title"
                 required
             ></v-text-field>
-            <v-text-field label="Another input"></v-text-field>
+
             <v-switch
-                v-model="durationSwitch"
-                :label="`Display Date Added: ${durationSwitch.toString()}`"
+              v-model="displayNewButton"
+              label="Display '+ New' Button"
+            ></v-switch>
+
+            <v-select
+              v-if="displayNewButton"
+              v-model="this.newEntityFormId"
+              label="New Entity Form"
+              :items="this.formOptions"
+            >
+
+            </v-select>
+
+            <v-switch
+                v-model="displayDuration"
+                :label="`Display Date Added: ${displayDuration.toString()}`"
             ></v-switch>
             <v-divider></v-divider>
-            <v-row>
-              <v-col cols="8">
 
-                <v-range-slider
-                    v-model="range"
-                    :max="max"
-                    :min="min"
-                    hide-details
-                    class="align-center"
-                >
-                  <template v-slot:prepend>
-                    <v-text-field
-                        :value="range[0]"
-                        class="mt-0 pt-0"
-                        hide-details
-                        single-line
-                        type="number"
-                        style="width: 60px"
-                        @change="$set(range, 0, $event)"
-                    ></v-text-field>
-                  </template>
-                  <template v-slot:append>
-                    <v-text-field
-                        :value="range[1]"
-                        class="mt-0 pt-0"
-                        hide-details
-                        single-line
-                        type="number"
-                        style="width: 60px"
-                        @change="$set(range, 1, $event)"
-                    ></v-text-field>
-                  </template>
-                </v-range-slider>
-              </v-col>
-              <v-col>
-                <v-select :items="units" label="Units"></v-select>
-              </v-col>
-
-            </v-row>
-
-            <v-color-picker
-                class="ma-2"
-                hide-canvas
-            ></v-color-picker>
+            <MultiRangePicker></MultiRangePicker>
 
           </v-container>
         </v-tab-item>
@@ -201,9 +189,11 @@
 
 <script>
 import draggable from "vuedraggable";
+import MultiRangePicker from './MultiRangePicker'
 export default {
   name: "DashboardBuilder",
   components: {
+    MultiRangePicker,
     draggable
   },
   props: {
@@ -218,21 +208,12 @@ export default {
   },
   data() {
     return {
+      isDirty: false,
       tab: null,
       selectedItem: 1,
       drawer: null,
       activeDashboardElement: {},
       validElement: true,
-      dashboardModel: {
-
-      },
-      durationSwitch: true,
-      min: -50,
-      max: 90,
-      range: [-20, 70],
-      units: [
-          'Minutes', 'Hours', 'Days'
-      ]
     }
   },
   computed: {
@@ -244,6 +225,27 @@ export default {
     },
     dashboardColumns() {
       return this.dashboard.headers
+    },
+    newEntityFormId() {
+      return this.dashboard.newEntityFormId
+    },
+    displayDuration() {
+      return this.dashboard.displayDuration
+    },
+    displayNewButton() {
+      return this.dashboard.displayNewButton
+    },
+    formOptions() {
+      // This gathers up all the forms in { text: '', value: '' } format for the select box
+      let options = []
+      this.activeWorkspace.forms.forEach(form => {
+        const option = {
+          text: form.title,
+          value: form.id
+        }
+        options.push(option)
+      })
+      return options
     }
   },
   methods: {

@@ -146,6 +146,9 @@ export default new Vuex.Store({
           {
             id: 10,
             title: "Triage Dashboard",
+            newEntityFormId: null,
+            displayDuration: true,
+            displayNewButton: false,
             filters: [
               {
                 field: 'status',
@@ -177,12 +180,16 @@ export default new Vuex.Store({
           {
             id: 11,
             title: "Dispatch Dashboard",
+            displayDuration: true,
+            displayNewButton: false,
             filters: [],
             headers: []
           },
           {
             id: 12,
             title: "Whiteboard",
+            displayDuration: true,
+            displayNewButton: false,
             filters: [],
             headers: []
           },
@@ -647,7 +654,10 @@ export default new Vuex.Store({
         })
       }
     },
-    fetchRows () {
+    // fetchDashboardRow ({ state, commit }, { dashboardId, rowId }) {
+    // TODO
+    // },
+    fetchAllDashboardRows () {
 
     }
   },
@@ -719,7 +729,7 @@ export default new Vuex.Store({
     },
 
     /**
-     * TODO Dashboard Module
+     * TODO Move to a Dashboard Module
      */
     dSetDashboard (state, dashboard) {
       // set the new dashboard in the state
