@@ -96,7 +96,7 @@ export default {
   },
   computed: {
     activeWorkspace () {
-      return this.$store.state.workspaces[this.$store.state.userState.activeWorkspace]
+      return this.$store.state.workspaces[this.$store.state.userState.navigation.workspace]
     },
     dashboards () {
       return this.activeWorkspace.dashboards
@@ -105,8 +105,9 @@ export default {
   methods: {
     onListItemClicked(id) {
       console.log(id)
-      this.$store.commit("setActiveDashboardBuilder", {
-        dashboardId: id
+      this.$store.commit("setNavigation", {
+        key: 'dashboard',
+        id: id
       });
     },
     onNavigationClicked() {
@@ -120,8 +121,8 @@ export default {
   },
   mounted () {
     let activeDashboardId = 0
-    if (this.$store.state.userState.activeDashboardBuilder) {
-      activeDashboardId = this.$store.state.userState.activeDashboardBuilder
+    if (this.$store.state.userState.navigation.dashboard) {
+      activeDashboardId = this.$store.state.userState.navigation.dashboard
     } else if (this.dashboards[0].id) {
       activeDashboardId = this.dashboards[0].id
     } else {
@@ -130,7 +131,7 @@ export default {
     this.$router.push({
       name: 'DashboardBuilder',
       params: {
-        workspaceId: this.$store.state.userState.activeWorkspace,
+        workspaceId: this.$store.state.userState.navigation.workspace,
         dashboardId: activeDashboardId
       }
     })

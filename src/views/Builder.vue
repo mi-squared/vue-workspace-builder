@@ -188,7 +188,7 @@ export default {
       }
     },
     activeWorkspaceId() {
-      return this.$store.state.userState.activeWorkspace
+      return this.$store.state.userState.navigation.workspace
     },
     activeWorkspace() {
       return this.$store.state.workspaces[this.activeWorkspaceId]

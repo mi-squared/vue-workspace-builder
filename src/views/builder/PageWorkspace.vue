@@ -182,7 +182,7 @@ export default {
   },
   computed: {
     activeWorkspace () {
-      return this.$store.state.workspaces[this.$store.state.userState.activeWorkspace]
+      return this.$store.state.workspaces[this.$store.state.userState.navigation.workspace]
     },
     title () {
       return this.activeWorkspace.title
