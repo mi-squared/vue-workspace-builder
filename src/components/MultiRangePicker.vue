@@ -10,20 +10,18 @@
       <v-col cols="2">
         <v-text-field
           label="Min"
-          v-model="range.range[0]"
-          :value="range.range[0]"
+          v-model.number="range.range[0]"
           class="mt-0 pt-0"
           hide-details
           single-line
-          readonly
           disabled
+          readonly
         ></v-text-field>
       </v-col>
       <v-col cols="2">
         <v-text-field
           label="Max"
-          v-model="range.range[1]"
-          :value="range.range[1]"
+          v-model.number="range.range[1]"
           class="mt-0 pt-0"
           hide-details
           single-line
@@ -81,7 +79,7 @@
       <v-col>
 
         <v-range-slider
-          v-model="range.range"
+          :value="range.range"
           :min="`0`"
           :max="pickerMax"
           :color="range.color"
@@ -107,7 +105,7 @@
       <v-col>
         Greater than or equal to {{ pickerMax }} {{ picker.units }} =
         <v-icon
-          :color="outOfRangeColor">
+          :color="picker.outOfRangeColor">
           mdi-format-color-fill
         </v-icon>
       </v-col>
@@ -128,16 +126,7 @@ export default {
         outOfRangeColor: 'grey',
         units: 'minutes',
         ranges: [
-          {
-            order: 0,
-            range: [0, 30],
-            color: 'red',
-          },
-          {
-            order: 1,
-            range: [31, 100],
-            color: 'yellow',
-          },
+
         ]
       }
     }
@@ -146,8 +135,7 @@ export default {
     pickerMax() {
       let max = 0
       this.picker.ranges.forEach(range => {
-        const diff = range.range[1] - range.range[0]
-        max = max + diff + 1
+        max = range.range[1]
       })
       return max
     },
@@ -156,21 +144,22 @@ export default {
     updateRangeMax(range) {
       // If this is not the last range, we need to set the min of the next one to ONE GREATER
       // when we update the max of this one
-      if (range.order < this.picker.ranges.length - 1) {
-        let nextRange = this.picker.ranges[range.order + 1]
-        nextRange.range[0] = range.range[1] + 1
+      console.log(range)
+      for ( let i = range.order; i < this.picker.ranges.length - 1; ++i) {
+        let thisRange = this.picker.ranges[i]
+        let nextRange = this.picker.ranges[i + 1]
+        this.$set(thisRange.range, 1, range.range[1])
         this.$set(nextRange.range, 0, range.range[1] + 1)
       }
-      this.$set(this.picker.ranges[range.order].range, 1, range.range[1])
     },
     addRange() {
       const order = this.picker.ranges.length;
-      const start = this.picker.ranges[this.picker.ranges.length - 1].range[1]
+      const start = this.picker.ranges.length ? this.picker.ranges[this.picker.ranges.length - 1].range[1] : 0
       const end = start + 30
       const range = {
         order: order,
         range: [
-          start + 1,
+          start === 0 ? 0 : start + 1,
           end
         ],
         color: 'red'
