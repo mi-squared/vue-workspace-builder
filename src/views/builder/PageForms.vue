@@ -75,9 +75,8 @@
       </v-list>
     </v-navigation-drawer>
 
-    <v-main>
-      <router-view @hamburger-navigation-clicked="onNavigationClicked"></router-view>
-    </v-main>
+    <router-view @hamburger-navigation-clicked="onNavigationClicked"></router-view>
+
   </div>
 </template>
 

@@ -3,58 +3,64 @@
 <div id="page-dashboards">
   <v-navigation-drawer app clipped v-model="drawer">
     <v-list shaped>
-      <v-dialog
-        v-model="showNewDashboardDialog"
-        persistent
-        max-width="600px"
-      >
-        <template v-slot:activator="{ on, attrs }">
-          <v-btn
-            text
-            class="align-self-center mr-4"
-            v-bind="attrs"
-            v-on="on"
+      <v-list-item>
+        <v-list-item-content>
+          <v-dialog
+            v-model="showNewDashboardDialog"
+            persistent
+            max-width="600px"
           >
-            <v-icon left>
-              mdi-plus
-            </v-icon>
-            New Dashboard
-          </v-btn>
-        </template>
+            <template v-slot:activator="{ on, attrs }">
+              <v-btn
+                text
+                class="align-self-center mr-4"
+                v-bind="attrs"
+                v-on="on"
+              >
+                <v-icon left>
+                  mdi-plus
+                </v-icon>
+                New Dashboard
+              </v-btn>
+            </template>
 
-        <v-card height="100%">
-          <v-card-title>
-            <span class="text-h5">New Dashboard</span>
-          </v-card-title>
-          <v-card-text>
-            <v-container>
-              <v-text-field
-                v-model="newDashboardModel.title"
-                label="Dashboard Title*"
-                required
-              ></v-text-field>
-            </v-container>
-          </v-card-text>
-          <v-card-actions>
-            <v-spacer></v-spacer>
-            <v-btn
-              color="blue darken-1"
-              text
-              @click="showNewDashboardDialog = false"
-            >
-              Close
-            </v-btn>
-            <v-btn
-              color="blue darken-1"
-              text
-              @click="saveNewLayout"
-            >
-              Save
-            </v-btn>
-          </v-card-actions>
-        </v-card>
-      </v-dialog>
+            <v-card height="100%">
+              <v-card-title>
+                <span class="text-h5">New Dashboard</span>
+              </v-card-title>
+              <v-card-text>
+                <v-container>
+                  <v-text-field
+                    v-model="newDashboardModel.title"
+                    label="Dashboard Title*"
+                    required
+                  ></v-text-field>
+                </v-container>
+              </v-card-text>
+              <v-card-actions>
+                <v-spacer></v-spacer>
+                <v-btn
+                  color="blue darken-1"
+                  text
+                  @click="showNewDashboardDialog = false"
+                >
+                  Close
+                </v-btn>
+                <v-btn
+                  color="blue darken-1"
+                  text
+                  @click="saveNewLayout"
+                >
+                  Save
+                </v-btn>
+              </v-card-actions>
+            </v-card>
+          </v-dialog>
+        </v-list-item-content>
+      </v-list-item>
       <!-- End of the new layout dialog -->
+
+      <v-divider class="ml-2 mb-4"></v-divider>
 
       <!-- this is the list of existing dashboards -->
       <v-list-item-group color="primary">
@@ -66,9 +72,7 @@
     </v-list>
   </v-navigation-drawer>
 
-  <v-main>
-    <router-view @hamburger-navigation-clicked="onNavigationClicked"></router-view>
-  </v-main>
+  <router-view @hamburger-navigation-clicked="onNavigationClicked"></router-view>
 
 </div>
 </template>

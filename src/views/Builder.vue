@@ -133,8 +133,10 @@
       </v-menu>
     </v-app-bar>
 
-    <!-- v-main is in the page component -->
-    <router-view></router-view>
+    <!-- v-main  -->
+    <v-main>
+      <router-view></router-view>
+    </v-main>
 
     <v-footer app>
       <!-- -->
