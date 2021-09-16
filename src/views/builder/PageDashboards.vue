@@ -64,7 +64,7 @@
 
       <!-- this is the list of existing dashboards -->
       <v-list-item-group color="primary">
-        <v-list-item v-for="dashboard in dashboards" :key="dashboard.id" :to="`/builder/workspace/${activeWorkspace.id}/dashboards/${dashboard.id}`">
+        <v-list-item @click="onListItemClicked(dashboard.id)" v-for="dashboard in dashboards" :key="dashboard.id" :to="`/builder/workspace/${activeWorkspace.id}/dashboards/${dashboard.id}`">
           {{ dashboard.title }}
         </v-list-item>
       </v-list-item-group>
@@ -92,9 +92,6 @@ export default {
 
       ],
       newDashboardModel: {},
-      activeDashboard: {},
-
-
     }
   },
   computed: {
@@ -106,6 +103,12 @@ export default {
     }
   },
   methods: {
+    onListItemClicked(id) {
+      console.log(id)
+      this.$store.commit("setActiveDashboardBuilder", {
+        dashboardId: id
+      });
+    },
     onNavigationClicked() {
       this.drawer = !this.drawer
     },
@@ -114,7 +117,23 @@ export default {
       // set it to the active layout model to edit.
       this.showNewDashboardDialog = false
     },
-
+  },
+  mounted () {
+    let activeDashboardId = 0
+    if (this.$store.state.userState.activeDashboardBuilder) {
+      activeDashboardId = this.$store.state.userState.activeDashboardBuilder
+    } else if (this.dashboards[0].id) {
+      activeDashboardId = this.dashboards[0].id
+    } else {
+      return
+    }
+    this.$router.push({
+      name: 'DashboardBuilder',
+      params: {
+        workspaceId: this.$store.state.userState.activeWorkspace,
+        dashboardId: activeDashboardId
+      }
+    })
   }
 }
 </script>

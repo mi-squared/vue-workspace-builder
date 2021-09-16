@@ -17,9 +17,8 @@ export default new Vuex.Store({
     metaData: {},
     userState: {
       activeWorkspace: 1,
-      dashboards: {
-
-      }
+      activeDashboardBuilder: null,
+      activeFormBuilder: null
     },
     workspaces: {
       1: {
@@ -695,6 +694,9 @@ export default new Vuex.Store({
         column.name,
         column
       );
+    },
+    setActiveDashboardBuilder(state, { dashboardId }) {
+      Vue.set(state.userState, 'activeDashboardBuilder', dashboardId)
     },
     setDataSourceColumn(state, { workspaceId, column }) {
       state.workspaces[workspaceId].dataSource.spec.columns[
