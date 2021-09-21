@@ -46,6 +46,7 @@ const routes = [{
         component: PageForms,
         props: ({ params }) => ({
           workspaceId: Number(params.workspaceId),
+          formId: Number(params.formId)
         }),
         children: [
           {
@@ -65,26 +66,32 @@ const routes = [{
         path: "workspace/:workspaceId/dashboards",
         name: 'PageDashboards',
         component: PageDashboards,
-        beforeEnter: (to, from, next) => {
-          if (to.params.dashboardId) {
-            next()
-          } else {
-            const navigation = router.app.$store.getters['user/GET_NAVIGATION']
-            let dashboardId = navigation.dashboard
-            if (!dashboardId) {
-              const dashboards = router.app.$store.getters['dashboard/ALL_DASHBOARDS']
-              dashboardId = Object.keys(dashboards)[0]
-            }
-            next({
-              name: 'DashboardBuilder',
-              params: {
-                workspaceId: to.params.workspaceId,
-                dashboardId: dashboardId
-              }
-            })
-
-          }
-        },
+        // beforeEnter: (to, from, next) => {
+        //   if (!to.params.dashboardId) {
+        //     const navigation = router.app.$store.getters['user/GET_NAVIGATION']
+        //     let dashboardId = null
+        //     if (navigation.dashboard) {
+        //       dashboardId = navigation.dashboard
+        //     } else {
+        //       const dashboards = Object.keys(router.app.$store.getters['dashboard/ALL_DASHBOARDS'])
+        //       if (dashboards.length > 0) {
+        //         dashboardId = dashboards[0]
+        //       }
+        //     }
+        //     next({
+        //       name: 'DashboardBuilder',
+        //       params: {
+        //         workspaceId: to.params.workspaceId,
+        //         dashboardId: dashboardId
+        //       }
+        //     })
+        //   } else {
+        //     router.app.$store.dispatch('user/SET_NAVIGATION', { key: 'dashboard', id: to.params.dashboardId }).then(value => {
+        //       console.log(value)
+        //       next()
+        //     })
+        //   }
+        // },
         props: ({ params }) => ({
           workspaceId: Number(params.workspaceId),
           dashboardId: Number(params.dashboardId)
@@ -96,9 +103,12 @@ const routes = [{
             path: ":dashboardId(\\d+)",
             name: "DashboardBuilder",
             component: DashboardBuilder,
-            beforeEnter: (to, from , next) => {
-              next()
-            },
+            // beforeEnter: (to, from , next) => {
+            //   router.app.$store.dispatch('user/SET_NAVIGATION', { key: 'dashboard', id: to.params.dashboardId }).then(value => {
+            //     console.log(value)
+            //     next()
+            //   })
+            // },
             props: ({ params }) => ({
               dashboardId: Number.parseInt(params.dashboardId, 10) || 0,
               workspaceId: Number.parseInt(params.workspaceId, 10) || 0,

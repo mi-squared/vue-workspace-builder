@@ -81,7 +81,7 @@
 import { createNamespacedHelpers } from 'vuex'
 import { ALL_DASHBOARDS } from '../../store/types-dashboard'
 import { GET_NAVIGATION, SET_NAVIGATION } from '../../store/types-user'
-const { mapState, mapActions, mapGetters } = createNamespacedHelpers('dashboard')
+const { mapState: mapDashboardState, mapActions: mapDashboardActions, mapGetters: mapDashboardGetters } = createNamespacedHelpers('dashboard')
 const { mapActions: mapUserActions, mapGetters: mapUserGetters } = createNamespacedHelpers('user')
 
 export default {
@@ -98,7 +98,8 @@ export default {
   },
   data () {
     return {
-      ...mapState,
+      ...mapDashboardState,
+      activeDashboard: this.dashboardId,
       drawer: true,
       showNewDashboardDialog: false,
       layouts: [
@@ -108,7 +109,7 @@ export default {
     }
   },
   computed: {
-    ...mapGetters({
+    ...mapDashboardGetters({
       dashboards: ALL_DASHBOARDS
     }),
     ...mapUserGetters({
@@ -116,11 +117,13 @@ export default {
     })
   },
   methods: {
-    ...mapActions,
-    ...mapUserActions,
+    ...mapDashboardActions,
+    ...mapUserActions({
+      setNavigation: SET_NAVIGATION
+    }),
     onListItemClicked(id) {
       console.log(id)
-      this.$store.dispatch(SET_NAVIGATION, {
+      this.setNavigation({
         key: 'dashboard',
         id: id
       })
@@ -135,27 +138,21 @@ export default {
     },
   },
   mounted () {
-    // if (this.navigation.dashboard) {
-    //   this.dashboardId = this.navigation.dashboard
-    // } else if (this.dashboards[0].id) {
-    //   this.dashboardId = this.dashboards[0].id
-    // } else {
-    //   return
-    // }
-    // if (this.$store.state.userState.navigation.dashboard) {
-    //   activeDashboardId = this.$store.state.userState.navigation.dashboard
-    // } else if (this.dashboards[0].id) {
-    //   activeDashboardId = this.dashboards[0].id
-    // } else {
-    //   return
-    // }
-    // this.$router.push({
-    //   name: 'DashboardBuilder',
-    //   params: {
-    //     workspaceId: this.$store.state.userState.navigation.workspace,
-    //     dashboardId: activeDashboardId
-    //   }
-    // })
+    if (!this.dashboardId) {
+      if (this.navigation.dashboard) {
+        this.activeDashboard = this.navigation.dashboard
+      } else if (Object.keys(this.dashboards).length > 0) {
+        this.activeDashboard = Object.keys(this.dashboards)[0]
+      }
+
+      this.$router.push({
+        name: 'DashboardBuilder',
+        params: {
+          workspaceId: this.workspaceId,
+          dashboardId: this.activeDashboard
+        }
+      })
+    }
   }
 }
 </script>

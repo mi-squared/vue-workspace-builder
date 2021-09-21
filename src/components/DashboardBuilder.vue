@@ -166,7 +166,7 @@ import MultiRangePicker from './MultiRangePicker'
 import { createNamespacedHelpers } from 'vuex'
 import { GET_WORKSPACE } from '../store/types-workspace'
 import { GET_DASHBOARD } from '../store/types-dashboard'
-const { mapState, mapActions, mapGetters } = createNamespacedHelpers('workspace')
+const { mapState: mapWorkspaceState, mapActions: mapWorkspaceActions, mapGetters: mapWorkspaceGetters } = createNamespacedHelpers('workspace')
 const { mapState: mapDashboardState, mapActions: mapDashboardActions, mapGetters: mapDashboardGetters } = createNamespacedHelpers('dashboard')
 
 export default {
@@ -187,7 +187,7 @@ export default {
   },
   data() {
     return {
-      ...mapState,
+      ...mapWorkspaceState,
       ...mapDashboardState,
       isDirty: false,
       tab: null,
@@ -198,7 +198,7 @@ export default {
     }
   },
   computed: {
-    ...mapGetters({
+    ...mapWorkspaceGetters({
       getWorkspace: GET_WORKSPACE
     }),
     ...mapDashboardGetters({
@@ -236,7 +236,7 @@ export default {
     }
   },
   methods: {
-    ...mapActions,
+    ...mapWorkspaceActions,
     ...mapDashboardActions,
     add: function() {
       const newElement = {

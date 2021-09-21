@@ -1,4 +1,4 @@
-import { GET_WORKSPACE, SET_WORKSPACE } from '../types-workspace'
+import { GET_DATA_SOURCE, GET_WORKSPACE, SET_WORKSPACE } from '../types-workspace'
 import Vue from "vue";
 import axios from 'axios'
 
@@ -160,25 +160,11 @@ export const workspace = {
       ],
     },
   },
-  mutations: {
+  getters: {
+    [GET_WORKSPACE]: state => id => state.workspaces[id],
 
-    // DataSource Builder Mutations
-    appendDataSourceColumn (state, { workspaceId, column }) {
-      // The column name is the index and the column is the model
-      Vue.set(
-        state.workspaces[workspaceId].dataSource.spec.columns,
-        column.name,
-        column
-      );
-    },
-
-    // Dashboard Builder Mutations
-    [SET_WORKSPACE] (state, { workspaceId, workspace }) {
-      const vuexWorkspace = state.workspaces[workspaceId]
-      Vue.set(vuexWorkspace, 'title', workspace.title)
-    },
-
-  },
+    [GET_DATA_SOURCE]: state => id => state.workspaces[id].dataSource
+},
   actions: {
     [SET_WORKSPACE] ({ state, commit, rootState }, { workspaceId }) {
       console.log(workspaceId);
@@ -225,8 +211,23 @@ export const workspace = {
       commit(SET_WORKSPACE, { workspaceId, workspace })
     },
   },
-  getters: {
-    [GET_WORKSPACE]: state => id => state.workspaces[id]
+  mutations: {
+
+    // DataSource Builder Mutations
+    appendDataSourceColumn (state, { workspaceId, column }) {
+      // The column name is the index and the column is the model
+      Vue.set(
+        state.workspaces[workspaceId].dataSource.spec.columns,
+        column.name,
+        column
+      );
+    },
+
+    // Dashboard Builder Mutations
+    [SET_WORKSPACE] (state, { workspaceId, workspace }) {
+      const vuexWorkspace = state.workspaces[workspaceId]
+      Vue.set(vuexWorkspace, 'title', workspace.title)
+    },
 
   },
 }

@@ -64,7 +64,7 @@
           <v-list-item
             v-for="(form, i) in forms"
             :key="i"
-            :to="`/builder/workspace/${activeWorkspace.id}/forms/${form.id}`"
+            :to="`/builder/workspace/${workspaceId}/forms/${form.id}`"
           >
             <v-list-item-content>
               <v-list-item-title> {{ form.title }} </v-list-item-title>
@@ -81,11 +81,27 @@
 </template>
 
 <script>
+import { createNamespacedHelpers } from 'vuex'
+import { ALL_FORMS, GET_FORM } from '../../store/types-form'
+
+const { mapState: mapFormState, mapActions: mapFormActions, mapGetters: mapFormGetters } = createNamespacedHelpers('form')
+
 export default {
   name: "PageForms",
   components: {},
+  props: {
+    workspaceId: {
+      type: Number,
+      required: true
+    },
+    formId: {
+      type: Number,
+      required: true
+    }
+  },
   data() {
     return {
+      ...mapFormState,
       drawer: true,
       showNewFormDialog: false,
       layouts: [],
@@ -94,17 +110,16 @@ export default {
     };
   },
   computed: {
-    activeWorkspace() {
-      return this.$store.state.workspaces[this.$route.params.workspaceId];
-    },
+    ...mapFormGetters({
+      getForm: GET_FORM,
+      forms: ALL_FORMS
+    }),
     activeForm() {
-      return this.activeWorspace.forms[this.$route.params.formId];
-    },
-    forms() {
-      return this.activeWorkspace.forms;
+      return this.forms[this.$route.params.formId];
     },
   },
   methods: {
+    ... mapFormActions,
     onNavigationClicked() {
       this.drawer = !this.drawer
     },
