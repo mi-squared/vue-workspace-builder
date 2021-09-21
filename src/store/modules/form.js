@@ -1,6 +1,6 @@
 import { createForm } from '../../api'
-// import Vue from 'vue'
-import { ALL_FORMS, GET_FORM, SET_FORM_GRID, SET_FORM_SCHEMA } from '../types-form'
+import Vue from 'vue'
+import { ALL_FORMS, CREATE_FORM, GET_FORM, SET_FORM_GRID, SET_FORM_SCHEMA } from '../types-form'
 
 export const form = {
   namespaced: true,
@@ -93,9 +93,12 @@ export const form = {
   },
   actions: {
 
-    createForm({ commit }, { workspaceId, form }) {
+    [CREATE_FORM]({ dispatch, commit }, { workspaceId, form }) {
       const newForm = createForm(workspaceId, form);
-      commit("addForm", { workspaceId: workspaceId, form: newForm });
+      commit(CREATE_FORM, { formId: newForm.id, form: newForm });
+
+      // Dispatch to workspace module to add this form to workspace
+      dispatch('workspace/ADD_FORM_TO_WORKSPACE', { workspaceId, formId: newForm.id}, { root: true })
     },
 
     [SET_FORM_GRID]: ({ commit }, { formId, grid }) => {
@@ -111,18 +114,15 @@ export const form = {
 
     // Form Builder Mutations
     [SET_FORM_SCHEMA](state, { formId, schema }) {
-      // state.workspaces[workspaceId].forms[
-      //   formId
-      // ].formDefinition.schema = schema;
       let form = state.forms[formId]
-      form.formDefinition.schema = schema;
+      form.formDefinition.schema = schema
     },
     [SET_FORM_GRID](state, { formId, grid }) {
       let form = state.forms[formId]
       form.formDefinition.grid = grid
     },
-    addForm(state, { workspaceId, form }) {
-      state.workspaces[workspaceId].forms.push(form);
+    [CREATE_FORM]: (state, { formId, form }) => {
+      Vue.set(state.forms, formId, form)
     },
   },
 }

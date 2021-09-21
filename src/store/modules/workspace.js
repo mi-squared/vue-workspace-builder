@@ -1,4 +1,10 @@
-import { GET_DATA_SOURCE, GET_WORKSPACE, SET_WORKSPACE } from '../types-workspace'
+import {
+  ADD_FORM_TO_WORKSPACE,
+  CREATE_DATA_SOURCE_COLUMN,
+  GET_DATA_SOURCE,
+  GET_WORKSPACE,
+  SET_WORKSPACE
+} from '../types-workspace'
 import Vue from "vue";
 import axios from 'axios'
 
@@ -164,7 +170,7 @@ export const workspace = {
     [GET_WORKSPACE]: state => id => state.workspaces[id],
 
     [GET_DATA_SOURCE]: state => id => state.workspaces[id].dataSource
-},
+  },
   actions: {
     [SET_WORKSPACE] ({ state, commit, rootState }, { workspaceId }) {
       console.log(workspaceId);
@@ -192,18 +198,25 @@ export const workspace = {
     // createWorkspace ({ state, commit }, { workspace }) {
     //
     // },
-    createDataSourceColumn ({ commit }, { workspaceId, column }) {
+    [CREATE_DATA_SOURCE_COLUMN]: ({ commit }, { userId, workspaceId, column }) => {
       // POST to create new column
 
+      if (userId === null) {
+        console.log('Error: userId not set')
+      }
       // Then commit mutation
       column.extra = {
-        createdBy: this.state.userState.userId,
+        createdBy: userId,
         createdDate: Date.now(),
       };
-      commit("appendDataSourceColumn", {
+      commit(CREATE_DATA_SOURCE_COLUMN, {
         workspaceId: workspaceId,
         column: column,
-      });
+      })
+    },
+
+    [ADD_FORM_TO_WORKSPACE]: ({ commit }, { workspaceId, formId }) => {
+      commit(ADD_FORM_TO_WORKSPACE, { workspaceId, formId })
     },
 
     [SET_WORKSPACE] ({ commit }, { workspaceId, workspace }) {
@@ -214,13 +227,13 @@ export const workspace = {
   mutations: {
 
     // DataSource Builder Mutations
-    appendDataSourceColumn (state, { workspaceId, column }) {
+    [CREATE_DATA_SOURCE_COLUMN]: (state, { workspaceId, column }) => {
       // The column name is the index and the column is the model
       Vue.set(
         state.workspaces[workspaceId].dataSource.spec.columns,
         column.name,
         column
-      );
+      )
     },
 
     // Dashboard Builder Mutations
@@ -228,6 +241,20 @@ export const workspace = {
       const vuexWorkspace = state.workspaces[workspaceId]
       Vue.set(vuexWorkspace, 'title', workspace.title)
     },
+
+    /**
+     * Add a form to a workspace by adding the form's ID to the forms section.
+     *
+     * This is used by the forms module when a form is created, it needs to be added to the workspace.
+     *
+     * @param state
+     * @param workspaceId
+     * @param formId
+     */
+    [ADD_FORM_TO_WORKSPACE]: (state, { workspaceId, formId} ) => {
+      const vuexWorkspace = state.workspaces[workspaceId]
+      Vue.set(vuexWorkspace.forms, formId, formId)
+    }
 
   },
 }

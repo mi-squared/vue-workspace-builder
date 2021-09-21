@@ -165,8 +165,8 @@ import draggable from "vuedraggable";
 import MultiRangePicker from './MultiRangePicker'
 import { createNamespacedHelpers } from 'vuex'
 import { GET_WORKSPACE } from '../store/types-workspace'
-import { GET_DASHBOARD } from '../store/types-dashboard'
 const { mapState: mapWorkspaceState, mapActions: mapWorkspaceActions, mapGetters: mapWorkspaceGetters } = createNamespacedHelpers('workspace')
+import { GET_DASHBOARD } from '../store/types-dashboard'
 const { mapState: mapDashboardState, mapActions: mapDashboardActions, mapGetters: mapDashboardGetters } = createNamespacedHelpers('dashboard')
 
 export default {

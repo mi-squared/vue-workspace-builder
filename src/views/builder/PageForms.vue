@@ -82,8 +82,7 @@
 
 <script>
 import { createNamespacedHelpers } from 'vuex'
-import { ALL_FORMS, GET_FORM } from '../../store/types-form'
-
+import { ALL_FORMS, CREATE_FORM, GET_FORM } from '../../store/types-form'
 const { mapState: mapFormState, mapActions: mapFormActions, mapGetters: mapFormGetters } = createNamespacedHelpers('form')
 
 export default {
@@ -115,27 +114,29 @@ export default {
       forms: ALL_FORMS
     }),
     activeForm() {
-      return this.forms[this.$route.params.formId];
+      return this.forms[this.$route.params.formId]
     },
   },
   methods: {
-    ... mapFormActions,
+    ... mapFormActions({
+      createForm: CREATE_FORM
+    }),
     onNavigationClicked() {
       this.drawer = !this.drawer
     },
     saveNewForm() {
       // Save the new layout model that gets initial data from the modal, store it, and then
       // set it to the active layout model to edit.
-      console.log("save new form!");
+      console.log("save new form!")
       this.showNewFormDialog = false;
-      this.$store.dispatch("createForm", {
-        workspaceId: this.$route.params.workspaceId,
+      this.createForm({
+        workspaceId: this.workspaceId,
         form: this.newFormModel,
-      });
+      })
     },
   },
   mounted() {
-    console.log("Forms mounted");
+    console.log("Forms mounted")
   },
 };
 </script>

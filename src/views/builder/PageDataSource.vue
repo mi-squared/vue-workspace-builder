@@ -115,10 +115,23 @@
 </template>
 
 <script>
+import { createNamespacedHelpers } from 'vuex'
+import { CREATE_DATA_SOURCE_COLUMN, GET_WORKSPACE } from '../../store/types-workspace'
+const { mapState: mapWorkspaceState, mapActions: mapWorkspaceActions, mapGetters: mapWorkspaceGetters } = createNamespacedHelpers('workspace')
+import { GET_USER_META } from '../../store/types-user'
+const { mapGetters: mapUserGetters } = createNamespacedHelpers('user')
+
 export default {
   name: "PageDataSource",
+  props: {
+    workspaceId: {
+      type: Number,
+      required: true
+    }
+  },
   data() {
     return {
+      ...mapWorkspaceState,
       dialog: false,
       valid: false,
       model: {
@@ -131,14 +144,32 @@ export default {
       required: (v) => !!v || "Field cannot be empty",
     };
   },
+  computed: {
+    ...mapWorkspaceGetters({
+      getWorkspace: GET_WORKSPACE
+    }),
+    ...mapUserGetters({
+      getUserMeta: GET_USER_META
+    }),
+    activeWorkspace() {
+      return this.getWorkspace(this.workspaceId)
+    },
+    spec() {
+      return this.activeWorkspace.dataSource.spec
+    },
+  },
   methods: {
+    ...mapWorkspaceActions({
+      createDataSourceColumn: CREATE_DATA_SOURCE_COLUMN
+    }),
     save() {
       // When the user clicks on the save button on the dialog, we need to create a new column.
       // This method hides the dialog, then dispatches a message to the store to create the data-source column.
       this.dialog = false;
-      this.$emit("save", this.model);
-      this.$store.dispatch("createDataSourceColumn", {
-        workspaceId: this.activeWorkspace,
+      this.$emit("save", this.model)
+      this.createDataSourceColumn({
+        userId: this.getUserMeta.id,
+        workspaceId: this.workspaceId,
         column: {
           ...this.model,
           schema: {
@@ -147,7 +178,7 @@ export default {
             // description: "This description is used as a help message.",
           },
         },
-      });
+      })
       // Reset the model for the next new column
       this.model = {
         name: "",
@@ -156,15 +187,7 @@ export default {
       };
     },
   },
-  computed: {
-    activeWorkspace() {
-      return this.$store.state.userState.activeWorkspace;
-    },
-    spec() {
-      return this.$store.state.workspaces[this.activeWorkspace].dataSource.spec;
-    },
-  },
-};
+}
 </script>
 
 <style scoped></style>

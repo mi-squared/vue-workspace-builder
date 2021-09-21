@@ -15,9 +15,21 @@ Vue.component("font-awesome-icon", FontAwesomeIcon);
 
 Vue.config.productionTip = false;
 
+import { createNamespacedHelpers } from 'vuex'
+import { INIT } from './store/types-user'
+const { mapActions: mapUserActions } = createNamespacedHelpers('user')
+
 new Vue({
   vuetify,
   store,
   router,
+  computed: {
+    ...mapUserActions({
+      initUser: INIT
+    })
+  },
+  created () {
+    this.initUser
+  },
   render: (h) => h(App),
 }).$mount("#app");

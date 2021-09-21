@@ -38,8 +38,12 @@ const routes = [{
         }),
       },
       {
-          path: "workspace/:workspaceId/data-source",
-          component: PageDataSource
+        path: "workspace/:workspaceId/data-source",
+        name: 'PageDataSource',
+        component: PageDataSource,
+        props: ({ params }) => ({
+          workspaceId: Number(params.workspaceId),
+        }),
       },
       {
         path: "workspace/:workspaceId/forms",

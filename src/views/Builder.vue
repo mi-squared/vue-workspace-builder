@@ -11,7 +11,7 @@
           {{ this.workspaceTitle }}
         </v-tab>
 
-        <v-tab :to="`/builder/workspace/${activeWorkspace.id}/data-source`">
+        <v-tab :to="{ name: 'PageDataSource', params: { workspaceId: workspaceId } }">
           Data Source
         </v-tab>
 
