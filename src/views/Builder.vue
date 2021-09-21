@@ -7,7 +7,7 @@
         of a new workspace
        -->
 
-        <v-tab :to="`/builder/workspace/${activeWorkspace.id}/home`">
+        <v-tab :to="{ name: 'PageWorkspace', params: { workspaceId: workspaceId } }">
           {{ this.workspaceTitle }}
         </v-tab>
 
@@ -15,7 +15,7 @@
           Data Source
         </v-tab>
 
-        <v-tab :to="`/builder/workspace/${activeWorkspace.id}/dashboards`">
+        <v-tab :to="{ name: 'PageDashboards', params: { workspaceId: workspaceId, dashboardId: null } }">
           Dashboards
         </v-tab>
 
@@ -145,10 +145,21 @@
 </template>
 
 <script>
+import { createNamespacedHelpers } from 'vuex'
+import { GET_WORKSPACE } from '../store/types-workspace'
+const { mapState, mapActions, mapGetters } = createNamespacedHelpers('workspace')
+
 export default {
   name: 'Builder',
+  props: {
+    workspaceId: {
+      type: Number,
+      required: true
+    }
+  },
   data() {
     return {
+      ...mapState,
       selected: null,
       workspaces: ["CET", "Crisis", "Foo"],
       showNewWorkspaceDialog: false,
@@ -156,6 +167,7 @@ export default {
     };
   },
   methods: {
+    ...mapActions,
     saveNewWorkspace() {
       // TODO store workspace
       // Save the new workspace model that gets initial data from the modal, store it, and then
@@ -169,6 +181,9 @@ export default {
     },
   },
   computed: {
+    ...mapGetters({
+      getWorkspace: GET_WORKSPACE
+    }),
     tabs() {
       // Tabs have to be in this array for the navigation to work
       return [
@@ -188,21 +203,22 @@ export default {
       }
     },
     activeWorkspaceId() {
-      return this.$store.state.userState.navigation.workspace
+      return this.workspaceId
     },
     activeWorkspace() {
-      return this.$store.state.workspaces[this.activeWorkspaceId]
+      return this.getWorkspace(this.activeWorkspaceId)
     },
     workspaceTitle() {
       return this.activeWorkspace.title + " Workspace"
     },
     administrators() {
-      return Object.values(this.$store.state.administrators)
+      return [] // Object.values(this.$store.state.administrators)
     }
   },
   mounted () {
     // When builder component load is done loading, redirect to the active workspace home page
     // this.$router.push({ path: `/builder/workspace/${this.activeWorkspaceId}/home` })
+    console.log('hello')
   }
 }
 </script>

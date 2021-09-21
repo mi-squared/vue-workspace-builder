@@ -1,0 +1,3 @@
+export const ALL_DASHBOARDS = "ALL_DASHBOARDS"
+export const GET_DASHBOARD = "GET_DASHBOARD"
+export const SET_DASHBOARD = "SET_DASHBOARD"

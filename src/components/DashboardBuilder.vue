@@ -163,6 +163,12 @@
 <script>
 import draggable from "vuedraggable";
 import MultiRangePicker from './MultiRangePicker'
+import { createNamespacedHelpers } from 'vuex'
+import { GET_WORKSPACE } from '../store/types-workspace'
+import { GET_DASHBOARD } from '../store/types-dashboard'
+const { mapState, mapActions, mapGetters } = createNamespacedHelpers('workspace')
+const { mapState: mapDashboardState, mapActions: mapDashboardActions, mapGetters: mapDashboardGetters } = createNamespacedHelpers('dashboard')
+
 export default {
   name: "DashboardBuilder",
   components: {
@@ -181,6 +187,8 @@ export default {
   },
   data() {
     return {
+      ...mapState,
+      ...mapDashboardState,
       isDirty: false,
       tab: null,
       selectedItem: 1,
@@ -190,11 +198,17 @@ export default {
     }
   },
   computed: {
-    activeWorkspace() {
-      return this.$store.state.workspaces[this.workspaceId]
+    ...mapGetters({
+      getWorkspace: GET_WORKSPACE
+    }),
+    ...mapDashboardGetters({
+      getDashboard: GET_DASHBOARD
+    }),
+    workspace() {
+      return this.getWorkspace(this.workspaceId)
     },
     dashboard() {
-      return this.activeWorkspace.dashboards.find(d => d.id === this.dashboardId)
+      return this.getDashboard(this.dashboardId)
     },
     dashboardColumns() {
       return this.dashboard.headers
@@ -211,7 +225,7 @@ export default {
     formOptions() {
       // This gathers up all the forms in { text: '', value: '' } format for the select box
       let options = []
-      this.activeWorkspace.forms.forEach(form => {
+      this.workspace.forms.forEach(form => {
         const option = {
           text: form.title,
           value: form.id
@@ -222,6 +236,8 @@ export default {
     }
   },
   methods: {
+    ...mapActions,
+    ...mapDashboardActions,
     add: function() {
       const newElement = {
         title: '',

@@ -64,7 +64,7 @@
 
       <!-- this is the list of existing dashboards -->
       <v-list-item-group color="primary">
-        <v-list-item @click="onListItemClicked(dashboard.id)" v-for="dashboard in dashboards" :key="dashboard.id" :to="`/builder/workspace/${activeWorkspace.id}/dashboards/${dashboard.id}`">
+        <v-list-item @click="onListItemClicked(dashboard.id)" v-for="dashboard in dashboards" :key="dashboard.id" :to="`/builder/workspace/${workspaceId}/dashboards/${dashboard.id}`">
           {{ dashboard.title }}
         </v-list-item>
       </v-list-item-group>
@@ -78,14 +78,27 @@
 </template>
 
 <script>
+import { createNamespacedHelpers } from 'vuex'
+import { ALL_DASHBOARDS } from '../../store/types-dashboard'
+import { GET_NAVIGATION, SET_NAVIGATION } from '../../store/types-user'
+const { mapState, mapActions, mapGetters } = createNamespacedHelpers('dashboard')
+const { mapActions: mapUserActions, mapGetters: mapUserGetters } = createNamespacedHelpers('user')
 
 export default {
   name: "PageDashboards",
-  components: {
-
+  props: {
+    workspaceId: {
+      type: Number,
+      required: true
+    },
+    dashboardId: {
+      type: Number,
+      required: true
+    }
   },
   data () {
     return {
+      ...mapState,
       drawer: true,
       showNewDashboardDialog: false,
       layouts: [
@@ -95,20 +108,22 @@ export default {
     }
   },
   computed: {
-    activeWorkspace () {
-      return this.$store.state.workspaces[this.$store.state.userState.navigation.workspace]
-    },
-    dashboards () {
-      return this.activeWorkspace.dashboards
-    }
+    ...mapGetters({
+      dashboards: ALL_DASHBOARDS
+    }),
+    ...mapUserGetters({
+      navigation: GET_NAVIGATION
+    })
   },
   methods: {
+    ...mapActions,
+    ...mapUserActions,
     onListItemClicked(id) {
       console.log(id)
-      this.$store.commit("setNavigation", {
+      this.$store.dispatch(SET_NAVIGATION, {
         key: 'dashboard',
         id: id
-      });
+      })
     },
     onNavigationClicked() {
       this.drawer = !this.drawer
@@ -120,21 +135,27 @@ export default {
     },
   },
   mounted () {
-    let activeDashboardId = 0
-    if (this.$store.state.userState.navigation.dashboard) {
-      activeDashboardId = this.$store.state.userState.navigation.dashboard
-    } else if (this.dashboards[0].id) {
-      activeDashboardId = this.dashboards[0].id
-    } else {
-      return
-    }
-    this.$router.push({
-      name: 'DashboardBuilder',
-      params: {
-        workspaceId: this.$store.state.userState.navigation.workspace,
-        dashboardId: activeDashboardId
-      }
-    })
+    // if (this.navigation.dashboard) {
+    //   this.dashboardId = this.navigation.dashboard
+    // } else if (this.dashboards[0].id) {
+    //   this.dashboardId = this.dashboards[0].id
+    // } else {
+    //   return
+    // }
+    // if (this.$store.state.userState.navigation.dashboard) {
+    //   activeDashboardId = this.$store.state.userState.navigation.dashboard
+    // } else if (this.dashboards[0].id) {
+    //   activeDashboardId = this.dashboards[0].id
+    // } else {
+    //   return
+    // }
+    // this.$router.push({
+    //   name: 'DashboardBuilder',
+    //   params: {
+    //     workspaceId: this.$store.state.userState.navigation.workspace,
+    //     dashboardId: activeDashboardId
+    //   }
+    // })
   }
 }
 </script>

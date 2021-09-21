@@ -1,0 +1,3 @@
+export const ALL_WORKSPACES = "ALL_WORKSPACES"
+export const GET_WORKSPACE = "GET_WORKSPACE"
+export const SET_WORKSPACE = "SET_WORKSPACE"
