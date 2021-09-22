@@ -15,12 +15,12 @@
         </v-tab>
 
         <v-spacer></v-spacer>
-        <v-tab>
-          <v-btn color="success" :disabled="!isDirty">
-            <v-icon>mdi-floppy</v-icon>
-            <div>Save</div>
-          </v-btn>
-        </v-tab>
+
+        <v-btn class="mt-4 mr-2" color="success" :disabled="!isDirty" @click="save">
+          <v-icon>mdi-floppy</v-icon>
+          Save
+        </v-btn>
+
 
       </v-tabs>
 
@@ -160,7 +160,7 @@ import MultiRangePicker from './MultiRangePicker'
 import { createNamespacedHelpers } from 'vuex'
 import { GET_WORKSPACE } from '../store/types-workspace'
 const { mapState: mapWorkspaceState, mapActions: mapWorkspaceActions, mapGetters: mapWorkspaceGetters } = createNamespacedHelpers('workspace')
-import { GET_DASHBOARD } from '../store/types-dashboard'
+import { GET_DASHBOARD, SET_DASHBOARD } from '../store/types-dashboard'
 const { mapState: mapDashboardState, mapActions: mapDashboardActions, mapGetters: mapDashboardGetters } = createNamespacedHelpers('dashboard')
 
 export default {
@@ -188,6 +188,17 @@ export default {
       activeDashboard: { ...this.dashboard }
     }
   },
+  watch: {
+    activeDashboard: {
+      // Watch the activeDashboard using a deep watch, and when it changes,
+      // mark the model as dirty, which activates the "save" button
+      handler() {
+        this.isDirty = true
+        // TODO should propagate an event up to let navigation know that there are unsaved changes on this builder
+      },
+      deep: true
+    }
+  },
   computed: {
     ...mapWorkspaceGetters({
       getWorkspace: GET_WORKSPACE
@@ -203,7 +214,9 @@ export default {
   },
   methods: {
     ...mapWorkspaceActions,
-    ...mapDashboardActions,
+    ...mapDashboardActions({
+      setDashboard: SET_DASHBOARD
+    }),
     add: function() {
       const newElement = {
         title: '',
@@ -211,6 +224,14 @@ export default {
       }
       this.dashboard.headers.push(newElement)
       this.dashboardElementClicked(newElement)
+    },
+    save() {
+      // this.$emit('dashboard-save-clicked', { dashboardId: this.activeDashboard.id })
+      let that = this
+      this.setDashboard({ dashboardId: this.activeDashboard.id, dashboard: this.activeDashboard })
+        .then(function () {
+          that.isDirty = false
+        })
     },
     dashboardElementClicked(element) {
       this.$emit('dashboard-element-clicked', element)

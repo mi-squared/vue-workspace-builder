@@ -143,6 +143,7 @@ export default {
     },
   },
   mounted () {
+    // If there is no param set for dashboardId, we look in user vuex for navigation
     if (!this.dashboardId) {
       if (this.navigation.dashboard) {
         this.activeDashboard = this.navigation.dashboard

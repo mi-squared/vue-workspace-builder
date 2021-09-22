@@ -126,8 +126,12 @@
 
           <v-divider></v-divider>
 
-          <v-list-item v-for="item in this.workspaces" :key="item">
-            {{ item }}
+          <v-list-item
+            v-for="workspace in workspaces"
+            :key="workspace.id"
+            :to="{ name: 'PageWorkspace', params: { workspaceId: workspace.id } }"
+          >
+            {{ workspace.title }}
           </v-list-item>
         </v-list>
       </v-menu>
@@ -146,7 +150,7 @@
 
 <script>
 import { createNamespacedHelpers } from 'vuex'
-import { GET_WORKSPACE } from '../store/types-workspace'
+import { ALL_WORKSPACES, CREATE_WORKSPACE, GET_WORKSPACE } from '../store/types-workspace'
 const { mapState, mapActions, mapGetters } = createNamespacedHelpers('workspace')
 
 export default {
@@ -161,28 +165,17 @@ export default {
     return {
       ...mapState,
       selected: null,
-      workspaces: ["CET", "Crisis", "Foo"],
       showNewWorkspaceDialog: false,
-      newWorkspaceModel: {},
+      newWorkspaceModel: {
+        title: "",
+        administrator: ""
+      },
     };
-  },
-  methods: {
-    ...mapActions,
-    saveNewWorkspace() {
-      // TODO store workspace
-      // Save the new workspace model that gets initial data from the modal, store it, and then
-      // set it to the active layout model to edit.
-      this.showNewWorkspaceDialog = false
-
-      // Set the newly created workspace to be the active workspace
-    },
-    setSelected(tab) {
-      this.selected = tab
-    },
   },
   computed: {
     ...mapGetters({
-      getWorkspace: GET_WORKSPACE
+      getWorkspace: GET_WORKSPACE,
+      allWorkspaces: ALL_WORKSPACES
     }),
     tabs() {
       // Tabs have to be in this array for the navigation to work
@@ -202,6 +195,9 @@ export default {
         return this.selected
       }
     },
+    workspaces() {
+      return Object.values(this.allWorkspaces)
+    },
     activeWorkspaceId() {
       return this.workspaceId
     },
@@ -214,6 +210,22 @@ export default {
     administrators() {
       return [] // Object.values(this.$store.state.administrators)
     }
+  },
+  methods: {
+    ...mapActions({
+      createWorkspace: CREATE_WORKSPACE
+    }),
+    saveNewWorkspace() {
+      this.createWorkspace(this.newWorkspaceModel)
+      // Save the new workspace model that gets initial data from the modal, store it, and then
+      // set it to the active layout model to edit.
+      this.showNewWorkspaceDialog = false
+
+      // Set the newly created workspace to be the active workspace
+    },
+    setSelected(tab) {
+      this.selected = tab
+    },
   },
   mounted () {
     // When builder component load is done loading, redirect to the active workspace home page

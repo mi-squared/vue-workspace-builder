@@ -1,12 +1,13 @@
 import {
-  ADD_FORM_TO_WORKSPACE,
-  CREATE_DATA_SOURCE_COLUMN,
+  ADD_FORM_TO_WORKSPACE, ALL_WORKSPACES,
+  CREATE_DATA_SOURCE_COLUMN, CREATE_WORKSPACE,
   GET_DATA_SOURCE,
   GET_WORKSPACE,
   SET_WORKSPACE
 } from '../types-workspace'
 import Vue from "vue";
-import axios from 'axios'
+// import axios from 'axios'
+import { createWorkspace } from '../../api'
 
 export const workspace = {
   namespaced: true,
@@ -167,37 +168,43 @@ export const workspace = {
     },
   },
   getters: {
+    [ALL_WORKSPACES]: state => state.workspaces,
+
     [GET_WORKSPACE]: state => id => state.workspaces[id],
 
     [GET_DATA_SOURCE]: state => id => state.workspaces[id].dataSource
   },
   actions: {
-    [SET_WORKSPACE] ({ state, commit, rootState }, { workspaceId }) {
-      console.log(workspaceId);
-      if (rootState.metaData.csrfToken) {
-        return new Promise((resolve) => {
-          axios.get("/apis/api/workspace", {
-            // params: {
-            //     id: dashboardId
-            // },
-            headers: {
-              apicsrftoken: rootState.metaData.csrfToken,
-            },
-          })
-            .then(function (response) {
-              const workspace = response.data;
-              commit(SET_WORKSPACE, workspace);
-              resolve(state.workspace[workspaceId]);
-            })
-            .catch(function () {
-              alert("there was an error, you may need to log back in");
-            });
-        });
-      }
+
+    [CREATE_WORKSPACE] ({ commit }, { title, administrator }) {
+      let newWorkspace = createWorkspace({ title, administrator })
+      commit(SET_WORKSPACE, { workspaceId: newWorkspace.id, workspace: newWorkspace })
     },
-    // createWorkspace ({ state, commit }, { workspace }) {
-    //
+
+    // [SET_WORKSPACE] ({ state, commit, rootState }, { workspaceId }) {
+    //   console.log(workspaceId);
+    //   if (rootState.metaData.csrfToken) {
+    //     return new Promise((resolve) => {
+    //       axios.get("/apis/api/workspace", {
+    //         // params: {
+    //         //     id: dashboardId
+    //         // },
+    //         headers: {
+    //           apicsrftoken: rootState.metaData.csrfToken,
+    //         },
+    //       })
+    //         .then(function (response) {
+    //           const workspace = response.data;
+    //           commit(SET_WORKSPACE, workspace);
+    //           resolve(state.workspace[workspaceId]);
+    //         })
+    //         .catch(function () {
+    //           alert("there was an error, you may need to log back in");
+    //         });
+    //     });
+    //   }
     // },
+
     [CREATE_DATA_SOURCE_COLUMN]: ({ commit }, { userId, workspaceId, column }) => {
       // POST to create new column
 
@@ -226,7 +233,6 @@ export const workspace = {
   },
   mutations: {
 
-    // DataSource Builder Mutations
     [CREATE_DATA_SOURCE_COLUMN]: (state, { workspaceId, column }) => {
       // The column name is the index and the column is the model
       Vue.set(
@@ -236,10 +242,8 @@ export const workspace = {
       )
     },
 
-    // Dashboard Builder Mutations
     [SET_WORKSPACE] (state, { workspaceId, workspace }) {
-      const vuexWorkspace = state.workspaces[workspaceId]
-      Vue.set(vuexWorkspace, 'title', workspace.title)
+      Vue.set(state.workspaces, workspaceId, workspace)
     },
 
     /**
