@@ -48,27 +48,18 @@ export default {
   name: "FormProperties",
   components: { VJsf },
   props: {
-    formId: {
-      type: Number,
+    form: {
+      type: Object,
       required: true,
-    },
-    workspaceId: {
-      type: Number,
-      required: true,
-    },
+    }
   },
   methods: {},
   computed: {
     schema() {
-      return this.$store.getters.getFormById(this.workspaceId, this.formId)
-        .formDefinition.schema;
-    },
-    form() {
-      return this.$store.getters.getFormById(this.workspaceId, this.formId);
+      return this.form.formDefinition.schema;
     },
     options() {
-      return this.$store.getters.getFormById(this.workspaceId, this.formId)
-        .formDefinition.options;
+      return this.form.formDefinition.options;
     },
   },
   data: () => ({

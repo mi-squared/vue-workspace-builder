@@ -7,15 +7,15 @@
         of a new workspace
        -->
 
-        <v-tab :to="`/builder/workspace/${activeWorkspace.id}/home`">
+        <v-tab :to="{ name: 'PageWorkspace', params: { workspaceId: workspaceId } }">
           {{ this.workspaceTitle }}
         </v-tab>
 
-        <v-tab :to="`/builder/workspace/${activeWorkspace.id}/data-source`">
+        <v-tab :to="{ name: 'PageDataSource', params: { workspaceId: workspaceId } }">
           Data Source
         </v-tab>
 
-        <v-tab :to="`/builder/workspace/${activeWorkspace.id}/dashboards`">
+        <v-tab :to="{ name: 'PageDashboards', params: { workspaceId: workspaceId, dashboardId: null } }">
           Dashboards
         </v-tab>
 
@@ -126,8 +126,12 @@
 
           <v-divider></v-divider>
 
-          <v-list-item v-for="item in this.workspaces" :key="item">
-            {{ item }}
+          <v-list-item
+            v-for="workspace in workspaces"
+            :key="workspace.id"
+            :to="{ name: 'PageWorkspace', params: { workspaceId: workspace.id } }"
+          >
+            {{ workspace.title }}
           </v-list-item>
         </v-list>
       </v-menu>
@@ -145,30 +149,34 @@
 </template>
 
 <script>
+import { createNamespacedHelpers } from 'vuex'
+import { ALL_WORKSPACES, CREATE_WORKSPACE, GET_WORKSPACE } from '../store/types-workspace'
+const { mapState, mapActions, mapGetters } = createNamespacedHelpers('workspace')
+
 export default {
   name: 'Builder',
+  props: {
+    workspaceId: {
+      type: Number,
+      required: true
+    }
+  },
   data() {
     return {
+      ...mapState,
       selected: null,
-      workspaces: ["CET", "Crisis", "Foo"],
       showNewWorkspaceDialog: false,
-      newWorkspaceModel: {},
+      newWorkspaceModel: {
+        title: "",
+        administrator: ""
+      },
     };
   },
-  methods: {
-    saveNewWorkspace() {
-      // TODO store workspace
-      // Save the new workspace model that gets initial data from the modal, store it, and then
-      // set it to the active layout model to edit.
-      this.showNewWorkspaceDialog = false
-
-      // Set the newly created workspace to be the active workspace
-    },
-    setSelected(tab) {
-      this.selected = tab
-    },
-  },
   computed: {
+    ...mapGetters({
+      getWorkspace: GET_WORKSPACE,
+      allWorkspaces: ALL_WORKSPACES
+    }),
     tabs() {
       // Tabs have to be in this array for the navigation to work
       return [
@@ -187,22 +195,42 @@ export default {
         return this.selected
       }
     },
+    workspaces() {
+      return Object.values(this.allWorkspaces)
+    },
     activeWorkspaceId() {
-      return this.$store.state.userState.navigation.workspace
+      return this.workspaceId
     },
     activeWorkspace() {
-      return this.$store.state.workspaces[this.activeWorkspaceId]
+      return this.getWorkspace(this.activeWorkspaceId)
     },
     workspaceTitle() {
       return this.activeWorkspace.title + " Workspace"
     },
     administrators() {
-      return Object.values(this.$store.state.administrators)
+      return [] // Object.values(this.$store.state.administrators)
     }
+  },
+  methods: {
+    ...mapActions({
+      createWorkspace: CREATE_WORKSPACE
+    }),
+    saveNewWorkspace() {
+      this.createWorkspace(this.newWorkspaceModel)
+      // Save the new workspace model that gets initial data from the modal, store it, and then
+      // set it to the active layout model to edit.
+      this.showNewWorkspaceDialog = false
+
+      // Set the newly created workspace to be the active workspace
+    },
+    setSelected(tab) {
+      this.selected = tab
+    },
   },
   mounted () {
     // When builder component load is done loading, redirect to the active workspace home page
     // this.$router.push({ path: `/builder/workspace/${this.activeWorkspaceId}/home` })
+    console.log('hello')
   }
 }
 </script>

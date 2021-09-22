@@ -99,8 +99,7 @@
 
       <v-col cols="12" sm="4">
         <FormProperties
-          :formId="formId"
-          :workspaceId="workspaceId"
+          :form="form"
         ></FormProperties>
 
         <v-card
@@ -140,10 +139,14 @@
 </template>
 
 <script>
-import { get } from "vuex-pathify";
-
 import VueGridLayout from "vue-grid-layout";
 import FormProperties from "@/components/FormProperties";
+
+import { createNamespacedHelpers } from 'vuex'
+import { GET_FORM, SET_FORM_GRID, SET_FORM_SCHEMA } from '../store/types-form'
+const { mapState: mapFormState, mapActions: mapFormActions, mapGetters: mapFormGetters } = createNamespacedHelpers('form')
+import { GET_DATA_SOURCE, GET_WORKSPACE } from '../store/types-workspace'
+const { mapState: mapWorkspaceState, mapActions: mapWorkspaceActions, mapGetters: mapWorkspaceGetters } = createNamespacedHelpers('workspace')
 
 export default {
   name: "LayoutBuilder",
@@ -164,6 +167,9 @@ export default {
   },
   data: function() {
     return {
+      ...mapFormState,
+      ...mapWorkspaceState,
+      isDirty: false,
       showFormElementSelector: false,
       activeLayoutIndex: 0,
       layouts: [
@@ -178,10 +184,25 @@ export default {
     };
   },
   computed: {
+    ...mapFormGetters({
+      getForm: GET_FORM
+    }),
+    ...mapWorkspaceGetters({
+      getDataSource: GET_DATA_SOURCE,
+      getWorkspace: GET_WORKSPACE
+    }),
+    form() {
+      return this.getForm(this.formId)
+    },
     activeFormModel() {
       return this.layouts[this.activeLayoutIndex];
     },
-    columns: get("workspaces[1].dataSource.spec.columns"),
+    dataSource() {
+      return this.getDataSource(this.workspaceId)
+    },
+    columns() {
+      return this.dataSource.spec.columns
+    }
     // selectedElement() {
     //   if (this.selected !== null) {
     //     return this.columns[this.selected];
@@ -199,6 +220,11 @@ export default {
     $route: "fetchData",
   },
   methods: {
+    ...mapFormActions({
+      setFormGrid: SET_FORM_GRID,
+      setFormSchema: SET_FORM_SCHEMA
+    }),
+    ...mapWorkspaceActions,
     addItem: function(column) {
       console.log(column);
 
@@ -218,8 +244,7 @@ export default {
     },
     fetchData() {
       console.log("fetchData!");
-      this.grid = this.$store.getters.getFormById(
-        this.workspaceId,
+      this.grid = this.getForm(
         this.formId
       ).formDefinition.grid;
 
@@ -251,17 +276,15 @@ export default {
         };
       }
 
-      this.$store.commit("setFormGrid", {
-        workspaceId: this.workspaceId,
+      this.setFormGrid({
         formId: this.formId,
         grid: this.grid,
-      });
+      })
 
-      this.$store.commit("setFormSchema", {
-        workspaceId: 1,
+      this.setFormSchema({
         formId: this.formId,
         schema: schema,
-      });
+      })
     },
     navigationHamburgerClicked() {
       this.$emit('hamburger-navigation-clicked')

@@ -64,7 +64,12 @@
 
       <!-- this is the list of existing dashboards -->
       <v-list-item-group color="primary">
-        <v-list-item @click="onListItemClicked(dashboard.id)" v-for="dashboard in dashboards" :key="dashboard.id" :to="`/builder/workspace/${activeWorkspace.id}/dashboards/${dashboard.id}`">
+        <v-list-item
+          @click="onListItemClicked(dashboard.id)"
+          v-for="dashboard in dashboards"
+          :key="dashboard.id"
+          :to="{ name: 'PageDashboardEdit', params: { dashboardId: dashboard.id, workspaceId: workspaceId } }"
+        >
           {{ dashboard.title }}
         </v-list-item>
       </v-list-item-group>
@@ -78,14 +83,28 @@
 </template>
 
 <script>
+import { createNamespacedHelpers } from 'vuex'
+import { ALL_DASHBOARDS } from '../../store/types-dashboard'
+import { GET_NAVIGATION, SET_NAVIGATION } from '../../store/types-user'
+const { mapState: mapDashboardState, mapActions: mapDashboardActions, mapGetters: mapDashboardGetters } = createNamespacedHelpers('dashboard')
+const { mapActions: mapUserActions, mapGetters: mapUserGetters } = createNamespacedHelpers('user')
 
 export default {
   name: "PageDashboards",
-  components: {
-
+  props: {
+    workspaceId: {
+      type: Number,
+      required: true
+    },
+    dashboardId: {
+      type: Number,
+      required: true
+    }
   },
   data () {
     return {
+      ...mapDashboardState,
+      activeDashboard: this.dashboardId,
       drawer: true,
       showNewDashboardDialog: false,
       layouts: [
@@ -95,20 +114,24 @@ export default {
     }
   },
   computed: {
-    activeWorkspace () {
-      return this.$store.state.workspaces[this.$store.state.userState.navigation.workspace]
-    },
-    dashboards () {
-      return this.activeWorkspace.dashboards
-    }
+    ...mapDashboardGetters({
+      dashboards: ALL_DASHBOARDS
+    }),
+    ...mapUserGetters({
+      navigation: GET_NAVIGATION
+    })
   },
   methods: {
+    ...mapDashboardActions,
+    ...mapUserActions({
+      setNavigation: SET_NAVIGATION
+    }),
     onListItemClicked(id) {
       console.log(id)
-      this.$store.commit("setNavigation", {
+      this.setNavigation({
         key: 'dashboard',
         id: id
-      });
+      })
     },
     onNavigationClicked() {
       this.drawer = !this.drawer
@@ -120,21 +143,22 @@ export default {
     },
   },
   mounted () {
-    let activeDashboardId = 0
-    if (this.$store.state.userState.navigation.dashboard) {
-      activeDashboardId = this.$store.state.userState.navigation.dashboard
-    } else if (this.dashboards[0].id) {
-      activeDashboardId = this.dashboards[0].id
-    } else {
-      return
-    }
-    this.$router.push({
-      name: 'DashboardBuilder',
-      params: {
-        workspaceId: this.$store.state.userState.navigation.workspace,
-        dashboardId: activeDashboardId
+    // If there is no param set for dashboardId, we look in user vuex for navigation
+    if (!this.dashboardId) {
+      if (this.navigation.dashboard) {
+        this.activeDashboard = this.navigation.dashboard
+      } else if (Object.keys(this.dashboards).length > 0) {
+        this.activeDashboard = Object.keys(this.dashboards)[0]
       }
-    })
+
+      this.$router.push({
+        name: 'PageDashboardEdit',
+        params: {
+          workspaceId: this.workspaceId,
+          dashboardId: this.activeDashboard
+        }
+      })
+    }
   }
 }
 </script>

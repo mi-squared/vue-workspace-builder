@@ -1,19 +1,5 @@
 <template>
-  <v-container  height="1000">
-
-    <v-toolbar dense flat>
-      <v-app-bar-nav-icon @click="navigationHamburgerClicked"></v-app-bar-nav-icon>
-
-      <v-toolbar-title>{{ this.dashboard.title }}</v-toolbar-title>
-
-      <v-spacer></v-spacer>
-
-      <v-btn color="success" :disabled="!isDirty">
-        <v-icon>mdi-floppy</v-icon>
-        <div>Save</div>
-      </v-btn>
-
-    </v-toolbar>
+  <v-container>
 
       <v-tabs
           v-model="tab"
@@ -28,6 +14,14 @@
           <v-icon>mdi-table</v-icon>
         </v-tab>
 
+        <v-spacer></v-spacer>
+
+        <v-btn class="mt-4 mr-2" color="success" :disabled="!isDirty" @click="save">
+          <v-icon>mdi-floppy</v-icon>
+          Save
+        </v-btn>
+
+
       </v-tabs>
 
       <v-tabs-items v-model="tab">
@@ -36,18 +30,18 @@
             <v-text-field
                 label="Title"
                 hide-details="auto"
-                v-model="this.dashboard.title"
+                v-model="activeDashboard.title"
                 required
             ></v-text-field>
 
             <v-switch
-              v-model="displayNewButton"
+              v-model="activeDashboard.displayNewButton"
               label="Display '+ New' Button"
             ></v-switch>
 
             <v-select
-              v-if="displayNewButton"
-              v-model="this.newEntityFormId"
+              v-if="activeDashboard.displayNewButton"
+              v-model="activeDashboard.newEntityFormId"
               label="New Entity Form"
               :items="this.formOptions"
             >
@@ -55,8 +49,8 @@
             </v-select>
 
             <v-switch
-                v-model="displayDuration"
-                :label="`Display Date Added: ${displayDuration.toString()}`"
+                v-model="activeDashboard.displayDuration"
+                :label="`Display Date Added: ${activeDashboard.displayDuration.toString()}`"
             ></v-switch>
             <v-divider></v-divider>
 
@@ -73,13 +67,13 @@
             >
               <draggable
                   id="first"
-                  :list="dashboardColumns"
+                  :list="activeDashboard.headers"
                   draggable=".v-list-item"
                   group="a"
               >
                 <!-- use value for key because it's unique -->
                 <v-list-item
-                    v-for="element in dashboardColumns"
+                    v-for="element in activeDashboard.headers"
                     :key="element.value"
                     @click="dashboardElementClicked(element)"
                     color="primary"
@@ -120,7 +114,7 @@
           </v-list-item-avatar>
 
           <v-list-item-content>
-            <v-list-item-title>{{ this.activeDashboardElement.name }}</v-list-item-title>
+            <v-list-item-title>{{ activeDashboardElement.name }}</v-list-item-title>
           </v-list-item-content>
         </v-list-item>
 
@@ -163,6 +157,12 @@
 <script>
 import draggable from "vuedraggable";
 import MultiRangePicker from './MultiRangePicker'
+import { createNamespacedHelpers } from 'vuex'
+import { GET_WORKSPACE } from '../store/types-workspace'
+const { mapState: mapWorkspaceState, mapActions: mapWorkspaceActions, mapGetters: mapWorkspaceGetters } = createNamespacedHelpers('workspace')
+import { GET_DASHBOARD, SET_DASHBOARD } from '../store/types-dashboard'
+const { mapState: mapDashboardState, mapActions: mapDashboardActions, mapGetters: mapDashboardGetters } = createNamespacedHelpers('dashboard')
+
 export default {
   name: "DashboardBuilder",
   components: {
@@ -170,58 +170,53 @@ export default {
     draggable
   },
   props: {
-    dashboardId: {
-      type: Number,
-      required: true,
-    },
-    workspaceId: {
-      type: Number,
+    dashboard: {
+      type: Object,
       required: true,
     },
   },
   data() {
     return {
+      ...mapWorkspaceState,
+      ...mapDashboardState,
       isDirty: false,
       tab: null,
       selectedItem: 1,
       drawer: null,
       activeDashboardElement: {},
       validElement: true,
+      activeDashboard: { ...this.dashboard }
+    }
+  },
+  watch: {
+    activeDashboard: {
+      // Watch the activeDashboard using a deep watch, and when it changes,
+      // mark the model as dirty, which activates the "save" button
+      handler() {
+        this.isDirty = true
+        // TODO should propagate an event up to let navigation know that there are unsaved changes on this builder
+      },
+      deep: true
     }
   },
   computed: {
-    activeWorkspace() {
-      return this.$store.state.workspaces[this.workspaceId]
-    },
-    dashboard() {
-      return this.activeWorkspace.dashboards.find(d => d.id === this.dashboardId)
-    },
-    dashboardColumns() {
-      return this.dashboard.headers
-    },
-    newEntityFormId() {
-      return this.dashboard.newEntityFormId
-    },
-    displayDuration() {
-      return this.dashboard.displayDuration
-    },
-    displayNewButton() {
-      return this.dashboard.displayNewButton
-    },
+    ...mapWorkspaceGetters({
+      getWorkspace: GET_WORKSPACE
+    }),
+    ...mapDashboardGetters({
+      getDashboard: GET_DASHBOARD
+    }),
+
     formOptions() {
-      // This gathers up all the forms in { text: '', value: '' } format for the select box
-      let options = []
-      this.activeWorkspace.forms.forEach(form => {
-        const option = {
-          text: form.title,
-          value: form.id
-        }
-        options.push(option)
-      })
-      return options
+      // This gathers up all the lists in { text: '', value: '' } format for the select box
+      return [{ text: 'test', value: '0'}]
     }
   },
   methods: {
+    ...mapWorkspaceActions,
+    ...mapDashboardActions({
+      setDashboard: SET_DASHBOARD
+    }),
     add: function() {
       const newElement = {
         title: '',
@@ -229,6 +224,14 @@ export default {
       }
       this.dashboard.headers.push(newElement)
       this.dashboardElementClicked(newElement)
+    },
+    save() {
+      // this.$emit('dashboard-save-clicked', { dashboardId: this.activeDashboard.id })
+      let that = this
+      this.setDashboard({ dashboardId: this.activeDashboard.id, dashboard: this.activeDashboard })
+        .then(function () {
+          that.isDirty = false
+        })
     },
     dashboardElementClicked(element) {
       this.$emit('dashboard-element-clicked', element)
@@ -257,10 +260,10 @@ export default {
         dashboard: this.dashboard
       })
       this.drawer = false
-    },
-    navigationHamburgerClicked() {
-      this.$emit('hamburger-navigation-clicked')
     }
+  },
+  mounted () {
+    console.log('Dashboard Builder Mounted')
   }
 }
 </script>
