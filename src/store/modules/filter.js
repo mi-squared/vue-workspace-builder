@@ -1,7 +1,7 @@
 import { ALL_FILTERS, GET_FILTER } from '../types-filter'
-import axios from 'axios'
+// import axios from 'axios'
 
-export const list = {
+export const filter = {
   namespaced: true,
   state: {
     filters: {

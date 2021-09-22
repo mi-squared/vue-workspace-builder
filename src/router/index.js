@@ -9,12 +9,12 @@ import PageDashboards from "@/views/builder/PageDashboards";
 import PageActions from "@/views/builder/PageActions";
 
 import FormBuilder from "@/components/FormBuilder";
-import DashboardBuilder from '@/components/DashboardBuilder'
 import Builder from '@/views/Builder'
 import PageDashboard from '@/views/dashboard/PageDashboard'
 import PageForm from '@/views/form/PageForm'
 import Dashboard from '../views/Dashboard'
 import Form from '../views/Form'
+import PageDashboardEdit from '../views/builder/PageDashboardEdit'
 
 Vue.use(VueRouter);
 
@@ -105,8 +105,8 @@ const routes = [{
             // Dashboard will be rendered inside PageDashboard's <router-view>
             // when /dashboard/:id/profile is matched
             path: ":dashboardId(\\d+)",
-            name: "DashboardBuilder",
-            component: DashboardBuilder,
+            name: "PageDashboardEdit",
+            component: PageDashboardEdit,
             // beforeEnter: (to, from , next) => {
             //   router.app.$store.dispatch('user/SET_NAVIGATION', { key: 'dashboard', id: to.params.dashboardId }).then(value => {
             //     console.log(value)

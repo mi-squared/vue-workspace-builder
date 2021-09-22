@@ -1,19 +1,5 @@
 <template>
-  <v-container  height="1000">
-
-    <v-toolbar dense flat>
-      <v-app-bar-nav-icon @click="navigationHamburgerClicked"></v-app-bar-nav-icon>
-
-      <v-toolbar-title>{{ this.dashboard.title }}</v-toolbar-title>
-
-      <v-spacer></v-spacer>
-
-      <v-btn color="success" :disabled="!isDirty">
-        <v-icon>mdi-floppy</v-icon>
-        <div>Save</div>
-      </v-btn>
-
-    </v-toolbar>
+  <v-container>
 
       <v-tabs
           v-model="tab"
@@ -28,6 +14,14 @@
           <v-icon>mdi-table</v-icon>
         </v-tab>
 
+        <v-spacer></v-spacer>
+        <v-tab>
+          <v-btn color="success" :disabled="!isDirty">
+            <v-icon>mdi-floppy</v-icon>
+            <div>Save</div>
+          </v-btn>
+        </v-tab>
+
       </v-tabs>
 
       <v-tabs-items v-model="tab">
@@ -36,18 +30,18 @@
             <v-text-field
                 label="Title"
                 hide-details="auto"
-                v-model="this.dashboard.title"
+                v-model="activeDashboard.title"
                 required
             ></v-text-field>
 
             <v-switch
-              v-model="displayNewButton"
+              v-model="activeDashboard.displayNewButton"
               label="Display '+ New' Button"
             ></v-switch>
 
             <v-select
-              v-if="displayNewButton"
-              v-model="this.newEntityFormId"
+              v-if="activeDashboard.displayNewButton"
+              v-model="activeDashboard.newEntityFormId"
               label="New Entity Form"
               :items="this.formOptions"
             >
@@ -55,8 +49,8 @@
             </v-select>
 
             <v-switch
-                v-model="displayDuration"
-                :label="`Display Date Added: ${displayDuration.toString()}`"
+                v-model="activeDashboard.displayDuration"
+                :label="`Display Date Added: ${activeDashboard.displayDuration.toString()}`"
             ></v-switch>
             <v-divider></v-divider>
 
@@ -73,13 +67,13 @@
             >
               <draggable
                   id="first"
-                  :list="dashboardColumns"
+                  :list="activeDashboard.headers"
                   draggable=".v-list-item"
                   group="a"
               >
                 <!-- use value for key because it's unique -->
                 <v-list-item
-                    v-for="element in dashboardColumns"
+                    v-for="element in activeDashboard.headers"
                     :key="element.value"
                     @click="dashboardElementClicked(element)"
                     color="primary"
@@ -120,7 +114,7 @@
           </v-list-item-avatar>
 
           <v-list-item-content>
-            <v-list-item-title>{{ this.activeDashboardElement.name }}</v-list-item-title>
+            <v-list-item-title>{{ activeDashboardElement.name }}</v-list-item-title>
           </v-list-item-content>
         </v-list-item>
 
@@ -176,12 +170,8 @@ export default {
     draggable
   },
   props: {
-    dashboardId: {
-      type: Number,
-      required: true,
-    },
-    workspaceId: {
-      type: Number,
+    dashboard: {
+      type: Object,
       required: true,
     },
   },
@@ -195,6 +185,7 @@ export default {
       drawer: null,
       activeDashboardElement: {},
       validElement: true,
+      activeDashboard: { ...this.dashboard }
     }
   },
   computed: {
@@ -204,35 +195,10 @@ export default {
     ...mapDashboardGetters({
       getDashboard: GET_DASHBOARD
     }),
-    workspace() {
-      return this.getWorkspace(this.workspaceId)
-    },
-    dashboard() {
-      return this.getDashboard(this.dashboardId)
-    },
-    dashboardColumns() {
-      return this.dashboard.headers
-    },
-    newEntityFormId() {
-      return this.dashboard.newEntityFormId
-    },
-    displayDuration() {
-      return this.dashboard.displayDuration
-    },
-    displayNewButton() {
-      return this.dashboard.displayNewButton
-    },
+
     formOptions() {
-      // This gathers up all the forms in { text: '', value: '' } format for the select box
-      let options = []
-      this.workspace.forms.forEach(form => {
-        const option = {
-          text: form.title,
-          value: form.id
-        }
-        options.push(option)
-      })
-      return options
+      // This gathers up all the lists in { text: '', value: '' } format for the select box
+      return [{ text: 'test', value: '0'}]
     }
   },
   methods: {
@@ -273,10 +239,10 @@ export default {
         dashboard: this.dashboard
       })
       this.drawer = false
-    },
-    navigationHamburgerClicked() {
-      this.$emit('hamburger-navigation-clicked')
     }
+  },
+  mounted () {
+    console.log('Dashboard Builder Mounted')
   }
 }
 </script>

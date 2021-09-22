@@ -64,7 +64,12 @@
 
       <!-- this is the list of existing dashboards -->
       <v-list-item-group color="primary">
-        <v-list-item @click="onListItemClicked(dashboard.id)" v-for="dashboard in dashboards" :key="dashboard.id" :to="`/builder/workspace/${workspaceId}/dashboards/${dashboard.id}`">
+        <v-list-item
+          @click="onListItemClicked(dashboard.id)"
+          v-for="dashboard in dashboards"
+          :key="dashboard.id"
+          :to="{ name: 'PageDashboardEdit', params: { dashboardId: dashboard.id, workspaceId: workspaceId } }"
+        >
           {{ dashboard.title }}
         </v-list-item>
       </v-list-item-group>
@@ -146,7 +151,7 @@ export default {
       }
 
       this.$router.push({
-        name: 'DashboardBuilder',
+        name: 'PageDashboardEdit',
         params: {
           workspaceId: this.workspaceId,
           dashboardId: this.activeDashboard
