@@ -22,9 +22,6 @@ const routes = [{
     path: "/builder",
     name: 'Builder',
     component: Builder,
-    beforeEnter: (to, from , next) => {
-      next()
-    },
     props: ({ params }) => ({
       workspaceId: Number(params.workspaceId),
     }),

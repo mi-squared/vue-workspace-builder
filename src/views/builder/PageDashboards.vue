@@ -84,8 +84,10 @@
 
 <script>
 import { createNamespacedHelpers } from 'vuex'
-import { ALL_DASHBOARDS } from '../../store/types-dashboard'
+import {} from '../../store/types-dashboard'
 import { GET_NAVIGATION, SET_NAVIGATION } from '../../store/types-user'
+import { GET_DASHBOARDS } from '../../store/types-workspace'
+const { mapGetters: mapWorkspaceGetters } = createNamespacedHelpers('workspace')
 const { mapState: mapDashboardState, mapActions: mapDashboardActions, mapGetters: mapDashboardGetters } = createNamespacedHelpers('dashboard')
 const { mapActions: mapUserActions, mapGetters: mapUserGetters } = createNamespacedHelpers('user')
 
@@ -114,12 +116,20 @@ export default {
     }
   },
   computed: {
-    ...mapDashboardGetters({
-      dashboards: ALL_DASHBOARDS
+    ...mapWorkspaceGetters({
+      getDashboards: GET_DASHBOARDS
     }),
+    ...mapDashboardGetters,
     ...mapUserGetters({
       navigation: GET_NAVIGATION
-    })
+    }),
+    /**
+     * Get an array of dashboards from the workspace Vuex module
+     * @returns {*}
+     */
+    dashboards() {
+      return this.getDashboards(this.workspaceId)
+    }
   },
   methods: {
     ...mapDashboardActions,
@@ -147,8 +157,8 @@ export default {
     if (!this.dashboardId) {
       if (this.navigation.dashboard) {
         this.activeDashboard = this.navigation.dashboard
-      } else if (Object.keys(this.dashboards).length > 0) {
-        this.activeDashboard = Object.keys(this.dashboards)[0]
+      } else if (this.dashboards.length > 0) {
+        this.activeDashboard = this.dashboards[0].id
       }
 
       this.$router.push({

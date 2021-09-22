@@ -1,6 +1,6 @@
 import {
   ADD_FORM_TO_WORKSPACE, ALL_WORKSPACES,
-  CREATE_DATA_SOURCE_COLUMN, CREATE_WORKSPACE,
+  CREATE_DATA_SOURCE_COLUMN, CREATE_WORKSPACE, GET_DASHBOARDS,
   GET_DATA_SOURCE,
   GET_WORKSPACE,
   SET_WORKSPACE
@@ -16,7 +16,7 @@ export const workspace = {
       1: {
         id: 1,
         title: "CET",
-        administrator: "admin",
+        administrator: 1,
         dataSource: {
           spec: {
             columns: {
@@ -145,26 +145,6 @@ export const workspace = {
           199: 199,
         }
       },
-      views: [
-        {
-          order: 0,
-          title: "CET Triage Board",
-          type: "dashboard",
-          enabled: true,
-          component: {
-            id: 1001,
-          },
-        },
-        {
-          order: 1,
-          title: "Cigna Dashboard",
-          type: "dashboard",
-          enabled: true,
-          component: {
-            id: 1002,
-          },
-        },
-      ],
     },
   },
   getters: {
@@ -172,7 +152,15 @@ export const workspace = {
 
     [GET_WORKSPACE]: state => id => state.workspaces[id],
 
-    [GET_DATA_SOURCE]: state => id => state.workspaces[id].dataSource
+    [GET_DATA_SOURCE]: state => id => state.workspaces[id].dataSource,
+
+    [GET_DASHBOARDS]: (state, getters, rootState, rootGetters) => workspaceId => {
+      let dashboards = []
+      Object.keys(state.workspaces[workspaceId].dashboards).forEach(dashboardId => {
+        dashboards.push(rootGetters['dashboard/GET_DASHBOARD'](dashboardId))
+      })
+      return dashboards
+    }
   },
   actions: {
 
