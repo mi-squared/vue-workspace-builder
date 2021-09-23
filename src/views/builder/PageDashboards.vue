@@ -49,7 +49,7 @@
                 <v-btn
                   color="blue darken-1"
                   text
-                  @click="saveNewLayout"
+                  @click="saveNewDashboard"
                 >
                   Save
                 </v-btn>
@@ -84,7 +84,7 @@
 
 <script>
 import { createNamespacedHelpers } from 'vuex'
-import {} from '../../store/types-dashboard'
+import { CREATE_DASHBOARD } from '../../store/types-dashboard'
 import { GET_NAVIGATION, SET_NAVIGATION } from '../../store/types-user'
 import { GET_DASHBOARDS } from '../../store/types-workspace'
 const { mapGetters: mapWorkspaceGetters } = createNamespacedHelpers('workspace')
@@ -132,7 +132,9 @@ export default {
     }
   },
   methods: {
-    ...mapDashboardActions,
+    ...mapDashboardActions({
+      createDashboard: CREATE_DASHBOARD
+    }),
     ...mapUserActions({
       setNavigation: SET_NAVIGATION
     }),
@@ -146,9 +148,10 @@ export default {
     onNavigationClicked() {
       this.drawer = !this.drawer
     },
-    saveNewLayout () {
+    saveNewDashboard () {
       // Save the new layout model that gets initial data from the modal, store it, and then
       // set it to the active layout model to edit.
+      this.createDashboard({ workspaceId: this.workspaceId, dashboard: this.newDashboardModel })
       this.showNewDashboardDialog = false
     },
   },

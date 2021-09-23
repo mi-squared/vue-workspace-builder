@@ -1,6 +1,7 @@
-import { ALL_DASHBOARDS, GET_DASHBOARD, SET_DASHBOARD } from '../types-dashboard'
+import { ALL_DASHBOARDS, CREATE_DASHBOARD, GET_DASHBOARD, SET_DASHBOARD } from '../types-dashboard'
 import axios from 'axios'
 import Vue from 'vue'
+import { createDashboard } from '../../api'
 
 export const dashboard = {
   namespaced: true,
@@ -171,9 +172,15 @@ export const dashboard = {
   },
   actions: {
 
-    // createDashboard({ commit }, { workspaceId, dashboardId, dashboard }) {
-    //
-    // },
+    [CREATE_DASHBOARD]({ dispatch, commit }, { workspaceId, dashboard }) {
+      let newDashboard = createDashboard(dashboard)
+      // Create the dashboard, the rows, and add the dashboard ID to the workspace
+      commit(SET_DASHBOARD, { dashboardId: newDashboard.id, dashboard: newDashboard });
+
+      // Dispatch to workspace module to add this form to workspace
+      dispatch('workspace/ADD_DASHBOARD_TO_WORKSPACE', { workspaceId, dashboardId: newDashboard.id}, { root: true })
+    },
+
     [SET_DASHBOARD] ({ commit }, { dashboardId, dashboard }) {
       // Make a POST to server, then update VUEX
       return new Promise((resolve) => {

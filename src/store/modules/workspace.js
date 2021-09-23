@@ -1,4 +1,5 @@
 import {
+  ADD_DASHBOARD_TO_WORKSPACE,
   ADD_FORM_TO_WORKSPACE, ALL_WORKSPACES,
   CREATE_DATA_SOURCE_COLUMN, CREATE_WORKSPACE, GET_DASHBOARDS,
   GET_DATA_SOURCE,
@@ -210,6 +211,10 @@ export const workspace = {
       })
     },
 
+    [ADD_DASHBOARD_TO_WORKSPACE]: ({ commit }, { workspaceId, dashboardId }) => {
+      commit(ADD_DASHBOARD_TO_WORKSPACE, { workspaceId, dashboardId })
+    },
+
     [ADD_FORM_TO_WORKSPACE]: ({ commit }, { workspaceId, formId }) => {
       commit(ADD_FORM_TO_WORKSPACE, { workspaceId, formId })
     },
@@ -232,6 +237,11 @@ export const workspace = {
 
     [SET_WORKSPACE] (state, { workspaceId, workspace }) {
       Vue.set(state.workspaces, workspaceId, workspace)
+    },
+
+    [ADD_DASHBOARD_TO_WORKSPACE]: (state, { workspaceId, dashboardId }) => {
+      const vuexWorkspace = state.workspaces[workspaceId]
+      Vue.set(vuexWorkspace.dashboards, dashboardId, dashboardId)
     },
 
     /**

@@ -1,8 +1,21 @@
 export function createWorkspace(formData) {
   return {
     id: Math.floor(Math.random() * 32768),
-    title: "[New Form]",
+    title: "[New Workspace]",
     administrator: 1,
+
+    ...formData,
+  };
+}
+
+export function createDashboard(formData) {
+  return {
+    id: Math.floor(Math.random() * 32768),
+    title: "[New Dashboard]",
+    displayDuration: false,
+    displayNewButton: false,
+    filters: [],
+    headers: [],
 
     ...formData,
   };

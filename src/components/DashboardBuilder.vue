@@ -91,7 +91,7 @@
 
             <v-list-item>
               <!-- Button to add a new dashboard column -->
-              <v-btn @click="add">Add</v-btn>
+              <v-btn @click="addColumn">Add</v-btn>
             </v-list-item>
           </v-list>
         </v-tab-item>
@@ -217,13 +217,13 @@ export default {
     ...mapDashboardActions({
       setDashboard: SET_DASHBOARD
     }),
-    add: function() {
-      const newElement = {
+    addColumn: function() {
+      this.activeDashboardElement = {
         title: '',
         value: ''
       }
-      this.dashboard.headers.push(newElement)
-      this.dashboardElementClicked(newElement)
+      // this.dashboard.headers.push(newElement)
+      this.dashboardElementClicked(this.activeDashboardElement)
     },
     save() {
       // this.$emit('dashboard-save-clicked', { dashboardId: this.activeDashboard.id })
@@ -253,12 +253,13 @@ export default {
      */
     storeActiveDashboardElement()
     {
+      this.dashboard.headers.push(this.activeDashboardElement)
       console.log('save clicked')
-      this.$store.dispatch("updateDashboard", {
-        workspaceId: this.workspaceId,
-        dashboardId: this.dashboardId,
-        dashboard: this.dashboard
-      })
+      // this.$store.dispatch("updateDashboard", {
+      //   workspaceId: this.workspaceId,
+      //   dashboardId: this.dashboardId,
+      //   dashboard: this.dashboard
+      // })
       this.drawer = false
     }
   },
