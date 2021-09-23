@@ -141,6 +141,7 @@ export default {
     onListItemClicked(id) {
       console.log(id)
       this.setNavigation({
+        workspaceId: this.workspaceId,
         key: 'dashboard',
         id: id
       })
@@ -158,8 +159,8 @@ export default {
   mounted () {
     // If there is no param set for dashboardId, we look in user vuex for navigation
     if (!this.dashboardId) {
-      if (this.navigation.dashboard) {
-        this.activeDashboard = this.navigation.dashboard
+      if (this.navigation.workspaces[this.workspaceId].dashboard) {
+        this.activeDashboard = this.navigation.workspaces[this.workspaceId].dashboard
       } else if (this.dashboards.length > 0) {
         this.activeDashboard = this.dashboards[0].id
       }

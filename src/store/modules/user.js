@@ -7,9 +7,13 @@ export const user = {
   state: {
     userMeta: {},
     navigation: {
-      workspace: null,
-      dashboard: null,
-      form: null
+      workspace: 1,
+      workspaces: {
+        1: {
+          dashboard: null,
+          form: null
+        }
+      }
     }
   },
   getters: {
@@ -51,16 +55,17 @@ export const user = {
     /**
      * Store the sub-navigation for each section, ie: which dashboard we were last looking at in the dashboard-builder
      * @param commit
+     * @param workspaceId
      * @param key
      * @param id
      */
-    [SET_NAVIGATION]: ({ commit }, { key, id }) => {
-      commit(SET_NAVIGATION, { key, id })
+    [SET_NAVIGATION]: ({ commit }, { workspaceId, key, id }) => {
+      commit(SET_NAVIGATION, { workspaceId, key, id })
     },
   },
   mutations: {
-    [SET_NAVIGATION]: (state, { key, id }) => {
-      Vue.set(state.navigation, key, id)
+    [SET_NAVIGATION]: (state, { workspaceId, key, id }) => {
+      Vue.set(state.navigation.workspaces[workspaceId], key, id)
     },
     [SET_USER_META]: (state, userMeta) => {
       Vue.set(state, 'userMeta', userMeta)
