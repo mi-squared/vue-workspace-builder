@@ -12,15 +12,32 @@ export const dashboard = {
         title: 'Triage Dashboard',
         newEntityFormId: null,
         displayDuration: true,
+        durationModel: {
+          'ranges': [
+            {
+              'order': 0,
+              'range': [0, 26],
+              'color': '#EC8116FF'
+            },
+            {
+              'order': 1,
+              'range': [27, 60],
+              'color': '#AD1457F'
+            }
+          ],
+          'outOfRangeColor': 'grey',
+          'units': 'minutes'
+        },
         displayNewButton: false,
+
         filters: {
           1200: 1200,
           1201: 1201
         },
         headers: [
           {
-            text: 'Created',
-            value: 'timestamp'
+            text: 'Added',
+            value: 'moved_to_dashboard_date',
           },
           {
             text: 'First Name',
@@ -45,6 +62,11 @@ export const dashboard = {
         title: 'Dispatch Dashboard',
         displayDuration: true,
         displayNewButton: false,
+        durationModel: {
+          ranges: [],
+          units: 'minutes',
+          outOfRangeColor: 'grey'
+        },
         filters: [],
         headers: [],
       },
@@ -53,6 +75,11 @@ export const dashboard = {
         title: 'Whiteboard',
         displayDuration: true,
         displayNewButton: false,
+        durationModel: {
+          ranges: [],
+          units: 'minutes',
+          outOfRangeColor: 'grey'
+        },
         filters: [],
         headers: [],
       },
@@ -61,7 +88,7 @@ export const dashboard = {
       10: [
         {
           id: 1,
-          timestamp: '1622164951',
+          moved_to_dashboard_date: '2021-09-24 19:30:00',
           firstName: 'Frozen Yogurt',
           lastName: 'Smith',
           DOB: '11/21/1991', //: 6.0,
@@ -71,7 +98,7 @@ export const dashboard = {
         },
         {
           id: 2,
-          timestamp: '1622161351',
+          moved_to_dashboard_date: '2021-09-24 19:30:00',
           firstName: 'Ice cream sandwich',
           lastName: 'Smith',
           DOB: '11/21/1991', //: 9.0,
@@ -81,7 +108,7 @@ export const dashboard = {
         },
         {
           id: 3,
-          timestamp: '1622132551',
+          moved_to_dashboard_date: '2021-09-24 19:30:00',
           firstName: 'Eclair',
           lastName: 'Smith',
           DOB: '11/21/1991', //: 16.0,
@@ -91,7 +118,7 @@ export const dashboard = {
         },
         {
           id: 4,
-          timestamp: '1622164951',
+          moved_to_dashboard_date: '2021-09-24 19:30:00',
           firstName: 'Cupcake',
           lastName: 'Smith',
           DOB: '11/21/1991', //: 3.7,
@@ -101,7 +128,7 @@ export const dashboard = {
         },
         {
           id: 5,
-          timestamp: '1619540551',
+          moved_to_dashboard_date: '2021-09-24 19:30:00',
           firstName: 'Gingerbread',
           lastName: 'Smith',
           DOB: '11/21/1991', //: 16.0,
@@ -111,7 +138,7 @@ export const dashboard = {
         },
         {
           id: 6,
-          timestamp: '1622164951',
+          moved_to_dashboard_date: '2021-09-24 18:30:00',
           firstName: 'Jelly bean',
           lastName: 'Jones',
           DOB: '11/21/1991', //: 0.0,
@@ -121,7 +148,7 @@ export const dashboard = {
         },
         {
           id: 7,
-          timestamp: '1622164951',
+          moved_to_dashboard_date: '2021-09-24 19:30:00',
           firstName: 'Lollipop',
           lastName: 'Smith',
           DOB: '11/21/1991', //: 0.2,
@@ -131,7 +158,7 @@ export const dashboard = {
         },
         {
           id: 8,
-          timestamp: '1622164951',
+          moved_to_dashboard_date: '2021-09-24 19:30:00',
           firstName: 'Honeycomb',
           lastName: 'Smith',
           DOB: '11/21/1991', //: 3.2,
@@ -141,7 +168,7 @@ export const dashboard = {
         },
         {
           id: 9,
-          timestamp: '1622164951',
+          moved_to_dashboard_date: '2021-09-24 19:30:00',
           firstName: 'Donut',
           lastName: 'Smith',
           DOB: '11/21/1991', //: 25.0,
@@ -151,7 +178,7 @@ export const dashboard = {
         },
         {
           id: 10,
-          timestamp: '1622164951',
+          moved_to_dashboard_date: '2021-09-24 19:30:00',
           firstName: 'KitKat',
           lastName: 'Smith',
           DOB: '11/21/1991', //: 26.0,

@@ -54,7 +54,12 @@
             ></v-switch>
             <v-divider></v-divider>
 
-            <MultiRangePicker></MultiRangePicker>
+            <MultiRangePicker
+              :ranges="activeDashboard.durationModel.ranges"
+              :units="activeDashboard.durationModel.units"
+              :out-of-range-color="activeDashboard.durationModel.outOfRangeColor"
+              @change="onRangePickerChanged"
+            ></MultiRangePicker>
 
           </v-container>
         </v-tab-item>
@@ -233,6 +238,12 @@ export default {
         .then(function () {
           that.isDirty = false
         })
+    },
+    /**
+     * This function is called whenever the Multi-Range Picker is changed, so we update our duration model
+     */
+    onRangePickerChanged(model) {
+      this.activeDashboard.durationModel = model
     },
     dashboardElementClicked(element) {
       this.$emit('dashboard-element-clicked', element)

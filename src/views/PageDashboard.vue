@@ -87,13 +87,13 @@
       </template>
 
       <!-- Display the created_datetime within a chip that indicates how old (attrition) the row is -->
-      <template v-slot:item.created_datetime="{ item }">
+      <template v-slot:item.moved_to_dashboard_date="{ item }">
         <v-chip
           :key="currentTimestamp"
-          :color="getColor(item.created_datetime)"
+          :color="getColor(item.moved_to_dashboard_date)"
           dark
         >
-          <AppDate :timestamp="item.created_datetime"></AppDate>
+          <AppDate :timestamp="item.moved_to_dashboard_date"></AppDate>
         </v-chip>
       </template>
 
@@ -326,44 +326,6 @@ export default {
           component: 'Text'
         }
       ],
-      attrition: [
-        {
-          title: 'New',
-          color: 'green',
-          low: {
-            value: 0,
-            units: 'days'
-          },
-          high: {
-            value: 2,
-            units: 'days'
-          },
-        },
-        {
-          title: 'Needs Attention',
-          color: 'red',
-          low: {
-            value: 61,
-            units: 'minutes'
-          },
-          high: {
-            value: 200,
-            units: 'minutes'
-          },
-        },
-        {
-          title: 'Stale',
-          color: 'yellow',
-          low: {
-            value: 201,
-            units: 'minutes'
-          },
-          high: {
-            value: 500,
-            units: 'minutes'
-          },
-        },
-      ],
     }
   },
   created () {
@@ -405,15 +367,16 @@ export default {
       let a = moment()
       let b = moment(timestamp)
       let seconds = a.diff(b, 'seconds')
-      for (const attr in this.attrition) {
+      for (let i = 0; i < this.dashboard.durationModel.ranges.length; ++i) {
+        const range = this.dashboard.durationModel.ranges[i]
         // Convert our ranges to seconds
-        const minSeconds = moment.duration(this.attrition[attr].low.value, this.attrition[attr].low.units).asSeconds()
-        const maxSeconds = moment.duration(this.attrition[attr].high.value, this.attrition[attr].high.units).asSeconds()
+        const minSeconds = moment.duration(range.range[0], this.dashboard.durationModel.units).asSeconds()
+        const maxSeconds = moment.duration(range.range[1], this.dashboard.durationModel.units).asSeconds()
         if (seconds > minSeconds && seconds <= maxSeconds) {
-          return this.attrition[attr].color
+          return range.color
         }
       }
-      return 'dark'
+      return this.dashboard.durationModel.outOfRangeColor
     },
     customGroup (items, groupBy, groupDesc) {
       console.log(groupDesc)
