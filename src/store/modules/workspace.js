@@ -23,6 +23,26 @@ export const workspace = {
           "x-itemTitle": "label",
         },
       },
+      "patient": {
+        mysql: "BIGINT",
+        formSchemaTemplate: {
+          type: "integer",
+          "x-fromData": "context.patient",
+          "x-itemKey": "val",
+          "x-itemTitle": "label",
+        },
+        dashboardFields: {
+          "fname": {
+
+          },
+          "lname": {
+
+          },
+          "DOB": {
+
+          }
+        }
+      },
       "string": {
         mysql: "VARCHAR(255)",
         formSchemaTemplate: {
