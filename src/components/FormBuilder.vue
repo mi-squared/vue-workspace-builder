@@ -100,6 +100,7 @@
               :h="item.h"
               :i="item.i"
               :key="item.i"
+              @move="updateFormSchema"
             >
               {{ item.meta.name }} {{ item.meta.type }}
               <v-btn
@@ -305,7 +306,8 @@ export default {
       this.showFormElementSelector = false;
     },
     setSelectedElement(name) {
-      this.selectedElement = JSON.parse(JSON.stringify(this.columns[name]));
+      this.selectedElement = this.activeForm.properties[name]
+      this.drawer = true
     },
     storeSelectedElement() {
       // // sync the selected element to the vuex store on change
@@ -320,10 +322,15 @@ export default {
       console.log('save clicked')
       this.drawer = false
     },
+
+    /**
+     * This function is called whenever the form's layout is changed
+     */
     updateFormSchema() {
       // Loop through the form properties  as stored in Vuex grid, and lookup by name
       // and create a format that JSON Form Schema component likes by merging with the type's
       // schema template
+      this.activeForm.properties = {}
       for (const row of this.activeForm.grid) {
         const element = this.activeForm.properties[row.meta.name]
         const schemaTemplate = this.getSchemaTemplateByType(row.meta.type)
