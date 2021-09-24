@@ -1,22 +1,38 @@
 <template>
   <v-container>
-    <v-toolbar dense flat>
 
-      <v-app-bar-nav-icon @click="navigationHamburgerClicked"></v-app-bar-nav-icon>
-
-      <v-toolbar-title>{{ this.activeFormModel.title }}</v-toolbar-title>
+    <v-tabs
+      v-model="tab"
+      icons-and-text
+    >
+      <v-tab :key="'tab-properties'">
+        Properties
+        <v-icon>mdi-settings</v-icon>
+      </v-tab>
+      <v-tab :key="'tab-columns'">
+        Layout
+        <v-icon>mdi-table</v-icon>
+      </v-tab>
 
       <v-spacer></v-spacer>
 
-      <v-btn color="success" :disabled="!isDirty">
+      <FormPreviewButton :form="activeForm" :key="activeForm.id"></FormPreviewButton>
+
+      <v-btn class="mt-4 mr-2" color="success" :disabled="!isDirty" @click="save">
         <v-icon>mdi-floppy</v-icon>
-        <div>Save</div>
+        Save
       </v-btn>
 
-    </v-toolbar>
+    </v-tabs>
+    <v-tabs-items v-model="tab">
+      <v-tab-item :key="'tab-properties'">
+        <FormProperties
+          :form="activeForm"
+          :key="activeForm.id"
+        ></FormProperties>
+      </v-tab-item>
 
-    <v-row>
-      <v-col cols="12" sm="8">
+      <v-tab-item :key="'tab-layout'">
         <!-- <v-btn @click="addItem">Add Form Element</v-btn> -->
         <v-dialog v-model="showFormElementSelector" width="500">
           <template v-slot:activator="{ on, attrs }">
@@ -26,8 +42,9 @@
           </template>
 
           <v-card>
+
             <v-card-title class="text-h5 grey lighten-2">
-              Add Form Element
+              Data Source Elements
             </v-card-title>
 
             <v-card-text>
@@ -64,7 +81,7 @@
 
         <v-sheet rounded="lg" min-height="268" elevation="1">
           <grid-layout
-            :layout.sync="grid"
+            :layout.sync="activeForm.grid"
             :col-num="12"
             :row-height="30"
             :is-draggable="true"
@@ -76,7 +93,7 @@
             @layout-updated="updateFormSchema"
           >
             <grid-item
-              v-for="item in grid"
+              v-for="item in activeForm.grid"
               :x="item.x"
               :y="item.y"
               :w="item.w"
@@ -84,57 +101,87 @@
               :i="item.i"
               :key="item.i"
             >
-              {{ item.name }}
+              {{ item.meta.name }} {{ item.meta.type }}
               <v-btn
                 color="red lighten-2"
                 dark
-                @click="setSelectedElement(item.name)"
+                @click="setSelectedElement(item.meta.name)"
               >
                 Edit
               </v-btn>
             </grid-item>
           </grid-layout>
         </v-sheet>
-      </v-col>
+      </v-tab-item>
+    </v-tabs-items>
 
-      <v-col cols="12" sm="4">
-        <FormProperties
-          :form="form"
-        ></FormProperties>
+    <!-- when an element is clicked, this should slide out -->
+    <v-navigation-drawer
+      v-model="drawer"
+      app
+      absolute
+      right
+      temporary
+      width="420"
+    >
+      <v-list-item>
+        <v-list-item-avatar>
+          <v-icon>mdi-page-layout-header</v-icon>
+        </v-list-item-avatar>
 
-        <v-card
-          rounded="lg"
-          min-height="268"
-          class="mt-0 p-4"
-          v-if="selectedElement"
-        >
-          <v-card-title>Element Properties</v-card-title>
-          <v-card-text>
-            <v-text-field
-              :value="selectedElement.type"
-              label="Type"
-              readonly
-            ></v-text-field>
-            <v-text-field
-              v-model="selectedElement.schema.title"
-              label="Label"
-              @change="syncSelectedElement"
-            ></v-text-field>
-            <v-text-field
-              v-model="selectedElement.schema.description"
-              label="Description"
-              @change="syncSelectedElement"
-            ></v-text-field>
-            <v-checkbox
-              v-model="selectedElement.schema.readOnly"
-              :readonly="selectedElement.extra.createdBy == 'system'"
-              label="Read-Only"
-            ></v-checkbox>
-            <v-checkbox label="Show on Read-Only View"></v-checkbox>
-          </v-card-text>
-        </v-card>
-      </v-col>
-    </v-row>
+        <v-list-item-content>
+          <v-list-item-title>{{ selectedElement.name }}</v-list-item-title>
+        </v-list-item-content>
+      </v-list-item>
+
+      <v-divider></v-divider>
+
+      <v-form
+        ref="form"
+        v-model="validElement"
+        lazy-validation
+      >
+        <v-container>
+
+          <v-text-field
+            :value="selectedElement.type"
+            label="Type"
+            readonly
+          ></v-text-field>
+          <v-text-field
+            v-model="selectedElement.title"
+            label="Label"
+          ></v-text-field>
+          <v-text-field
+            v-model="selectedElement.description"
+            label="Description"
+          ></v-text-field>
+<!--          TODO need read-onlly to come from the data-source vuex module getter -->
+          <v-checkbox
+            v-model="selectedElement.readOnly"
+            :readonly="false"
+            label="Read-Only"
+          ></v-checkbox>
+          <v-checkbox label="Show on Read-Only View"></v-checkbox>
+
+          <v-btn
+            color="success"
+            class="mr-4"
+            @click="storeSelectedElement"
+          >
+            Save
+          </v-btn>
+          <v-btn
+            color="secondary"
+            class="mr-4"
+            @click="drawer = false"
+          >
+            Cancel
+          </v-btn>
+        </v-container>
+      </v-form>
+    </v-navigation-drawer>
+
   </v-container>
 </template>
 
@@ -143,25 +190,32 @@ import VueGridLayout from "vue-grid-layout";
 import FormProperties from "@/components/FormProperties";
 
 import { createNamespacedHelpers } from 'vuex'
-import { GET_FORM, SET_FORM_GRID, SET_FORM_SCHEMA } from '../store/types-form'
-const { mapState: mapFormState, mapActions: mapFormActions, mapGetters: mapFormGetters } = createNamespacedHelpers('form')
-import { GET_DATA_SOURCE, GET_WORKSPACE } from '../store/types-workspace'
+
+import { GET_DATA_SOURCE, GET_SCHEMA_TEMPLATE_BY_TYPE, GET_WORKSPACE } from '../store/types-workspace'
 const { mapState: mapWorkspaceState, mapActions: mapWorkspaceActions, mapGetters: mapWorkspaceGetters } = createNamespacedHelpers('workspace')
 
+import { GET_FORM, SET_FORM, SET_FORM_GRID, SET_FORM_SCHEMA } from '../store/types-form'
+import FormPreviewButton from './FormPreviewButton'
+const { mapState: mapFormState, mapActions: mapFormActions, mapGetters: mapFormGetters } = createNamespacedHelpers('form')
+
 export default {
-  name: "LayoutBuilder",
+  name: 'FormBuilder',
   components: {
+    FormPreviewButton,
     FormProperties,
     GridLayout: VueGridLayout.GridLayout,
     GridItem: VueGridLayout.GridItem,
   },
   props: {
-    formId: {
-      type: Number,
-      required: true,
+    /**
+     * The FormBuilder requires the workspace for access to the data source
+     */
+    workspace: {
+      type: Object,
+      required: true
     },
-    workspaceId: {
-      type: Number,
+    form: {
+      type: Object,
       required: true,
     },
   },
@@ -170,35 +224,37 @@ export default {
       ...mapFormState,
       ...mapWorkspaceState,
       isDirty: false,
+      tab: null,
+      drawer: null,
       showFormElementSelector: false,
-      activeLayoutIndex: 0,
-      layouts: [
-        {
-          id: 1,
-          title: "Main Form",
-        },
-      ],
-      grid: [],
-      index: 0,
-      selectedElement: null,
-    };
+      selectedElement: {},
+      validElement: true, // true if the properties of a new or modified element are valid
+      index: this.form.grid.length,
+      activeForm: { ...this.form }
+    }
+  },
+  watch: {
+    activeForm: {
+      // Watch the activeForm using a deep watch, and when it changes,
+      // mark the model as dirty, which activates the "save" button
+      handler() {
+        this.isDirty = true
+        // TODO should propagate an event up to let navigation know that there are unsaved changes on this builder
+      },
+      deep: true
+    }
   },
   computed: {
     ...mapFormGetters({
-      getForm: GET_FORM
+      getForm: GET_FORM,
     }),
     ...mapWorkspaceGetters({
       getDataSource: GET_DATA_SOURCE,
-      getWorkspace: GET_WORKSPACE
+      getWorkspace: GET_WORKSPACE,
+      getSchemaTemplateByType: GET_SCHEMA_TEMPLATE_BY_TYPE,
     }),
-    form() {
-      return this.getForm(this.formId)
-    },
-    activeFormModel() {
-      return this.layouts[this.activeLayoutIndex];
-    },
     dataSource() {
-      return this.getDataSource(this.workspaceId)
+      return this.workspace.dataSource
     },
     columns() {
       return this.dataSource.spec.columns
@@ -211,86 +267,87 @@ export default {
     //   return null;
     // },
   },
-
-  created() {
-    this.fetchData();
-  },
-  watch: {
-    // call again the method if the route changes
-    $route: "fetchData",
-  },
   methods: {
     ...mapFormActions({
+      setForm: SET_FORM,
       setFormGrid: SET_FORM_GRID,
-      setFormSchema: SET_FORM_SCHEMA
+      setFormSchema: SET_FORM_SCHEMA,
     }),
     ...mapWorkspaceActions,
+    save() {
+      this.$emit('form-save-clicked', { form: this.activeForm.id })
+      let that = this
+      this.setForm({ formId: this.activeForm.id, form: this.activeForm })
+        .then(function () {
+          that.isDirty = false
+        })
+    },
     addItem: function(column) {
       console.log(column);
 
       // Add a new item. It must have a unique key!
-      this.grid.push({
-        x: (this.grid.length * 2) % (this.colNum || 12),
-        y: this.grid.length + (this.colNum || 12), // puts it at the bottom
+      this.activeForm.grid.push({
+        x: (this.activeForm.grid.length * 2) % (this.colNum || 12),
+        y: this.activeForm.grid.length + (this.colNum || 12), // puts it at the bottom
         w: 12,
         h: 2,
         i: this.index,
-        name: column.name,
+        // Meta contains the model for the visual representation of the grid element, and
+        // also helps to map the grid element to the form element and it's type.
+        meta: {
+          type: column.type,
+          name: column.name,
+        }
       });
       // Increment the counter to ensure key is always unique.
-      this.index++;
+      this.index++
       // close the dialog
       this.showFormElementSelector = false;
-    },
-    fetchData() {
-      console.log("fetchData!");
-      this.grid = this.getForm(
-        this.formId
-      ).formDefinition.grid;
-
-      console.log(this.grid);
-      this.index = this.grid.length;
     },
     setSelectedElement(name) {
       this.selectedElement = JSON.parse(JSON.stringify(this.columns[name]));
     },
-    syncSelectedElement() {
-      // sync the selected element to the vuex store on change
-      this.$store.commit("setDataSourceColumn", {
-        workspaceId: this.workspaceId,
-        column: this.selectedElement,
-      });
-
-      // update the form schema so the preview looks correct
-      this.updateFormSchema();
+    storeSelectedElement() {
+      // // sync the selected element to the vuex store on change
+      // this.$store.commit("setDataSourceColumn", {
+      //   workspaceId: this.workspaceId,
+      //   column: this.selectedElement,
+      // });
+      //
+      // // update the form schema so the preview looks correct
+      // this.updateFormSchema()
+      this.updateFormSchema()
+      console.log('save clicked')
+      this.drawer = false
     },
     updateFormSchema() {
-      let schema = { properties: {} };
+      // Loop through the form properties  as stored in Vuex grid, and lookup by name
+      // and create a format that JSON Form Schema component likes by merging with the type's
+      // schema template
+      for (const row of this.activeForm.grid) {
+        const element = this.activeForm.properties[row.meta.name]
+        const schemaTemplate = this.getSchemaTemplateByType(row.meta.type)
 
-      for (const row of this.grid) {
-        const column = this.columns[row.name];
-        schema.properties[row.name] = {
-          ...column.schema,
+        this.activeForm.properties[row.meta.name] = {
+          ...schemaTemplate,
+          ...element,
           // format: "date",
           "x-cols": row.w,
-        };
+        }
       }
 
-      this.setFormGrid({
-        formId: this.formId,
-        grid: this.grid,
-      })
-
-      this.setFormSchema({
-        formId: this.formId,
-        schema: schema,
-      })
+      // this.setFormGrid({
+      //   formId: this.form.id,
+      //   grid: this.grid,
+      // })
+      //
+      // this.setFormSchema({
+      //   formId: this.form.id,
+      //   schema: schema,
+      // })
     },
-    navigationHamburgerClicked() {
-      this.$emit('hamburger-navigation-clicked')
-    }
   },
-};
+}
 </script>
 
 <style></style>

@@ -158,8 +158,10 @@
 import draggable from "vuedraggable";
 import MultiRangePicker from './MultiRangePicker'
 import { createNamespacedHelpers } from 'vuex'
+
 import { GET_WORKSPACE } from '../store/types-workspace'
 const { mapState: mapWorkspaceState, mapActions: mapWorkspaceActions, mapGetters: mapWorkspaceGetters } = createNamespacedHelpers('workspace')
+
 import { GET_DASHBOARD, SET_DASHBOARD } from '../store/types-dashboard'
 const { mapState: mapDashboardState, mapActions: mapDashboardActions, mapGetters: mapDashboardGetters } = createNamespacedHelpers('dashboard')
 
@@ -181,10 +183,9 @@ export default {
       ...mapDashboardState,
       isDirty: false,
       tab: null,
-      selectedItem: 1,
       drawer: null,
       activeDashboardElement: {},
-      validElement: true,
+      validElement: true, // true if the properties of a new or modified column are valid
       activeDashboard: { ...this.dashboard }
     }
   },
@@ -237,10 +238,7 @@ export default {
       this.$emit('dashboard-element-clicked', element)
       this.showDashboardElementProperties(element)
     },
-    dashboardAddElementClicked()
-    {
 
-    },
     showDashboardElementProperties(element)
     {
       this.activeDashboardElement = element
@@ -249,17 +247,12 @@ export default {
     },
 
     /**
-     * Save the active element to Vuex
+     * Save the active element locally to data
      */
     storeActiveDashboardElement()
     {
       this.dashboard.headers.push(this.activeDashboardElement)
       console.log('save clicked')
-      // this.$store.dispatch("updateDashboard", {
-      //   workspaceId: this.workspaceId,
-      //   dashboardId: this.dashboardId,
-      //   dashboard: this.dashboard
-      // })
       this.drawer = false
     }
   },

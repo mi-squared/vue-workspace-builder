@@ -1,6 +1,13 @@
 import { createForm } from '../../api'
 import Vue from 'vue'
-import { ALL_FORMS, CREATE_FORM, GET_FORM, SET_FORM_GRID, SET_FORM_SCHEMA } from '../types-form'
+import {
+  ALL_FORMS,
+  CREATE_FORM,
+  GET_FORM,
+  SET_FORM,
+  SET_FORM_GRID,
+  SET_FORM_SCHEMA
+} from '../types-form'
 
 export const form = {
   namespaced: true,
@@ -11,74 +18,51 @@ export const form = {
         title: "Dashboard Create Form",
         // JSON Schema definition utilizing the format required by this library:
         // https://koumoul-dev.github.io/vuetify-jsonschema-form/latest/getting-started
-        formDefinition: {
-          // Global Options
-          grid: [],
-          options: {
-            timePickerProps: {
-              format: "24h",
-            },
+        grid: [],
+        // Global Options
+        options: {
+          timePickerProps: {
+            format: "24h",
           },
-          schema: {
-            stringProp: {
-              type: "string",
-              title: "I'm a string",
-              format: "string",
-              "x-cols": 6,
-            },
-            dateTimeProp: {
-              type: "string",
-              title: "I'm a date-time",
-              format: "date-time",
-              description: "This description is used as a help message.",
-              "x-cols": 6,
-            },
-            stringTextareaProp: {
-              type: "string",
-              title: "I'm a string in a textarea",
-              "x-display": "textarea",
-            },
-            numberProp: {
-              type: "number",
-              title: "I'm a number",
-            },
-            integerProp: {
-              type: "integer",
-              title: "I'm an integer",
-            },
-            integerSliderProp: {
-              type: "integer",
-              title: "I'm an integer in a slider",
-              "x-display": "slider",
-              minimum: 0,
-              maximum: 5,
-            },
-            booleanProp: {
-              type: "boolean",
-              title: "I'm a boolean",
-              description: "This description is used as a help message.",
-            },
-            booleanSwitchProp: {
-              type: "boolean",
-              title: "I'm a boolean with switch display",
-              "x-display": "switch",
-              description: "This description is used as a help message.",
-            },
-            stringArrayProp: {
-              type: "array",
-              title: "I'm an array of strings",
-              items: {
-                type: "string",
-              },
-            },
-            integerArrayProp: {
-              type: "array",
-              title: "I'm an array of integers",
-              items: {
-                type: "integer",
-              },
-            },
-          },
+        },
+        properties: {
+          // id: {
+          //   type: "integer",
+          //   title: "ID",
+          //   description: "Unique ID",
+          //   readOnly: true,
+          // },
+          // created_date: {
+          //   type: "string",
+          //   title: "Created Date",
+          //   format: "date-time",
+          //   description: "This description is used as a help message.",
+          //   readOnly: true,
+          // },
+          // created_by: {
+          //   type: "integer",
+          //   title: "Created By",
+          //   "x-fromData": "context.users",
+          //   "x-itemKey": "val",
+          //   "x-itemTitle": "label",
+          //   description: "This description is used as a help message.",
+          //   readOnly: true,
+          // },
+          // updated_by: {
+          //   type: "integer",
+          //   title: "Updated By",
+          //   "x-fromData": "context.users",
+          //   "x-itemKey": "val",
+          //   "x-itemTitle": "label",
+          //   description: "This description is used as a help message.",
+          //   readOnly: true,
+          // },
+          // source: {
+          //   type: "string",
+          //   title: "Source",
+          //   description: "Source",
+          //   readOnly: true,
+          // }
         },
       },
     },
@@ -90,6 +74,7 @@ export const form = {
     [GET_FORM]: (state) => (id) => {
       return state.forms[id];
     },
+
   },
   actions: {
 
@@ -107,7 +92,14 @@ export const form = {
 
     [SET_FORM_SCHEMA]: ({ commit }, { formId, schema }) => {
       commit(SET_FORM_SCHEMA, { formId, schema })
-    }
+    },
+
+    [SET_FORM] ({ commit }, { formId, form }) {
+      return new Promise((resolve) => {
+        commit(SET_FORM, { formId, form })
+        resolve(form)
+      })
+    },
 
   },
   mutations: {
@@ -115,13 +107,17 @@ export const form = {
     // Form Builder Mutations
     [SET_FORM_SCHEMA](state, { formId, schema }) {
       let form = state.forms[formId]
-      form.formDefinition.schema = schema
+      form.schema = schema
     },
     [SET_FORM_GRID](state, { formId, grid }) {
       let form = state.forms[formId]
-      form.formDefinition.grid = grid
+      Vue.set(form, 'grid', grid)
     },
     [CREATE_FORM]: (state, { formId, form }) => {
+      Vue.set(state.forms, formId, form)
+    },
+
+    [SET_FORM] (state, { formId, form }) {
       Vue.set(state.forms, formId, form)
     },
   },

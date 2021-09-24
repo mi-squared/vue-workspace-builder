@@ -13,29 +13,26 @@
 <script>
 import { createNamespacedHelpers } from 'vuex'
 import { GET_WORKSPACE } from '../../store/types-workspace'
-const { mapState: mapWorkspaceState, mapActions: mapWorkspaceActions, mapGetters: mapWorkspaceGetters } = createNamespacedHelpers('workspace')
+const { mapGetters: mapWorkspaceGetters } = createNamespacedHelpers('workspace')
 import { GET_DASHBOARD } from '../../store/types-dashboard'
 import DashboardBuilder from '../../components/DashboardBuilder'
-const { mapState: mapDashboardState, mapActions: mapDashboardActions, mapGetters: mapDashboardGetters } = createNamespacedHelpers('dashboard')
+const { mapGetters: mapDashboardGetters } = createNamespacedHelpers('dashboard')
 
 export default {
   name: 'PageDashboardEdit',
   components: { DashboardBuilder },
   props: {
-    dashboardId: {
+    workspaceId: {
       type: Number,
       required: true,
     },
-    workspaceId: {
+    dashboardId: {
       type: Number,
       required: true,
     },
   },
   data() {
-    return {
-      ...mapWorkspaceState,
-      ...mapDashboardState,
-    }
+    return {}
   },
   computed: {
     ...mapWorkspaceGetters({
@@ -52,8 +49,6 @@ export default {
     },
   },
   methods: {
-    ...mapWorkspaceActions,
-    ...mapDashboardActions,
     navigationHamburgerClicked() {
       this.$emit('hamburger-navigation-clicked')
     }

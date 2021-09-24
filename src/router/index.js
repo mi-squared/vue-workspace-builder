@@ -8,13 +8,13 @@ import PageFilters from "@/views/builder/PageFilters";
 import PageDashboards from "@/views/builder/PageDashboards";
 import PageActions from "@/views/builder/PageActions";
 
-import FormBuilder from "@/components/FormBuilder";
 import Builder from '@/views/Builder'
 import PageDashboard from '@/views/dashboard/PageDashboard'
 import PageForm from '@/views/form/PageForm'
 import Dashboard from '../views/Dashboard'
 import Form from '../views/Form'
 import PageDashboardEdit from '../views/builder/PageDashboardEdit'
+import PageFormEdit from '../views/builder/PageFormEdit'
 
 Vue.use(VueRouter);
 
@@ -54,7 +54,7 @@ const routes = [{
             // UserProfile will be rendered inside User's <router-view>
             // when /user/:id/profile is matched
             path: ":formId(\\d+)",
-            component: FormBuilder,
+            component: PageFormEdit,
             props: ({ params }) => ({
               formId: Number(params.formId),
               workspaceId: Number(params.workspaceId),

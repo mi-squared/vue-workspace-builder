@@ -2,7 +2,7 @@ import {
   ADD_DASHBOARD_TO_WORKSPACE,
   ADD_FORM_TO_WORKSPACE, ALL_WORKSPACES,
   CREATE_DATA_SOURCE_COLUMN, CREATE_WORKSPACE, GET_DASHBOARDS,
-  GET_DATA_SOURCE,
+  GET_DATA_SOURCE, GET_SCHEMA_TEMPLATE_BY_TYPE,
   GET_WORKSPACE,
   SET_WORKSPACE
 } from '../types-workspace'
@@ -13,6 +13,63 @@ import { createWorkspace } from '../../api'
 export const workspace = {
   namespaced: true,
   state: {
+    dataTypes: {
+      "user": {
+        mysql: "BIGINT",
+        formSchemaTemplate: {
+          type: "integer",
+          "x-fromData": "context.users",
+          "x-itemKey": "val",
+          "x-itemTitle": "label",
+        },
+      },
+      "string": {
+        mysql: "VARCHAR(255)",
+        formSchemaTemplate: {
+          type: "string",
+          title: "I'm a string",
+          format: "string",
+        },
+      },
+      "text": {
+        mysql: "LONGTEXT",
+        formSchemaTemplate: {
+          type: "string",
+          title: "I'm a string in a textarea",
+          "x-display": "textarea"
+        },
+      },
+      "integer": {
+        mysql: "BIGINT",
+        formSchemaTemplate: {
+          type: "integer",
+        },
+      },
+      "boolean": {
+        mysql: "BOOLEAN",
+        formSchemaTemplate: {
+          type: "boolean",
+          title: "I'm a boolean",
+          "x-display": "switch",
+          description: "This description is used as a help message."
+        },
+      },
+      "date": {
+        mysql: "DATE",
+        formSchemaTemplate: {
+          type: "string",
+          format: "date",
+        },
+      },
+      "datetime": {
+        mysql: "DATETIME",
+        formSchemaTemplate: {
+          type: "string",
+          format: "date-time",
+        },
+      },
+
+    },
     workspaces: {
       1: {
         id: 1,
@@ -23,7 +80,7 @@ export const workspace = {
             columns: {
               id: {
                 name: "id",
-                type: "int(11)",
+                type: "integer",
                 default: "",
                 comment: "",
                 extra: {
@@ -56,7 +113,7 @@ export const workspace = {
               },
               created_by: {
                 name: "created_by",
-                type: "int(11)",
+                type: "integer",
                 default: "",
                 comment: "refers to users.id",
                 extra: {
@@ -92,7 +149,7 @@ export const workspace = {
               },
               updated_by: {
                 name: "updated_by",
-                type: "int(11)",
+                type: "user",
                 default: "",
                 comment: "refers to users.id",
                 extra: {
@@ -111,7 +168,7 @@ export const workspace = {
               },
               source: {
                 name: "source",
-                type: "varchar(255)",
+                type: "string",
                 default: "",
                 comment: "",
                 extra: {
@@ -161,7 +218,12 @@ export const workspace = {
         dashboards.push(rootGetters['dashboard/GET_DASHBOARD'](dashboardId))
       })
       return dashboards
-    }
+    },
+
+
+    [GET_SCHEMA_TEMPLATE_BY_TYPE]: (state) => (type) => {
+      return state.dataTypes[type].formSchemaTemplate
+    },
   },
   actions: {
 
