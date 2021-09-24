@@ -9,12 +9,10 @@ import PageDashboards from "@/views/builder/PageDashboards";
 import PageActions from "@/views/builder/PageActions";
 
 import Builder from '@/views/Builder'
-import PageDashboard from '@/views/dashboard/PageDashboard'
-import PageForm from '@/views/form/PageForm'
-import Dashboard from '../views/Dashboard'
-import Form from '../views/Form'
+import PageDashboard from '@/views/PageDashboard'
 import PageDashboardEdit from '../views/builder/PageDashboardEdit'
 import PageFormEdit from '../views/builder/PageFormEdit'
+import PageForm from '../views/PageForm'
 
 Vue.use(VueRouter);
 
@@ -121,24 +119,20 @@ const routes = [{
     ]
   },
   {
-      path: "/dashboard",
-      component: Dashboard,
-      children: [{
-        path: ':id',
-        name: 'Dashboard',
-        component: PageDashboard,
-        props: true
-      }]
+    path: "/dashboard/:dashboardId",
+    component: PageDashboard,
+    name: 'Dashboard',
+    props: ({ params }) => ({
+      dashboardId: Number(params.dashboardId),
+    }),
   },
   {
-      path: "/form",
-      component: Form,
-      children: [{
-        path: ':id',
-        name: 'Form',
-        component: PageForm,
-        props: true
-     }]
+      path: "/form/:formId",
+    name: 'Form',
+    component: PageForm,
+    props: ({ params }) => ({
+      formId: Number(params.formId),
+    }),
   },
 ];
 

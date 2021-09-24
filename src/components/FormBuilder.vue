@@ -102,14 +102,23 @@
               :key="item.i"
               @move="updateFormSchema"
             >
-              {{ item.meta.name }} {{ item.meta.type }}
-              <v-btn
-                color="red lighten-2"
-                dark
-                @click="setSelectedElement(item.meta.name)"
-              >
-                Edit
-              </v-btn>
+              <v-toolbar flat dense>
+                <v-icon>mdi-drag-vertical</v-icon>
+                <v-toolbar-title>{{ item.meta.name }}</v-toolbar-title>
+
+                &nbsp;
+
+                <p class="mt-4 font-weight-thin">
+                  [{{ item.meta.type }}]
+                </p>
+
+                <v-btn
+                  icon
+                  @click="setSelectedElement(item.meta.name)"
+                >
+                  <v-icon>mdi-pencil</v-icon>
+                </v-btn>
+              </v-toolbar>
             </grid-item>
           </grid-layout>
         </v-sheet>

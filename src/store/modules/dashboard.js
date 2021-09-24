@@ -1,4 +1,4 @@
-import { ALL_DASHBOARDS, CREATE_DASHBOARD, GET_DASHBOARD, SET_DASHBOARD } from '../types-dashboard'
+import { ALL_DASHBOARDS, CREATE_DASHBOARD, GET_DASHBOARD, GET_DASHBOARD_ROWS, SET_DASHBOARD } from '../types-dashboard'
 import axios from 'axios'
 import Vue from 'vue'
 import { createDashboard } from '../../api'
@@ -167,7 +167,13 @@ export const dashboard = {
   getters: {
     [ALL_DASHBOARDS]: state => state.dashboards,
 
-    [GET_DASHBOARD]: state => id => { return state.dashboards[id] },
+    [GET_DASHBOARD]: state => id => {
+      return state.dashboards[id]
+    },
+
+    [GET_DASHBOARD_ROWS]: state => id => {
+      return state.rows[id]
+    },
 
   },
   actions: {

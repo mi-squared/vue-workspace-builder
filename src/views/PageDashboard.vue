@@ -1,5 +1,5 @@
 <template>
-  <div id="dashboard">
+  <v-app class="dashboard">
       <v-data-table
           :headers="headers"
           :items="rows"
@@ -14,14 +14,11 @@
         <!-- This is the toolbar at the top of the table -->
         <template v-slot:top>
           <v-toolbar flat>
-            <v-toolbar-title>CET Triage Dashboard</v-toolbar-title>
-            <v-app-bar-nav-icon></v-app-bar-nav-icon>
-            <v-spacer></v-spacer>
-
-
+            <v-toolbar-title>{{ dashboard.title }}</v-toolbar-title>
             <v-spacer></v-spacer>
 
               <v-btn
+                v-if="dashboard.displayNewButton"
                   color="primary"
                   outlined
                   dark
@@ -41,16 +38,6 @@
             ></v-text-field>
 
             <v-btn icon>
-              <v-icon>mdi-heart</v-icon>
-            </v-btn>
-
-            <v-switch
-                v-model="singleExpand"
-                label="Single expand"
-                class="mt-6"
-            ></v-switch>
-
-            <v-btn icon>
               <v-icon>mdi-dots-vertical</v-icon>
             </v-btn>
           </v-toolbar>
@@ -64,6 +51,7 @@
           <!-- Hide on screens smaller than "small" otherwise display as table-row -->
           <tr class='d-none d-sm-table-row'>
 
+<!--            If we are showing the Date Added to Board, then this is the first column -->
             <td>&nbsp;</td>
             <td>
               <v-text-field v-model="filters.firstName" type="text" label="First Name"></v-text-field>
@@ -214,7 +202,7 @@
           </v-dialog>
         </v-row>
       </template>
-  </div>
+  </v-app>
 </template>
 
 <script>
@@ -222,24 +210,56 @@
 import moment from 'moment'
 import AppDate from "@/components/AppDate"
 import JsonForm from "@/components/JsonForm"
+import { createNamespacedHelpers } from 'vuex'
+
+import { ALL_WORKSPACES } from '../store/types-workspace'
+const { mapGetters: mapWorkspaceGetters } = createNamespacedHelpers('workspace')
+
+import { GET_LIST } from '../store/types-list'
+const { mapGetters: mapListGetters } = createNamespacedHelpers('list')
+
+import { GET_DASHBOARD } from '../store/types-dashboard'
+const { mapGetters: mapDashboardGetters } = createNamespacedHelpers('dashboard')
 
 export default {
   name: 'PageDashboard',
+  props: {
+    dashboardId: {
+      type: Number,
+      required: true
+    }
+  },
   components: {
     JsonForm,
-
     AppDate
-
   },
   computed: {
+    ...mapDashboardGetters({
+      getDashboard: GET_DASHBOARD
+    }),
+    ...mapWorkspaceGetters({
+      allWorkspaces: ALL_WORKSPACES
+    }),
+    ...mapListGetters({
+      getList: GET_LIST
+    }),
+    dashboard() {
+      return this.getDashboard(this.dashboardId)
+    },
+
+    /**
+     * Get an array of text/value objects representing facilities
+     *
+     * @returns {*}
+     */
     facilities () {
-        return this.$store.getters.dashboardLists.facilities
+        return this.getList('facilities').data
     },
     workspaces () {
-        return this.$store.getters.dashboardLists.workspaces
+        return Object.values(this.allWorkspaces)
     },
     headers () {
-        return this.$store.getters.dashboardHeaders
+        return this.dashboard.headers
     },
     rows () {
         return this.$store.getters.dashboardRows

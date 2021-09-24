@@ -1,6 +1,6 @@
 <template>
   <v-app>
-    <router-view></router-view>
+    <Page>
   </v-app>
 </template>
 
@@ -16,19 +16,16 @@ export default {
     }
   },
   created() {
-    this.$store.dispatch('init')
-        .then((response) => {
-          console.log(response)
-          // Fetch the dashboard from the server given an ID
-          this.dashboardId = this.$route.params.id
-            console.log(this.$route.params)
-          this.$store.dispatch('fetchDashboard', { dashboardId: this.dashboardId })
-              .then(dashboard => {
-                document.title = dashboard.title
-                console.log(dashboard)
+    console.log("Dashboard Created")
+    // Fetch the dashboard from the server given an ID
+    this.dashboardId = this.$route.params.id
+    console.log(this.$route.params)
+    this.$store.dispatch('fetchDashboard', { dashboardId: this.dashboardId })
+      .then(dashboard => {
+        document.title = dashboard.title
+        console.log(dashboard)
 
-              })
-        })
+      })
   }
 }
 </script>

@@ -33,7 +33,16 @@ export const list = {
         title: 'Facilities',
         id: 'facilities',
         type: 'custom',
-        data: []
+        data: [
+          {
+            text: 'Facility 1',
+            value: 1
+          },
+          {
+            text: 'Facility 2',
+            value: 2
+          },
+        ]
       },
       administrators: {
         title: 'Administrators',
