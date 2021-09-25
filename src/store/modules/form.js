@@ -27,47 +27,47 @@ export const form = {
         },
         schema: {
           type: "object",
-          allOf: []
+          // properties: {},
+          properties: {
+          id: {
+            type: "integer",
+            title: "ID",
+            description: "Unique ID",
+            readOnly: true,
+          },
+          created_date: {
+            type: "string",
+            title: "Created Date",
+            format: "date-time",
+            description: "This description is used as a help message.",
+            readOnly: true,
+          },
+          created_by: {
+            type: "integer",
+            title: "Created By",
+            "x-fromData": "context.users",
+            "x-itemKey": "val",
+            "x-itemTitle": "label",
+            description: "This description is used as a help message.",
+            readOnly: true,
+          },
+          updated_by: {
+            type: "integer",
+            title: "Updated By",
+            "x-fromData": "context.users",
+            "x-itemKey": "val",
+            "x-itemTitle": "label",
+            description: "This description is used as a help message.",
+            readOnly: true,
+          },
+          source: {
+            type: "string",
+            title: "Source",
+            description: "Source",
+            readOnly: true,
+          }
+          },
         },
-        //properties: {
-          // id: {
-          //   type: "integer",
-          //   title: "ID",
-          //   description: "Unique ID",
-          //   readOnly: true,
-          // },
-          // created_date: {
-          //   type: "string",
-          //   title: "Created Date",
-          //   format: "date-time",
-          //   description: "This description is used as a help message.",
-          //   readOnly: true,
-          // },
-          // created_by: {
-          //   type: "integer",
-          //   title: "Created By",
-          //   "x-fromData": "context.users",
-          //   "x-itemKey": "val",
-          //   "x-itemTitle": "label",
-          //   description: "This description is used as a help message.",
-          //   readOnly: true,
-          // },
-          // updated_by: {
-          //   type: "integer",
-          //   title: "Updated By",
-          //   "x-fromData": "context.users",
-          //   "x-itemKey": "val",
-          //   "x-itemTitle": "label",
-          //   description: "This description is used as a help message.",
-          //   readOnly: true,
-          // },
-          // source: {
-          //   type: "string",
-          //   title: "Source",
-          //   description: "Source",
-          //   readOnly: true,
-          // }
-       // },
       },
     },
   },

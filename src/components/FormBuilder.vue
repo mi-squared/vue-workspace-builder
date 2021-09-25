@@ -339,7 +339,7 @@ export default {
       this.showFormElementSelector = false;
     },
     setSelectedElement(name) {
-      this.selectedElement = this.activeForm.properties[name]
+      this.selectedElement = this.activeForm.schema.properties[name]
       this.drawer = true
     },
     storeSelectedElement() {
@@ -363,7 +363,7 @@ export default {
       // Loop through the form properties  as stored in Vuex grid, and lookup by name
       // and create a format that JSON Form Schema component likes by merging with the type's
       // schema template
-      this.activeForm.schema.allOf = []
+      //this.activeForm.schema.allOf = []
 
       // Sort the grid by Y and then by X so that the form components render
       // in the correct order. We have to clone the grid, because if we sort
@@ -375,35 +375,32 @@ export default {
         } else if (a.y < b.y) {
           return -1
         } else {
-          return 0
+          if (a.x > b.x) {
+            return 1
+          } else if (a.x < b.x) {
+            return -1
+          }
         }
+
+        return 0
       })
 
+      // We have to rebuild the form properties every time so that they appear in
+      // the correct order. We hope that the browser conforms to spec that object keys
+      // will be returned in the order they were placed in the object, otherwise,
+      // we'll get form elements out of order with our grid
+      this.activeForm.schema.properties = {}
       for (const row of grid) {
 
-        let subsection = { properties: {} }
-        //const element = this.activeForm.properties[row.meta.name]
+        const element = this.activeForm.schema.properties[row.meta.name]
         const schemaTemplate = this.getSchemaTemplateByType(row.meta.type)
 
-        subsection.properties[row.meta.name] =  {
+        this.activeForm.schema.properties[row.meta.name] = {
           ...schemaTemplate,
-          //...element,
-          // format: "date",
+          ...element,
           "x-cols": row.w,
         }
-
-        this.activeForm.schema.allOf.push(subsection)
       }
-
-      // this.setFormGrid({
-      //   formId: this.form.id,
-      //   grid: this.grid,
-      // })
-      //
-      // this.setFormSchema({
-      //   formId: this.form.id,
-      //   schema: schema,
-      // })
     },
   },
 }
