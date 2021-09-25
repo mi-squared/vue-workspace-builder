@@ -16,11 +16,12 @@
 
         <v-spacer></v-spacer>
 
+        <DashboardPreviewButton :dashboard="dashboard"></DashboardPreviewButton>
+
         <v-btn class="mt-4 mr-2" color="success" :disabled="!isDirty" @click="save">
           <v-icon>mdi-floppy</v-icon>
           Save
         </v-btn>
-
 
       </v-tabs>
 
@@ -168,11 +169,13 @@ import { GET_WORKSPACE } from '../store/types-workspace'
 const { mapState: mapWorkspaceState, mapActions: mapWorkspaceActions, mapGetters: mapWorkspaceGetters } = createNamespacedHelpers('workspace')
 
 import { GET_DASHBOARD, SET_DASHBOARD } from '../store/types-dashboard'
+import DashboardPreviewButton from './DashboardPreviewButton'
 const { mapState: mapDashboardState, mapActions: mapDashboardActions, mapGetters: mapDashboardGetters } = createNamespacedHelpers('dashboard')
 
 export default {
   name: "DashboardBuilder",
   components: {
+    DashboardPreviewButton,
     MultiRangePicker,
     draggable
   },
