@@ -2,7 +2,7 @@ import {
   ADD_DASHBOARD_TO_WORKSPACE,
   ADD_FORM_TO_WORKSPACE, ALL_WORKSPACES,
   CREATE_DATA_SOURCE_COLUMN, CREATE_WORKSPACE, GET_DASHBOARDS,
-  GET_DATA_SOURCE, GET_SCHEMA_TEMPLATE_BY_TYPE,
+  GET_DATA_SOURCE, GET_DATA_TYPES, GET_SCHEMA_TEMPLATE_BY_TYPE,
   GET_WORKSPACE,
   SET_WORKSPACE
 } from '../types-workspace'
@@ -19,6 +19,7 @@ export const workspace = {
         formSchemaTemplate: {
           type: "integer",
           "x-fromData": "context.users",
+          "x-display": "custom-user",
           "x-itemKey": "val",
           "x-itemTitle": "label",
         },
@@ -27,6 +28,7 @@ export const workspace = {
         mysql: "BIGINT",
         formSchemaTemplate: {
           type: "integer",
+          "x-display": "custom-patient",
           "x-fromData": "context.patient",
           "x-itemKey": "val",
           "x-itemTitle": "label",
@@ -240,9 +242,10 @@ export const workspace = {
       return dashboards
     },
 
+    [GET_DATA_TYPES]: state => state.dataTypes,
 
     [GET_SCHEMA_TEMPLATE_BY_TYPE]: (state) => (type) => {
-      return state.dataTypes[type].formSchemaTemplate
+      return state.dataTypes[type.toLowerCase()].formSchemaTemplate
     },
   },
   actions: {

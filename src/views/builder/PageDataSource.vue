@@ -36,16 +36,7 @@
                       <v-col cols="12" sm="6">
                         <v-select
                           v-model="model.type"
-                          :items="[
-                            'Integer',
-                            'String',
-                            'Long Text',
-                            'Date',
-                            'Date Time',
-                            'Patient',
-                            'User',
-                            'List',
-                          ]"
+                          :items="dataTypes"
                           label="Type"
                           :rules="[required]"
                           required
@@ -116,7 +107,7 @@
 
 <script>
 import { createNamespacedHelpers } from 'vuex'
-import { CREATE_DATA_SOURCE_COLUMN, GET_WORKSPACE } from '../../store/types-workspace'
+import { CREATE_DATA_SOURCE_COLUMN, GET_DATA_TYPES, GET_WORKSPACE } from '../../store/types-workspace'
 const { mapState: mapWorkspaceState, mapActions: mapWorkspaceActions, mapGetters: mapWorkspaceGetters } = createNamespacedHelpers('workspace')
 import { GET_USER_META } from '../../store/types-user'
 const { mapGetters: mapUserGetters } = createNamespacedHelpers('user')
@@ -146,11 +137,15 @@ export default {
   },
   computed: {
     ...mapWorkspaceGetters({
-      getWorkspace: GET_WORKSPACE
+      getWorkspace: GET_WORKSPACE,
+      getDataTypes: GET_DATA_TYPES,
     }),
     ...mapUserGetters({
       getUserMeta: GET_USER_META
     }),
+    dataTypes() {
+      return Object.keys(this.getDataTypes)
+    },
     activeWorkspace() {
       return this.getWorkspace(this.workspaceId)
     },

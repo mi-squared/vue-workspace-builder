@@ -16,12 +16,12 @@ export const dashboard = {
           'ranges': [
             {
               'order': 0,
-              'range': [0, 26],
+              'range': [0, 30],
               'color': '#EC8116FF'
             },
             {
               'order': 1,
-              'range': [27, 60],
+              'range': [31, 60],
               'color': '#AD1457F'
             }
           ],

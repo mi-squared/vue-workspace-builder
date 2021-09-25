@@ -1,90 +1,53 @@
 <template>
 <v-form v-model="valid">
-  <VJsf v-model="model" :schema="schema" :options="options"></VJsf>
+  <v-jsf v-model="model" :key="form.id" :schema="schema" :options="options">
+    <template slot="custom-patient" slot-scope="context">
+      <PatientPicker :pid="pid" v-bind="context"></PatientPicker>
+<!--      <v-date-picker v-bind="context"></v-date-picker>-->
+    </template>
+  </v-jsf>
 </v-form>
 </template>
 
 <script>
-import VJsf from '@koumoul/vjsf'
+import VJsf from "@koumoul/vjsf/lib/VJsf.js";
+import "@koumoul/vjsf/dist/main.css";
+import PatientPicker from './form-elements/PatientPicker'
+
 export default {
   name: "JsonForm",
   components: {
+    PatientPicker,
     VJsf
+  },
+  props: {
+    form: {
+      type: Object,
+      required: true
+    },
+    model: {
+      type: Object,
+      required: true,
+    },
+    schema: {
+      type: Object,
+      required: true
+    },
+    options: {
+      type: Object,
+      required: true
+    },
+    pid: {
+      type: Number,
+      required: false
+    }
   },
   data () {
     return {
       valid: false,
-      model: {},
-      // Global Options
-      options: {
-        "timePickerProps": {
-          "format": "24h"
-        }
-      },
-      schema: {
-        "properties": {
-          "stringProp": {
-            "type": "string",
-            "title": "I'm a string",
-            "format": "string",
-            "x-cols": 6
-          },
-          "dateTimeProp": {
-            "type": "string",
-            "title": "I'm a date-time",
-            "format": "date-time",
-            "description": "This description is used as a help message.",
-            "x-cols": 6
-          },
-          "stringTextareaProp": {
-            "type": "string",
-            "title": "I'm a string in a textarea",
-            "x-display": "textarea"
-          },
-          "numberProp": {
-            "type": "number",
-            "title": "I'm a number"
-          },
-          "integerProp": {
-            "type": "integer",
-            "title": "I'm an integer"
-          },
-          "integerSliderProp": {
-            "type": "integer",
-            "title": "I'm an integer in a slider",
-            "x-display": "slider",
-            "minimum": 0,
-            "maximum": 5
-          },
-          "booleanProp": {
-            "type": "boolean",
-            "title": "I'm a boolean",
-            "description": "This description is used as a help message."
-          },
-          "booleanSwitchProp": {
-            "type": "boolean",
-            "title": "I'm a boolean with switch display",
-            "x-display": "switch",
-            "description": "This description is used as a help message."
-          },
-          "stringArrayProp": {
-            "type": "array",
-            "title": "I'm an array of strings",
-            "items": {
-              "type": "string"
-            }
-          },
-          "integerArrayProp": {
-            "type": "array",
-            "title": "I'm an array of integers",
-            "items": {
-              "type": "integer"
-            }
-          }
-        }
-      }
     }
-  }
+  },
+  computed: {}
 }
 </script>
 
