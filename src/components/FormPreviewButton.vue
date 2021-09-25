@@ -48,7 +48,7 @@ export default {
   methods: {},
   computed: {
     schema() {
-      return this.form;
+      return this.form.schema;
     },
     options() {
       return this.form.options;

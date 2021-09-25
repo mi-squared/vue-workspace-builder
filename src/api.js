@@ -8,6 +8,17 @@ export function createWorkspace(formData) {
   };
 }
 
+export function createDataSourceColumn(formData) {
+  return {
+    title: "[New Data Source Column]",
+    name: "",
+    type: "",
+    comment: "",
+
+    ...formData,
+  };
+}
+
 export function createDashboard(formData) {
   return {
     id: Math.floor(Math.random() * 32768),
@@ -29,7 +40,7 @@ export function createForm(workspaceId, formData) {
     grid: [],
     options: {},
     properties: {},
-    
+
     ...formData,
   };
 }

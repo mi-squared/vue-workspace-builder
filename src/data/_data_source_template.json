@@ -1,0 +1,66 @@
+{
+    "spec": {
+        "columns": [
+            {
+                "name": "id",
+                "type": "integer",
+                "default": "",
+                "comment": ""
+            },
+            {
+                "name": "created_date",
+                "type": "datetime",
+                "default": "",
+                "comment": ""
+            },
+            {
+                "name": "created_by",
+                "type": "integer",
+                "default": "",
+                "comment": "refers to users.id"
+            },
+            {
+                "name": "updated_date",
+                "type": "datetime",
+                "default": "",
+                "comment": ""
+            },
+            {
+                "name": "updated_by",
+                "type": "user",
+                "default": "",
+                "comment": "refers to users.id"
+            },
+            {
+                "name": "dashboard_id",
+                "type": "integer",
+                "default": "",
+                "comment": "refers to the dashboard that the entity is currently on, OR NULL if not on a dashboard"
+            },
+            {
+                "name": "moved_to_dashboard_date",
+                "type": "datetime",
+                "default": "",
+                "comment": "datetime that an entity was moved to dashboard"
+            },
+            {
+                "name": "moved_to_dashboard_by",
+                "type": "integer",
+                "default": "",
+                "comment": "refers to users.id"
+            },
+            {
+                "name": "source",
+                "type": "string",
+                "default": "",
+                "comment": ""
+            }
+        ],
+        "indexes": [
+            {
+                "key": "PRIMARY",
+                "column": "id"
+            }
+        ]
+    }
+}

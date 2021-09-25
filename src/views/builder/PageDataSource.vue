@@ -25,14 +25,7 @@
                 <v-card-text>
                   <v-container>
                     <v-row>
-                      <v-col cols="12" sm="6">
-                        <v-text-field
-                          v-model="model.name"
-                          label="Name*"
-                          :rules="[noSpaces, max25chars, required]"
-                          required
-                        ></v-text-field>
-                      </v-col>
+
                       <v-col cols="12" sm="6">
                         <v-select
                           v-model="model.type"
@@ -41,6 +34,26 @@
                           :rules="[required]"
                           required
                         ></v-select>
+                      </v-col>
+
+                      <v-col cols="12" sm="6">
+                        <v-text-field
+                          v-model="model.name"
+                          label="Database Name*"
+                          :rules="[noSpaces, max25chars, required]"
+                          required
+                          hint="This will be the field name in the database. No spaces or special characters besides '_' are allowed."
+                        ></v-text-field>
+                      </v-col>
+
+                      <v-col cols="12">
+                        <v-text-field
+                          v-model="model.title"
+                          label="Title*"
+                          :rules="[required]"
+                          required
+                          hint="This will be the default title for this field when added to a form or dashboard"
+                        ></v-text-field>
                       </v-col>
 
                       <v-col cols="12">
@@ -128,6 +141,7 @@ export default {
       model: {
         name: "",
         type: "",
+        title: "",
         comment: "",
       },
       max25chars: (v) => v.length <= 25 || "Input too long!",
@@ -167,19 +181,15 @@ export default {
         workspaceId: this.workspaceId,
         column: {
           ...this.model,
-          schema: {
-            type: "string",
-            // title: "Created Date",
-            // description: "This description is used as a help message.",
-          },
         },
       })
       // Reset the model for the next new column
       this.model = {
         name: "",
         type: "",
+        title: "",
         comment: "",
-      };
+      }
     },
   },
 }

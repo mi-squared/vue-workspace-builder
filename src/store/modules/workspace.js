@@ -14,12 +14,19 @@ export const workspace = {
   namespaced: true,
   state: {
     dataTypes: {
+      "list": {
+        mysql: "VARCHAR(255)",
+        formSchemaTemplate: {
+          type: "string",
+          "x-display": "autocomplete"
+        },
+      },
       "user": {
         mysql: "BIGINT",
         formSchemaTemplate: {
           type: "integer",
-          "x-fromData": "context.users",
           "x-display": "custom-user",
+          "x-fromData": "context.users",
           "x-itemKey": "val",
           "x-itemTitle": "label",
         },

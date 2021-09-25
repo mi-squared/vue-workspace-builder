@@ -25,7 +25,11 @@ export const form = {
             format: "24h",
           },
         },
-        properties: {
+        schema: {
+          type: "object",
+          allOf: []
+        },
+        //properties: {
           // id: {
           //   type: "integer",
           //   title: "ID",
@@ -63,7 +67,7 @@ export const form = {
           //   description: "Source",
           //   readOnly: true,
           // }
-        },
+       // },
       },
     },
   },

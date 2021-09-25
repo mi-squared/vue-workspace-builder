@@ -83,7 +83,7 @@
           <grid-layout
             :layout.sync="activeForm.grid"
             :col-num="12"
-            :row-height="30"
+            :row-height="20"
             :is-draggable="true"
             :is-resizable="true"
             :is-mirrored="false"
@@ -100,7 +100,11 @@
               :h="item.h"
               :i="item.i"
               :key="item.i"
-              @move="updateFormSchema"
+              :minW="3"
+              :maxW="12"
+              :minH="2"
+              :maxH="2"
+              @moved="updateFormSchema"
             >
               <v-toolbar flat dense>
                 <v-icon>mdi-drag-vertical</v-icon>
@@ -122,6 +126,26 @@
             </grid-item>
           </grid-layout>
         </v-sheet>
+        <v-row>
+          <v-col>
+        <v-textarea
+          :value="JSON.stringify(activeForm.grid, undefined, 4)"
+          auto-grow
+          readonly
+          label="Grid"
+        >
+        </v-textarea>
+          </v-col>
+          <v-col>
+        <v-textarea
+          :value="JSON.stringify(activeForm.schema, undefined, 4)"
+          auto-grow
+          readonly
+          label="Schema"
+        >
+        </v-textarea>
+          </v-col>
+        </v-row>
       </v-tab-item>
     </v-tabs-items>
 
@@ -339,17 +363,36 @@ export default {
       // Loop through the form properties  as stored in Vuex grid, and lookup by name
       // and create a format that JSON Form Schema component likes by merging with the type's
       // schema template
-      this.activeForm.properties = {}
-      for (const row of this.activeForm.grid) {
-        const element = this.activeForm.properties[row.meta.name]
+      this.activeForm.schema.allOf = []
+
+      // Sort the grid by Y and then by X so that the form components render
+      // in the correct order. We have to clone the grid, because if we sort
+      // the reactive property, it will trigger an infinite update loop!!!
+      let grid = [...this.activeForm.grid]
+      grid.sort(function(a, b) {
+        if (a.y > b.y) {
+          return 1
+        } else if (a.y < b.y) {
+          return -1
+        } else {
+          return 0
+        }
+      })
+
+      for (const row of grid) {
+
+        let subsection = { properties: {} }
+        //const element = this.activeForm.properties[row.meta.name]
         const schemaTemplate = this.getSchemaTemplateByType(row.meta.type)
 
-        this.activeForm.properties[row.meta.name] = {
+        subsection.properties[row.meta.name] =  {
           ...schemaTemplate,
-          ...element,
+          //...element,
           // format: "date",
           "x-cols": row.w,
         }
+
+        this.activeForm.schema.allOf.push(subsection)
       }
 
       // this.setFormGrid({
