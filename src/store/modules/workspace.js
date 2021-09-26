@@ -50,6 +50,11 @@ export const workspace = {
           "DOB": {
 
           }
+        },
+        customFilters: {
+          isHighUtilizer: {
+            title: 'High Utilizer'
+          }
         }
       },
       "string": {

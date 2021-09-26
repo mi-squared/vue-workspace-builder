@@ -158,62 +158,14 @@
       temporary
       width="420"
     >
-      <v-list-item>
-        <v-list-item-avatar>
-          <v-icon>mdi-page-layout-header</v-icon>
-        </v-list-item-avatar>
-
-        <v-list-item-content>
-          <v-list-item-title>{{ selectedElement.name }}</v-list-item-title>
-        </v-list-item-content>
-      </v-list-item>
-
-      <v-divider></v-divider>
-
-      <v-form
-        ref="form"
-        v-model="validElement"
-        lazy-validation
-      >
-        <v-container>
-
-          <v-text-field
-            :value="selectedElement.type"
-            label="Type"
-            readonly
-          ></v-text-field>
-          <v-text-field
-            v-model="selectedElement.title"
-            label="Label"
-          ></v-text-field>
-          <v-text-field
-            v-model="selectedElement.description"
-            label="Description"
-          ></v-text-field>
-<!--          TODO need read-onlly to come from the data-source vuex module getter -->
-          <v-checkbox
-            v-model="selectedElement.readOnly"
-            :readonly="false"
-            label="Read-Only"
-          ></v-checkbox>
-          <v-checkbox label="Show on Read-Only View"></v-checkbox>
-
-          <v-btn
-            color="success"
-            class="mr-4"
-            @click="storeSelectedElement"
-          >
-            Save
-          </v-btn>
-          <v-btn
-            color="secondary"
-            class="mr-4"
-            @click="drawer = false"
-          >
-            Cancel
-          </v-btn>
-        </v-container>
-      </v-form>
+      <FormElementProperties
+        :key="selectedElement.name"
+        :form="this.activeForm"
+        :data-source="this.dataSource"
+        :element="this.selectedElement"
+        @save="storeSelectedElement"
+        @cancel="this.drawer = false"
+      ></FormElementProperties>
     </v-navigation-drawer>
 
   </v-container>
@@ -230,11 +182,13 @@ const { mapState: mapWorkspaceState, mapActions: mapWorkspaceActions, mapGetters
 
 import { GET_FORM, SET_FORM, SET_FORM_GRID, SET_FORM_SCHEMA } from '../store/types-form'
 import FormPreviewButton from './FormPreviewButton'
+import FormElementProperties from './FormElementProperties'
 const { mapState: mapFormState, mapActions: mapFormActions, mapGetters: mapFormGetters } = createNamespacedHelpers('form')
 
 export default {
   name: 'FormBuilder',
   components: {
+    FormElementProperties,
     FormPreviewButton,
     FormProperties,
     GridLayout: VueGridLayout.GridLayout,
@@ -262,7 +216,6 @@ export default {
       drawer: null,
       showFormElementSelector: false,
       selectedElement: {},
-      validElement: true, // true if the properties of a new or modified element are valid
       index: this.form.grid.length,
       activeForm: { ...this.form }
     }
