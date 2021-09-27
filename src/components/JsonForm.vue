@@ -59,11 +59,16 @@ export default {
     // Need to combine the options stored in VUEX, and merge with computed options
     // so that we can provide the context for conditional rendering. Here we process
     // the conditional logic and set the properties on the options object. We build context here
+    that.optionsForForm.idPrefix = 'example-_x-if-'
     that.optionsForForm.context = {}
     Object.values(this.schema.properties).forEach(function(properties) {
 
+      // Get the string key for context object
+      let contextKey = properties["x-if"]
+      contextKey = contextKey.replace("context.", "")
+
       // Always set option to show by default
-      that.optionsForForm.context[properties["x-if"]] = "true"
+      that.optionsForForm.context[contextKey] = true
       if (properties.hasConditionalLogic) {
         // Check to see if conditions are met to display this field
         // let show = true
@@ -73,7 +78,7 @@ export default {
         })
 
         if (!show) {
-          that.optionsForForm.context[properties["x-if"]] = "false"
+          that.optionsForForm.context[contextKey] = false
         }
 
         console.log('Condition Result: show = ' + show)
