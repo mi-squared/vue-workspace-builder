@@ -34,6 +34,7 @@ export const form = {
             title: "ID",
             description: "Unique ID",
             readOnly: true,
+            "x-if": "show_id",
           },
           created_date: {
             type: "string",
@@ -41,6 +42,7 @@ export const form = {
             format: "date-time",
             description: "This description is used as a help message.",
             readOnly: true,
+            "x-if": "show_created_date",
           },
           created_by: {
             type: "integer",
@@ -50,6 +52,7 @@ export const form = {
             "x-itemTitle": "label",
             description: "This description is used as a help message.",
             readOnly: true,
+            "x-if": "show_created_by",
           },
           updated_by: {
             type: "integer",
@@ -59,12 +62,14 @@ export const form = {
             "x-itemTitle": "label",
             description: "This description is used as a help message.",
             readOnly: true,
+            "x-if": "show_updated_by",
           },
           source: {
             type: "string",
             title: "Source",
             description: "Source",
             readOnly: true,
+            "x-if": "show_source",
           }
           },
         },

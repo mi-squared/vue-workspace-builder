@@ -98,8 +98,52 @@
             </v-list-item-group>
 
             <v-list-item>
-              <!-- Button to add a new dashboard column -->
-              <v-btn @click="addColumn">Add</v-btn>
+              <!-- Button adn Dialog to add a new dashboard column -->
+              <v-dialog v-model="showDashboardColumnSelector" width="500">
+                <template v-slot:activator="{ on, attrs }">
+                  <v-btn v-bind="attrs" v-on="on">
+                    + Add Column
+                  </v-btn>
+                </template>
+
+                <v-card>
+
+                  <v-card-title class="text-h5 grey lighten-2">
+                    Data Source Elements
+                  </v-card-title>
+
+                  <v-card-text>
+                    <v-list-item
+                      two-line
+                      v-for="(column, i) in dataSourceColumns"
+                      :key="i"
+                      link
+                      @click="addColumn(column)"
+                    >
+                      <v-list-item-content>
+                        <v-list-item-title>{{ column.name }}</v-list-item-title>
+                        <v-list-item-subtitle>{{
+                            column.comment
+                          }}</v-list-item-subtitle>
+                      </v-list-item-content>
+                    </v-list-item>
+                  </v-card-text>
+
+                  <v-divider></v-divider>
+
+                  <v-card-actions>
+                    <v-spacer></v-spacer>
+                    <v-btn
+                      color="primary"
+                      text
+                      @click="showDashboardColumnSelector = false"
+                    >
+                      Close
+                    </v-btn>
+                  </v-card-actions>
+                </v-card>
+              </v-dialog>
+
             </v-list-item>
           </v-list>
         </v-tab-item>
@@ -136,10 +180,15 @@
           <v-container>
             <v-text-field
                 v-model="activeDashboardElement.text"
-                :counter="10"
+                :counter="20"
                 label="Name"
                 required
             ></v-text-field>
+
+            <v-switch
+              v-model="activeDashboardElement.editable"
+              label="Is Editable?"
+              ></v-switch>
 
             <v-btn
                 color="success"
@@ -165,7 +214,7 @@
 <script>
 import { createNamespacedHelpers } from 'vuex'
 
-import { GET_WORKSPACE } from '../store/types-workspace'
+import {} from '../store/types-workspace'
 const { mapState: mapWorkspaceState, mapActions: mapWorkspaceActions, mapGetters: mapWorkspaceGetters } = createNamespacedHelpers('workspace')
 
 import { GET_DASHBOARD, SET_DASHBOARD } from '../store/types-dashboard'
@@ -186,6 +235,10 @@ export default {
     draggable
   },
   props: {
+    workspace: {
+      type: Object,
+      required: true
+    },
     dashboard: {
       type: Object,
       required: true,
@@ -198,6 +251,7 @@ export default {
       isDirty: false,
       tab: null,
       drawer: null,
+      showDashboardColumnSelector: false,
       activeDashboardElement: {},
       validElement: true, // true if the properties of a new or modified column are valid
       activeDashboard: { ...this.dashboard }
@@ -215,15 +269,19 @@ export default {
     }
   },
   computed: {
-    ...mapWorkspaceGetters({
-      getWorkspace: GET_WORKSPACE
-    }),
+    ...mapWorkspaceGetters,
     ...mapDashboardGetters({
       getDashboard: GET_DASHBOARD
     }),
     ...mapFormGetters({
       allForms: ALL_FORMS
     }),
+    dataSource() {
+      return this.workspace.dataSource
+    },
+    dataSourceColumns() {
+      return this.dataSource.spec.columns
+    },
     formOptions() {
       // This gathers up all the lists in { text: '', value: '' } format for the select box
       const forms = Object.values(this.allForms)
@@ -240,10 +298,14 @@ export default {
     ...mapDashboardActions({
       setDashboard: SET_DASHBOARD
     }),
-    addColumn: function() {
+    addColumn: function(column) {
+      // Hide the element selector modal
+      this.showDashboardColumnSelector = false
+
       this.activeDashboardElement = {
         title: '',
-        value: ''
+        value: '',
+        ...column
       }
       // this.dashboard.headers.push(newElement)
       this.dashboardElementClicked(this.activeDashboardElement)

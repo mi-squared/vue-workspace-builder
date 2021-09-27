@@ -50,7 +50,7 @@ export function createForm(workspaceId, formData) {
     title: "[New Form]",
     grid: [],
     options: {},
-    properties: {},
+    schema: {},
 
     ...formData,
   };

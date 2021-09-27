@@ -45,14 +45,16 @@
       ></v-checkbox>
 
       <v-checkbox
-        v-model="element.hasConditions"
+        v-model="element.hasConditionalLogic"
         label="Conditional Logic"
       ></v-checkbox>
 
       <ConditionBuilder
-        v-if="element.hasConditions == true"
+        v-if="element.hasConditionalLogic == true"
         :form="form"
         :element="element"
+        :key="form.id + element.name"
+        @change="onConditionalLogicChanged"
         ></ConditionBuilder>
 
       <v-checkbox label="Show on Read-Only View"></v-checkbox>
@@ -106,6 +108,9 @@ export default {
     },
     onCancelClicked() {
       this.$emit('cancel', { element: this.element })
+    },
+    onConditionalLogicChanged(conditionalLogic) {
+      this.element.conditionalLogic = conditionalLogic
     }
 
   },

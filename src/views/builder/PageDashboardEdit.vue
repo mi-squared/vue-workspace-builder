@@ -1,12 +1,12 @@
 <template>
-  <div>
-  <v-toolbar dense flat>
-    <v-app-bar-nav-icon @click="navigationHamburgerClicked"></v-app-bar-nav-icon>
+  <div id="page-dashboard-edit">
+    <v-toolbar dense flat>
+      <v-app-bar-nav-icon @click="navigationHamburgerClicked"></v-app-bar-nav-icon>
 
-    <v-toolbar-title>{{ dashboard.title }}</v-toolbar-title>
+      <v-toolbar-title>{{ dashboard.title }}</v-toolbar-title>
 
-  </v-toolbar>
-  <DashboardBuilder :key="dashboardId" :dashboard="dashboard"></DashboardBuilder>
+    </v-toolbar>
+    <DashboardBuilder :key="dashboardId" :workspace="workspace" :dashboard="dashboard"></DashboardBuilder>
   </div>
 </template>
 

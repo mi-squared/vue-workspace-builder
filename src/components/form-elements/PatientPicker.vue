@@ -29,12 +29,44 @@
       </v-row>
       <v-row>
         <v-col>
-          <v-date-picker
-            v-model="patient.DOB"
-            color="blue darken-2"
-            label="DOB"
-            required
-          ></v-date-picker>
+          <v-dialog
+            ref="dialog"
+            v-model="modal"
+            :return-value.sync="patient.DOB"
+            persistent
+            width="290px"
+          >
+            <template v-slot:activator="{ on, attrs }">
+              <v-text-field
+                v-model="patient.DOB"
+                label="DOB"
+                prepend-icon="mdi-calendar"
+                readonly
+                v-bind="attrs"
+                v-on="on"
+              ></v-text-field>
+            </template>
+            <v-date-picker
+              v-model="patient.DOB"
+              scrollable
+            >
+              <v-spacer></v-spacer>
+              <v-btn
+                text
+                color="primary"
+                @click="modal = false"
+              >
+                Cancel
+              </v-btn>
+              <v-btn
+                text
+                color="primary"
+                @click="$refs.dialog.save(patient.DOB)"
+              >
+                OK
+              </v-btn>
+            </v-date-picker>
+          </v-dialog>
         </v-col>
       </v-row>
     </v-container>
@@ -43,17 +75,14 @@
       absolute
       temporary
       right
+      width="520px"
       v-model="drawer"
     >
       <template v-slot:prepend>
         <v-list-item two-line>
-          <v-list-item-avatar>
-            <img src="https://randomuser.me/api/portraits/women/81.jpg">
-          </v-list-item-avatar>
-
           <v-list-item-content>
             <v-list-item-title>Jane Smith</v-list-item-title>
-            <v-list-item-subtitle>Logged In</v-list-item-subtitle>
+            <v-list-item-subtitle>DOB: 10/21/1990</v-list-item-subtitle>
           </v-list-item-content>
         </v-list-item>
       </template>
@@ -62,12 +91,22 @@
 
       <v-list dense>
         <v-list-item
+          three-line
           v-for="match in matches"
           :key="match.pid"
         >
           <v-list-item-content>
             <v-list-item-title>{{ match.fname }} {{ match.lname }}</v-list-item-title>
+            <v-list-item-subtitle>DOB: 10/21/1990</v-list-item-subtitle>
+            <v-list-item-subtitle>pid: 1234</v-list-item-subtitle>
           </v-list-item-content>
+
+
+          <v-list-item-action>
+            <v-list-item-action-text v-text="match.text"></v-list-item-action-text>
+
+            <v-btn text>Apply Match</v-btn>
+          </v-list-item-action>
         </v-list-item>
       </v-list>
     </v-navigation-drawer>
@@ -103,7 +142,8 @@ export default {
           pid: 23
         },
       ],
-      drawer: false
+      drawer: false, // Matching patients nav drawer
+      modal: false, // DOB date-picker modal
     }
   }
 }

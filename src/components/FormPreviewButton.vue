@@ -1,7 +1,7 @@
 <template>
   <v-dialog v-model="dialog" fullscreen>
     <template v-slot:activator="{ on, attrs }">
-      <v-btn class="mt-4 mr-2" color="primary" dark v-bind="attrs" v-on="on">
+      <v-btn class="mt-4 mr-2" color="primary" dark v-bind="attrs" v-on="on" @click="count++">
         Preview
       </v-btn>
     </template>
@@ -23,7 +23,7 @@
 
       <v-card-text>
         <v-container>
-          <JsonForm :form="form" :model="model" :schema="schema" :options="options"></JsonForm>
+          <JsonForm :key="count" :form="form" :model="model" :schema="schema" :options="options"></JsonForm>
         </v-container>
         <small>*indicates required field</small>
       </v-card-text>
@@ -45,6 +45,13 @@ export default {
       required: true,
     }
   },
+  data() {
+    return {
+      count: 0,
+      model: {},
+      dialog: false,
+    }
+  },
   methods: {},
   computed: {
     schema() {
@@ -54,11 +61,7 @@ export default {
       return this.form.options;
     },
   },
-  data: () => ({
-    model: {},
-    dialog: false,
-  }),
-};
+}
 </script>
 
 <style scoped></style>

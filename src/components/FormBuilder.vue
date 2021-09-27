@@ -367,6 +367,12 @@ export default {
           element.readOnly = true
         }
 
+        // Create a v-if element so this element can be responsive to conditional rendering
+        // The v-if property will be passed to the form as an option if it should be rendered
+        // or not. The options are generated dynamically in the JsonForm Component based on
+        // conditional logic
+        element["x-if"] = "context.show_" + this.dataSource.spec.columns[row.meta.name].name
+
         this.activeForm.schema.properties[row.meta.name] = {
           ...schemaTemplate,
           ...element,
