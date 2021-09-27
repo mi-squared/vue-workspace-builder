@@ -1,4 +1,11 @@
-import { INIT, GET_NAVIGATION, SET_NAVIGATION, SET_USER_META, GET_USER_META } from '../types-user'
+import {
+  INIT,
+  GET_NAVIGATION,
+  SET_NAVIGATION,
+  SET_USER_META,
+  GET_USER_META,
+  ADD_WORKSPACE_TO_NAVIGATION
+} from '../types-user'
 import Vue from 'vue'
 import axios from 'axios'
 
@@ -62,6 +69,12 @@ export const user = {
     [SET_NAVIGATION]: ({ commit }, { workspaceId, key, id }) => {
       commit(SET_NAVIGATION, { workspaceId, key, id })
     },
+
+    [ADD_WORKSPACE_TO_NAVIGATION]: ({ commit }, {workspaceId }) => {
+      // Since this is a new navigation item, initialize the pages to null
+      const item = { dashboard: null, form: null }
+      commit(ADD_WORKSPACE_TO_NAVIGATION, { workspaceId, item })
+    }
   },
   mutations: {
     [SET_NAVIGATION]: (state, { workspaceId, key, id }) => {
@@ -69,7 +82,9 @@ export const user = {
     },
     [SET_USER_META]: (state, userMeta) => {
       Vue.set(state, 'userMeta', userMeta)
+    },
+    [ADD_WORKSPACE_TO_NAVIGATION]: (state, { workspaceId, item }) => {
+      Vue.set(state.navigation.workspaces, workspaceId, item )
     }
   },
-
 }

@@ -165,13 +165,15 @@ export default {
         this.activeDashboard = this.dashboards[0].id
       }
 
-      this.$router.push({
-        name: 'PageDashboardEdit',
-        params: {
-          workspaceId: this.workspaceId,
-          dashboardId: this.activeDashboard
-        }
-      })
+      if (this.activeDashboard) {
+        this.$router.push({
+          name: 'PageDashboardEdit',
+          params: {
+            workspaceId: this.workspaceId,
+            dashboardId: this.activeDashboard
+          }
+        })
+      }
     }
   }
 }

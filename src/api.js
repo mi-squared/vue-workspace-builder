@@ -1,8 +1,14 @@
 export function createWorkspace(formData) {
+  const defaultDataSource = require('./data/_data_source_template.json')
   return {
     id: Math.floor(Math.random() * 32768),
     title: "[New Workspace]",
     administrator: 1,
+    dataSource: defaultDataSource,
+    dashboards: [],
+    forms: [],
+    filters: [],
+    actions: [],
 
     ...formData,
   };
@@ -24,6 +30,11 @@ export function createDashboard(formData) {
     id: Math.floor(Math.random() * 32768),
     title: "[New Dashboard]",
     displayDuration: false,
+    durationModel: {
+      ranges: [],
+      units: "",
+      outOfRangeColor: ""
+    },
     displayNewButton: false,
     filters: [],
     headers: [],

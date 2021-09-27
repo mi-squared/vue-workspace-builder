@@ -225,9 +225,12 @@ export const workspace = {
   },
   actions: {
 
-    [CREATE_WORKSPACE] ({ commit }, { title, administrator }) {
+    [CREATE_WORKSPACE] ({ dispatch, commit }, { title, administrator }) {
       let newWorkspace = createWorkspace({ title, administrator })
       commit(SET_WORKSPACE, { workspaceId: newWorkspace.id, workspace: newWorkspace })
+
+      // Tell VUEX to create a new navigation item for this workspace to store navigation state
+      dispatch('user/ADD_WORKSPACE_TO_NAVIGATION', { workspaceId: newWorkspace.id }, { root: true })
     },
 
     // [SET_WORKSPACE] ({ state, commit, rootState }, { workspaceId }) {

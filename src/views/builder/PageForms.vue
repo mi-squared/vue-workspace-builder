@@ -159,13 +159,15 @@ export default {
         this.activeFormId = this.forms[0].id
       }
 
-      this.$router.push({
-        name: 'PageFormEdit',
-        params: {
-          workspaceId: this.workspaceId,
-          formId: this.activeFormId
-        }
-      })
+      if (this.activeFormId) {
+        this.$router.push({
+          name: 'PageFormEdit',
+          params: {
+            workspaceId: this.workspaceId,
+            formId: this.activeFormId
+          }
+        })
+      }
     }
   },
 }
