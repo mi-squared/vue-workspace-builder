@@ -51,6 +51,7 @@
 
       <ConditionBuilder
         v-if="element.hasConditions == true"
+        :form="form"
         :element="element"
         ></ConditionBuilder>
 

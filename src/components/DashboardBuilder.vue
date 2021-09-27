@@ -51,11 +51,13 @@
 
             <v-switch
                 v-model="activeDashboard.displayDuration"
-                :label="`Display Date Added: ${activeDashboard.displayDuration.toString()}`"
+                label="Display 'Date Added' Column"
+                hint="Displays the date and time that an entity was added to this dashboard"
             ></v-switch>
             <v-divider></v-divider>
 
             <MultiRangePicker
+              v-if="activeDashboard.displayDuration"
               :ranges="activeDashboard.durationModel.ranges"
               :units="activeDashboard.durationModel.units"
               :out-of-range-color="activeDashboard.durationModel.outOfRangeColor"
@@ -161,16 +163,20 @@
 </template>
 
 <script>
-import draggable from "vuedraggable";
-import MultiRangePicker from './MultiRangePicker'
 import { createNamespacedHelpers } from 'vuex'
 
 import { GET_WORKSPACE } from '../store/types-workspace'
 const { mapState: mapWorkspaceState, mapActions: mapWorkspaceActions, mapGetters: mapWorkspaceGetters } = createNamespacedHelpers('workspace')
 
 import { GET_DASHBOARD, SET_DASHBOARD } from '../store/types-dashboard'
-import DashboardPreviewButton from './DashboardPreviewButton'
 const { mapState: mapDashboardState, mapActions: mapDashboardActions, mapGetters: mapDashboardGetters } = createNamespacedHelpers('dashboard')
+const { mapGetters: mapFormGetters } = createNamespacedHelpers('form')
+
+import draggable from "vuedraggable";
+import MultiRangePicker from './MultiRangePicker'
+import DashboardPreviewButton from './DashboardPreviewButton'
+import { ALL_FORMS } from '../store/types-form'
+
 
 export default {
   name: "DashboardBuilder",
@@ -215,10 +221,18 @@ export default {
     ...mapDashboardGetters({
       getDashboard: GET_DASHBOARD
     }),
-
+    ...mapFormGetters({
+      allForms: ALL_FORMS
+    }),
     formOptions() {
       // This gathers up all the lists in { text: '', value: '' } format for the select box
-      return [{ text: 'test', value: '0'}]
+      const forms = Object.values(this.allForms)
+      let formOptions = []
+      forms.forEach(form => {
+        const option = { text: form.title, value: form.id }
+        formOptions.push(option)
+      })
+      return formOptions
     }
   },
   methods: {

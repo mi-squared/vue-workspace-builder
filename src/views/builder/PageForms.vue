@@ -82,7 +82,11 @@
 
 <script>
 import { createNamespacedHelpers } from 'vuex'
-import { ALL_FORMS, CREATE_FORM, GET_FORM } from '../../store/types-form'
+import { CREATE_FORM, GET_FORM } from '../../store/types-form'
+import { GET_NAVIGATION } from '../../store/types-user'
+import { GET_FORMS } from '../../store/types-workspace'
+const { mapGetters: mapWorkspaceGetters } = createNamespacedHelpers('workspace')
+const { mapGetters: mapUserGetters } = createNamespacedHelpers('user')
 const { mapState: mapFormState, mapActions: mapFormActions, mapGetters: mapFormGetters } = createNamespacedHelpers('form')
 
 export default {
@@ -101,6 +105,7 @@ export default {
   data() {
     return {
       ...mapFormState,
+      activeFormId: this.formId,
       drawer: true,
       showNewFormDialog: false,
       layouts: [],
@@ -109,13 +114,23 @@ export default {
     };
   },
   computed: {
+    ...mapWorkspaceGetters({
+      getForms: GET_FORMS
+    }),
     ...mapFormGetters({
       getForm: GET_FORM,
-      forms: ALL_FORMS
     }),
-    activeForm() {
-      return this.forms[this.$route.params.formId]
-    },
+    ...mapUserGetters({
+      navigation: GET_NAVIGATION
+    }),
+
+    /**
+     * Get an array of forms using the WORKSPACE getter to get all forms for this workspace
+     * @returns {*}
+     */
+    forms() {
+      return this.getForms(this.workspaceId)
+    }
   },
   methods: {
     ... mapFormActions({
@@ -137,8 +152,23 @@ export default {
   },
   mounted() {
     console.log("Forms mounted")
+    if (!this.formId) {
+      if (this.navigation.workspaces[this.workspaceId].form) {
+        this.activeFormId = this.navigation.workspaces[this.workspaceId].form
+      } else if (this.forms.length > 0) {
+        this.activeFormId = this.forms[0].id
+      }
+
+      this.$router.push({
+        name: 'PageFormEdit',
+        params: {
+          workspaceId: this.workspaceId,
+          formId: this.activeFormId
+        }
+      })
+    }
   },
-};
+}
 </script>
 
 <style scoped></style>

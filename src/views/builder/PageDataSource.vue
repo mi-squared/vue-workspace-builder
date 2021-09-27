@@ -48,16 +48,6 @@
 
                       <v-col cols="12">
                         <v-text-field
-                          v-model="model.title"
-                          label="Title*"
-                          :rules="[required]"
-                          required
-                          hint="This will be the default title for this field when added to a form or dashboard"
-                        ></v-text-field>
-                      </v-col>
-
-                      <v-col cols="12">
-                        <v-text-field
                           v-model="model.comment"
                           label="Comment"
                         ></v-text-field>
@@ -141,7 +131,6 @@ export default {
       model: {
         name: "",
         type: "",
-        title: "",
         comment: "",
       },
       max25chars: (v) => v.length <= 25 || "Input too long!",
@@ -187,7 +176,6 @@ export default {
       this.model = {
         name: "",
         type: "",
-        title: "",
         comment: "",
       }
     },

@@ -52,6 +52,7 @@ const routes = [{
             // UserProfile will be rendered inside User's <router-view>
             // when /user/:id/profile is matched
             path: ":formId(\\d+)",
+            name: 'PageFormEdit',
             component: PageFormEdit,
             props: ({ params }) => ({
               formId: Number(params.formId),

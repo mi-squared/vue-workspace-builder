@@ -153,10 +153,9 @@
     <v-navigation-drawer
       v-model="drawer"
       app
-      absolute
       right
       temporary
-      width="420"
+      width="520"
     >
       <FormElementProperties
         :key="selectedElement.name"
@@ -164,7 +163,7 @@
         :data-source="this.dataSource"
         :element="this.selectedElement"
         @save="storeSelectedElement"
-        @cancel="this.drawer = false"
+        @cancel="drawer = false"
       ></FormElementProperties>
     </v-navigation-drawer>
 
@@ -338,6 +337,10 @@ export default {
         return 0
       })
 
+      // Before we clear the properties, we need to preserve our settings on the element
+      // which are stored in properties. So here we clone the schema so it can be rebuilt.
+      let schema = JSON.parse(JSON.stringify(this.activeForm.schema))
+
       // We have to rebuild the form properties every time so that they appear in
       // the correct order. We hope that the browser conforms to spec that object keys
       // will be returned in the order they were placed in the object, otherwise,
@@ -345,8 +348,24 @@ export default {
       this.activeForm.schema.properties = {}
       for (const row of grid) {
 
-        const element = this.activeForm.schema.properties[row.meta.name]
+        const element = schema.properties[row.meta.name] || {}
         const schemaTemplate = this.getSchemaTemplateByType(row.meta.type)
+
+        // If the element doesn't have a title or description, grab the
+        // name and comment from the datasource to use as initial values
+        // (this is also the same as row.meta.name)
+        if (element.title === undefined) {
+          element.title = this.dataSource.spec.columns[row.meta.name].name
+        }
+
+        if (element.description === undefined) {
+          element.description = this.dataSource.spec.columns[row.meta.name].comment
+        }
+
+        // If this is a system-generated field, make read-only
+        if (this.dataSource.spec.columns[row.meta.name].extra.createdBy == 'system') {
+          element.readOnly = true
+        }
 
         this.activeForm.schema.properties[row.meta.name] = {
           ...schemaTemplate,

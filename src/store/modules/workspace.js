@@ -2,7 +2,7 @@ import {
   ADD_DASHBOARD_TO_WORKSPACE,
   ADD_FORM_TO_WORKSPACE, ALL_WORKSPACES,
   CREATE_DATA_SOURCE_COLUMN, CREATE_WORKSPACE, GET_DASHBOARDS,
-  GET_DATA_SOURCE, GET_DATA_TYPES, GET_SCHEMA_TEMPLATE_BY_TYPE,
+  GET_DATA_SOURCE, GET_DATA_TYPES, GET_FORMS, GET_SCHEMA_TEMPLATE_BY_TYPE,
   GET_WORKSPACE,
   SET_WORKSPACE
 } from '../types-workspace'
@@ -115,17 +115,10 @@ export const workspace = {
               id: {
                 name: "id",
                 type: "integer",
-                default: "",
                 comment: "",
                 extra: {
                   createdBy: "system",
                   createdDate: "2021-06-20",
-                },
-                schema: {
-                  type: "integer",
-                  title: "ID",
-                  description: "Unique ID",
-                  readOnly: true,
                 },
               },
               created_date: {
@@ -137,31 +130,15 @@ export const workspace = {
                   createdBy: "system",
                   createdDate: "2021-06-20",
                 },
-                schema: {
-                  type: "string",
-                  title: "Created Date",
-                  format: "date-time",
-                  description: "This description is used as a help message.",
-                  readOnly: true,
-                },
               },
               created_by: {
                 name: "created_by",
-                type: "integer",
+                type: "user",
                 default: "",
                 comment: "refers to users.id",
                 extra: {
                   createdBy: "system",
                   createdDate: "2021-06-20",
-                },
-                schema: {
-                  type: "integer",
-                  title: "Created By",
-                  "x-fromData": "context.users",
-                  "x-itemKey": "val",
-                  "x-itemTitle": "label",
-                  description: "This description is used as a help message.",
-                  readOnly: true,
                 },
               },
               updated_date: {
@@ -173,13 +150,6 @@ export const workspace = {
                   createdBy: "system",
                   createdDate: "2021-06-20",
                 },
-                schema: {
-                  type: "string",
-                  title: "Updated Date",
-                  format: "date-time",
-                  description: "This description is used as a help message.",
-                  readOnly: true,
-                },
               },
               updated_by: {
                 name: "updated_by",
@@ -190,15 +160,6 @@ export const workspace = {
                   createdBy: "system",
                   createdDate: "2021-06-20",
                 },
-                schema: {
-                  type: "integer",
-                  title: "Updated By",
-                  "x-fromData": "context.users",
-                  "x-itemKey": "val",
-                  "x-itemTitle": "label",
-                  description: "This description is used as a help message.",
-                  readOnly: true,
-                },
               },
               source: {
                 name: "source",
@@ -208,12 +169,6 @@ export const workspace = {
                 extra: {
                   createdBy: "system",
                   createdDate: "2021-06-20",
-                },
-                schema: {
-                  type: "string",
-                  title: "Source",
-                  description: "Source",
-                  readOnly: true,
                 },
               },
             },
@@ -252,6 +207,14 @@ export const workspace = {
         dashboards.push(rootGetters['dashboard/GET_DASHBOARD'](dashboardId))
       })
       return dashboards
+    },
+
+    [GET_FORMS]: (state, getters, rootState, rootGetters) => workspaceId => {
+      let forms = []
+      Object.keys(state.workspaces[workspaceId].forms).forEach(formId => {
+        forms.push(rootGetters['form/GET_FORM'](formId))
+      })
+      return forms
     },
 
     [GET_DATA_TYPES]: state => state.dataTypes,
