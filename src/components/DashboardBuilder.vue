@@ -146,6 +146,15 @@
 
             </v-list-item>
           </v-list>
+
+          <!-- JSON schema preview -->
+          <v-textarea
+            :value="JSON.stringify(activeDashboard.headers, undefined, 4)"
+            auto-grow
+            readonly
+            label="Header Schema"
+          >
+          </v-textarea>
         </v-tab-item>
       </v-tabs-items>
 
@@ -166,7 +175,8 @@
           </v-list-item-avatar>
 
           <v-list-item-content>
-            <v-list-item-title>{{ activeDashboardElement.name }}</v-list-item-title>
+            <!-- Display the value, which is the link to the datasource-->
+            <v-list-item-title>{{ activeDashboardElement.value }}</v-list-item-title>
           </v-list-item-content>
         </v-list-item>
 
@@ -225,6 +235,7 @@ import draggable from "vuedraggable";
 import MultiRangePicker from './MultiRangePicker'
 import DashboardPreviewButton from './DashboardPreviewButton'
 import { ALL_FORMS } from '../store/types-form'
+import { humanizeDataSourceString } from '../display-helpers'
 
 
 export default {
@@ -302,12 +313,14 @@ export default {
       // Hide the element selector modal
       this.showDashboardColumnSelector = false
 
+      // Map the data source column's properties on to the dashboard element
       this.activeDashboardElement = {
-        title: '',
-        value: '',
-        ...column
+        text: humanizeDataSourceString(column.name),
+        value: column.name,
+        type: column.type,
+        description: column.comment
       }
-      // this.dashboard.headers.push(newElement)
+
       this.dashboardElementClicked(this.activeDashboardElement)
     },
     save() {
