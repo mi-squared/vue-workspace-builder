@@ -158,14 +158,33 @@
       width="520"
     >
       <FormElementProperties
-        :key="selectedElement.name"
+        :key="Math.floor(Math.random() * 32768)"
         :form="this.activeForm"
         :data-source="this.dataSource"
-        :element="this.selectedElement"
+        :element="activeElement"
         @save="storeSelectedElement"
         @cancel="drawer = false"
       ></FormElementProperties>
     </v-navigation-drawer>
+
+    <div class="text-center ma-2">
+      <v-snackbar
+        v-model="snackbar.show"
+      >
+        {{ snackbar.text }}
+
+        <template v-slot:action="{ attrs }">
+          <v-btn
+            color="pink"
+            text
+            v-bind="attrs"
+            @click="snackbar.show = false"
+          >
+            Close
+          </v-btn>
+        </template>
+      </v-snackbar>
+    </div>
 
   </v-container>
 </template>
@@ -216,7 +235,11 @@ export default {
       showFormElementSelector: false,
       selectedElement: {},
       index: this.form.grid.length,
-      activeForm: { ...this.form }
+      activeForm: { ...this.form },
+      snackbar: {
+        text: '',
+        show: false
+      }
     }
   },
   watch: {
@@ -244,14 +267,10 @@ export default {
     },
     columns() {
       return this.dataSource.spec.columns
-    }
-    // selectedElement() {
-    //   if (this.selected !== null) {
-    //     return this.columns[this.selected];
-    //   }
-
-    //   return null;
-    // },
+    },
+    activeElement() {
+      return this.selectedElement
+    },
   },
   methods: {
     ...mapFormActions({
@@ -284,17 +303,27 @@ export default {
           type: column.type,
           name: column.name,
         }
-      });
+      })
       // Increment the counter to ensure key is always unique.
       this.index++
       // close the dialog
       this.showFormElementSelector = false;
     },
     setSelectedElement(name) {
+      console.log("Active Element: " + name)
       this.selectedElement = this.activeForm.schema.properties[name]
       this.drawer = true
     },
-    storeSelectedElement() {
+    storeSelectedElement({ key, element }) {
+      this.activeForm.schema.properties[key] = element
+
+      if (this.dataSource.spec.columns[key].extra.createdBy == 'system' &&
+        element.readOnly === false) {
+        // element.readOnly = true
+        this.snackbar.text = "Warning, allowing editing of a system-generated type"
+        this.snackbar.show = true
+      }
+
       // // sync the selected element to the vuex store on change
       // this.$store.commit("setDataSourceColumn", {
       //   workspaceId: this.workspaceId,
@@ -363,7 +392,8 @@ export default {
         }
 
         // If this is a system-generated field, make read-only
-        if (this.dataSource.spec.columns[row.meta.name].extra.createdBy == 'system') {
+        if (element.readOnly === undefined &&
+          this.dataSource.spec.columns[row.meta.name].extra.createdBy == 'system') {
           element.readOnly = true
         }
 
@@ -372,6 +402,9 @@ export default {
         // or not. The options are generated dynamically in the JsonForm Component based on
         // conditional logic
         element["x-if"] = "context.show_" + this.dataSource.spec.columns[row.meta.name].name
+
+        // Store the data source column in the object for easy access while iterating (it's also the key)
+        element.dataSourceColumn = this.dataSource.spec.columns[row.meta.name].name
 
         this.activeForm.schema.properties[row.meta.name] = {
           ...schemaTemplate,

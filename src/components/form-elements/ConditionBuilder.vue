@@ -91,24 +91,19 @@ export default {
       ]
     },
     fieldOptions() {
-      return [
-        {
-          text: 'Patient',
-          value: 'pid'
-        },
-        {
-          text: 'Created At',
-          value: 'created_datetime',
-        },
-        {
-          text: 'Created By',
-            value: 'created_by',
-        }
-      ]
+      let options = []
+      Object.values(this.form.schema.properties).forEach(function(property) {
+        options.push({
+          text: property.title,
+          value: property.dataSourceColumn
+        })
+      })
+
+      return options
     },
     operators() {
       return [
-        '>', '<', '='
+        '>', '<', '=', '!='
       ]
     },
 

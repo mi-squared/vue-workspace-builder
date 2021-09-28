@@ -6,7 +6,8 @@
     </v-list-item-avatar>
 
     <v-list-item-content>
-      <v-list-item-title>{{ element.name }}</v-list-item-title>
+      <v-list-item-subtitle>Data Source Column</v-list-item-subtitle>
+      <v-list-item-title>{{ activeElement.dataSourceColumn }}</v-list-item-title>
     </v-list-item-content>
   </v-list-item>
 
@@ -20,40 +21,40 @@
     <v-container>
 
       <v-text-field
-        :value="element.type"
+        :value="activeElement.type"
         label="Data Type"
         readonly
       ></v-text-field>
       <v-text-field
-        :value="element['x-display']"
+        :value="activeElement['x-display']"
         label="Display Type"
       ></v-text-field>
 
       <v-text-field
-        v-model="element.title"
+        v-model="activeElement.title"
         label="Label"
       ></v-text-field>
       <v-text-field
-        v-model="element.description"
+        v-model="activeElement.description"
         label="Description"
       ></v-text-field>
       <!--          TODO need read-onlly to come from the data-source vuex module getter -->
       <v-checkbox
-        v-model="element.readOnly"
+        v-model="activeElement.readOnly"
         :readonly="false"
         label="Read-Only"
       ></v-checkbox>
 
       <v-checkbox
-        v-model="element.hasConditionalLogic"
+        v-model="activeElement.hasConditionalLogic"
         label="Conditional Logic"
       ></v-checkbox>
 
       <ConditionBuilder
-        v-if="element.hasConditionalLogic == true"
+        v-if="activeElement.hasConditionalLogic == true"
         :form="form"
-        :element="element"
-        :key="form.id + element.name"
+        :element="activeElement"
+        :key="form.id + activeElement.name"
         @change="onConditionalLogicChanged"
         ></ConditionBuilder>
 
@@ -100,20 +101,24 @@ export default {
   data() {
     return {
       validElement: true, // true if the properties of a new or modified element are valid
+      activeElement: { ...this.element } // Copy the element prop into our local data for modification
     }
   },
   methods: {
     onSaveClicked() {
-      this.$emit('save', { element: this.element })
+      this.$emit('save', { key: this.activeElement.dataSourceColumn, element: this.activeElement })
     },
     onCancelClicked() {
-      this.$emit('cancel', { element: this.element })
+      this.$emit('cancel', { key: this.activeElement.dataSourceColumn, element: this.activeElement })
     },
     onConditionalLogicChanged(conditionalLogic) {
-      this.element.conditionalLogic = conditionalLogic
+      this.activeElement.conditionalLogic = conditionalLogic
     }
 
   },
+  mounted () {
+    console.log("FormElementProperties mounted()")
+  }
 
 }
 </script>
