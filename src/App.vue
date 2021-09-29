@@ -7,7 +7,7 @@ export default {
   name: "App",
   components: {},
   mounted () {
-      document.title = "This is the new title"
+    // document.title = "This is the new title"
   }
 }
 </script>

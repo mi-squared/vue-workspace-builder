@@ -1,18 +1,22 @@
 import {
   ADD_DASHBOARD_TO_WORKSPACE,
   ADD_FORM_TO_WORKSPACE, ALL_WORKSPACES,
-  CREATE_DATA_SOURCE_COLUMN, CREATE_WORKSPACE, GET_DASHBOARDS,
-  GET_DATA_SOURCE, GET_DATA_TYPES, GET_FORMS, GET_SCHEMA_TEMPLATE_BY_TYPE,
-  GET_WORKSPACE,
+  CREATE_DATA_SOURCE_COLUMN, CREATE_WORKSPACE, FETCH_ALL_WORKSPACES, FETCH_WORKSPACE, GET_DASHBOARDS,
+  GET_DATA_SOURCE, GET_DATA_TYPES, GET_FORMS, GET_SCHEMA_TEMPLATE_BY_TYPE, GET_SETTINGS,
+  GET_WORKSPACE, PUSH_WORKSPACE,
   SET_WORKSPACE
 } from '../types-workspace'
 import Vue from "vue";
 // import axios from 'axios'
 import { createWorkspace } from '../../api'
+import axios from 'axios'
 
 export const workspace = {
   namespaced: true,
   state: {
+    settings: {
+      test: false
+    },
     dataTypes: {
       "list": {
         mysql: "VARCHAR(255)",
@@ -105,99 +109,104 @@ export const workspace = {
 
     },
     workspaces: {
-      1: {
-        id: 1,
-        title: "CET",
-        administrator: 1,
-        dataSource: {
-          spec: {
-            columns: {
-              id: {
-                name: "id",
-                type: "integer",
-                comment: "",
-                extra: {
-                  createdBy: "system",
-                  createdDate: "2021-06-20",
-                },
-              },
-              created_date: {
-                name: "created_date",
-                type: "datetime",
-                default: "",
-                comment: "",
-                extra: {
-                  createdBy: "system",
-                  createdDate: "2021-06-20",
-                },
-              },
-              created_by: {
-                name: "created_by",
-                type: "user",
-                default: "",
-                comment: "refers to users.id",
-                extra: {
-                  createdBy: "system",
-                  createdDate: "2021-06-20",
-                },
-              },
-              updated_date: {
-                name: "updated_date",
-                type: "datetime",
-                default: "",
-                comment: "",
-                extra: {
-                  createdBy: "system",
-                  createdDate: "2021-06-20",
-                },
-              },
-              updated_by: {
-                name: "updated_by",
-                type: "user",
-                default: "",
-                comment: "refers to users.id",
-                extra: {
-                  createdBy: "system",
-                  createdDate: "2021-06-20",
-                },
-              },
-              source: {
-                name: "source",
-                type: "string",
-                default: "",
-                comment: "",
-                extra: {
-                  createdBy: "system",
-                  createdDate: "2021-06-20",
-                },
-              },
-            },
-            indexes: {
-              id: {
-                key: "PRIMARY",
-                column: "id",
-              },
-            },
-          },
-        },
-        dashboards: {
-          10: 10,
-          11: 11,
-          12: 12
-        },
-        forms: {
-          100: 100
-        },
-        filters: {
-          199: 199,
-        }
-      },
+      // "1": {
+      //   "id": 1,
+      //   "title": "CET",
+      //   "administrator": 1,
+      //   "displayOnPatientMenu": false,
+      //   "dataSource": {
+      //     "spec": {
+      //       "columns": {
+      //         "id": {
+      //           "name": "id",
+      //           "type": "integer",
+      //           "comment": "",
+      //           "extra": {
+      //             "createdBy": "system",
+      //             "createdDate": "2021-06-20"
+      //           }
+      //         },
+      //         "created_date": {
+      //           "name": "created_date",
+      //           "type": "datetime",
+      //           "default": "",
+      //           "comment": "",
+      //           "extra": {
+      //             "createdBy": "system",
+      //             "createdDate": "2021-06-20"
+      //           }
+      //         },
+      //         "created_by": {
+      //           "name": "created_by",
+      //           "type": "user",
+      //           "default": "",
+      //           "comment": "refers to users.id",
+      //           "extra": {
+      //             "createdBy": "system",
+      //             "createdDate": "2021-06-20"
+      //           }
+      //         },
+      //         "updated_date": {
+      //           "name": "updated_date",
+      //           "type": "datetime",
+      //           "default": "",
+      //           "comment": "",
+      //           "extra": {
+      //             "createdBy": "system",
+      //             "createdDate": "2021-06-20"
+      //           }
+      //         },
+      //         "updated_by": {
+      //           "name": "updated_by",
+      //           "type": "user",
+      //           "default": "",
+      //           "comment": "refers to users.id",
+      //           "extra": {
+      //             "createdBy": "system",
+      //             "createdDate": "2021-06-20"
+      //           }
+      //         },
+      //         "source": {
+      //           "name": "source",
+      //           "type": "string",
+      //           "default": "",
+      //           "comment": "",
+      //           "extra": {
+      //             "createdBy": "system",
+      //             "createdDate": "2021-06-20"
+      //           }
+      //         }
+      //       },
+      //       "indexes": {
+      //         "id": {
+      //           "key": "PRIMARY",
+      //           "column": "id"
+      //         }
+      //       }
+      //     }
+      //   },
+      //   "dashboards": {
+      //     "10": 10,
+      //     "11": 11,
+      //     "12": 12
+      //   },
+      //   "forms": {
+      //     "100": 100
+      //   },
+      //   "filters": {
+      //     "199": 199
+      //   }
+      // },
     },
   },
   getters: {
+    [GET_SETTINGS]: state => state.settings,
+
     [ALL_WORKSPACES]: state => state.workspaces,
 
-    [GET_WORKSPACE]: state => id => state.workspaces[id],
+    [GET_WORKSPACE]: state => id => {
+      return state.workspaces[id]
+    },
 
     [GET_DATA_SOURCE]: state => id => state.workspaces[id].dataSource,
 
@@ -225,12 +234,120 @@ export const workspace = {
   },
   actions: {
 
-    [CREATE_WORKSPACE] ({ dispatch, commit }, { title, administrator }) {
-      let newWorkspace = createWorkspace({ title, administrator })
-      commit(SET_WORKSPACE, { workspaceId: newWorkspace.id, workspace: newWorkspace })
+    [FETCH_ALL_WORKSPACES] ({ commit, rootGetters }) {
+      console.log("Fetching All Workspaces:")
+      // Get meta data from the user module
+      const userMeta = rootGetters['user/GET_USER_META']
 
-      // Tell VUEX to create a new navigation item for this workspace to store navigation state
-      dispatch('user/ADD_WORKSPACE_TO_NAVIGATION', { workspaceId: newWorkspace.id }, { root: true })
+      // If we have a token, make the API call
+      if (userMeta.csrfToken) {
+        return new Promise((resolve) => {
+          axios.get('/apis/api/workspaces', {
+            headers: {
+              'apicsrftoken': userMeta.csrfToken
+            }
+          }).then(function (response) {
+            // Set all the workspaces that we get in the response
+            const workspaces = response.data
+            workspaces.forEach(workspace => {
+              commit(SET_WORKSPACE, { workspaceId: workspace.id, workspace: workspace })
+            })
+            resolve(workspaces)
+          }).catch(function () {
+            alert('there was an error, you may need to log back in')
+          })
+        })
+      }
+    },
+
+    [FETCH_WORKSPACE] ({ commit, rootGetters }, { workspaceId }) {
+      console.log("Fetching Workspace: " + workspaceId)
+      // Get meta data from the user module
+      const userMeta = rootGetters['user/GET_USER_META']
+
+      // If we have a token, make the API call
+      if (userMeta.csrfToken) {
+        return new Promise((resolve) => {
+          axios.get('/apis/api/workspace', {
+            params: {
+              id: workspaceId
+            },
+            headers: {
+              'apicsrftoken': userMeta.csrfToken
+            }
+          }).then(function (response) {
+            const workspace = response.data
+            commit(SET_WORKSPACE, { workspaceId: workspace.id, workspace: workspace })
+            resolve(workspace)
+          }).catch(function () {
+            alert('there was an error, you may need to log back in')
+          })
+        })
+      }
+    },
+
+    [PUSH_WORKSPACE] ({ rootGetters }, { workspaceId, workspace }) {
+      console.log("Pushing Workspace: " + workspaceId)
+      // Get meta data from the user module
+      const userMeta = rootGetters['user/GET_USER_META']
+
+      // If we have a token, make the API call
+      if (userMeta.csrfToken) {
+        return new Promise((resolve) => {
+          axios.put('/apis/api/workspace', {
+            params: {
+              id: workspaceId,
+              workspace: workspace
+            }
+          },
+            {
+          headers: {
+            'apicsrftoken': userMeta.csrfToken,
+            'Content-Type': 'application/json;charset=utf-8'
+          }
+        }
+          ).then(function (response) {
+            const workspace = response.data
+            // Setting workspace mutation happens in set action
+            // commit(SET_WORKSPACE, { workspaceId: workspace.id, workspace: workspace })
+            resolve(workspace)
+          }).catch(function () {
+            alert('there was an error, you may need to log back in')
+          })
+        })
+      }
+    },
+
+    [CREATE_WORKSPACE] ({ dispatch, commit, rootGetters }, { title, administrator }) {
+      // Get meta data from the user module
+      const userMeta = rootGetters['user/GET_USER_META']
+
+      // If we have a token, make the API call
+      if (userMeta.csrfToken) {
+        let newWorkspace = createWorkspace({ title, administrator })
+
+        return new Promise((resolve) => {
+          axios.post('/apis/api/workspace', {
+            params: {
+              workspace: newWorkspace
+            },
+            headers: {
+              'apicsrftoken': userMeta.csrfToken,
+              //'HTTP_APICSRFTOKEN': userMeta.csrfToken
+            }
+          }).then(function (response) {
+            const workspace = response.data
+            commit(SET_WORKSPACE, { workspaceId: workspace.id, workspace: workspace })
+
+            // Tell VUEX to create a new navigation item for this workspace to store navigation state
+            dispatch('user/ADD_WORKSPACE_TO_NAVIGATION', { workspaceId: newWorkspace.id }, { root: true })
+
+            resolve(workspace)
+          }).catch(function () {
+            alert('there was an error, you may need to log back in')
+          })
+        })
+      }
     },
 
     // [SET_WORKSPACE] ({ state, commit, rootState }, { workspaceId }) {
@@ -282,9 +399,11 @@ export const workspace = {
       commit(ADD_FORM_TO_WORKSPACE, { workspaceId, formId })
     },
 
-    [SET_WORKSPACE] ({ commit }, { workspaceId, workspace }) {
+    [SET_WORKSPACE] ({ dispatch, commit }, { workspaceId, workspace }) {
       // Make a POST to server, then update VUEX
-      commit(SET_WORKSPACE, { workspaceId, workspace })
+      dispatch(PUSH_WORKSPACE, { workspaceId, workspace }).then((workspace) => {
+        commit(SET_WORKSPACE, { workspaceId, workspace })
+      })
     },
   },
   mutations: {

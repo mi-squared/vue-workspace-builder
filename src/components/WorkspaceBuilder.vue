@@ -1,5 +1,13 @@
 <template>
   <v-container>
+    <v-toolbar flat>
+      <v-spacer></v-spacer>
+        <v-btn class="right mt-4 mr-2" color="success" :disabled="!isDirty" @click="save">
+          <v-icon>mdi-floppy</v-icon>
+          Save
+        </v-btn>
+    </v-toolbar>
+
     <v-card flat>
       <v-card-title>Properties</v-card-title>
 
@@ -8,9 +16,10 @@
             <v-col cols="4">
               <v-card-text>
                 <v-form>
-                  <v-text-field label="Title" :value="title"></v-text-field>
-                  <v-select label="Administrator" :items="administrators" item-text="displayName" item-value="userId" hint="The administrator of this workspace" persistent-hint></v-select>
+                  <v-text-field label="Title" v-model="activeWorkspace.title"></v-text-field>
+                  <v-select label="Administrator" v-model="activeWorkspace.administrator" :items="administrators" item-text="displayName" item-value="userId" hint="The administrator of this workspace" persistent-hint></v-select>
                   <v-switch
+                    v-model="activeWorkspace.displayOnPatientMenu"
                     label="Display as patient menu item"
                     ></v-switch>
                 </v-form>
@@ -173,7 +182,7 @@
 
 <script>
 import { createNamespacedHelpers } from 'vuex'
-import { GET_WORKSPACE } from '../store/types-workspace'
+import { GET_WORKSPACE, SET_WORKSPACE } from '../store/types-workspace'
 const { mapState: mapWorkspaceState, mapActions: mapWorkspaceActions, mapGetters: mapWorkspaceGetters } = createNamespacedHelpers('workspace')
 export default {
   name: "WorkspaceBuilder",
@@ -186,9 +195,21 @@ export default {
   data () {
     return {
       ...mapWorkspaceState,
+      isDirty: false,
       showInput: false,
       activeWorkspace: { ...this.workspace }
     }
+  },
+  watch: {
+    activeWorkspace: {
+      // Watch the activeWorkspace using a deep watch, and when it changes,
+      // mark the model as dirty, which activates the "save" button
+      handler() {
+        this.isDirty = true
+        // TODO should propagate an event up to let navigation know that there are unsaved changes on this builder
+      },
+      deep: true
+    },
   },
   computed: {
     ...mapWorkspaceGetters({
@@ -206,7 +227,19 @@ export default {
     }
   },
   methods: {
-    ...mapWorkspaceActions
+    ...mapWorkspaceActions({
+      setWorkspace: SET_WORKSPACE
+    }),
+    save() {
+      let that = this
+      this.setWorkspace({ workspaceId: this.activeWorkspace.id, workspace: this.activeWorkspace })
+        .then(function () {
+          that.isDirty = false
+        })
+    }
+  },
+  mounted () {
+    console.log('WorkspaceBuilder Mounted')
   }
 }
 </script>

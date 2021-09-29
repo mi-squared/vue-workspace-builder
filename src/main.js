@@ -28,6 +28,11 @@ new Vue({
       initUser: INIT
     })
   },
+  data() {
+    return {
+      initialized: false
+    }
+  },
   created () {
     this.initUser
   },

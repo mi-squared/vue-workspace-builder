@@ -58,7 +58,7 @@
           </v-dialog>
         </v-list-item-content>
       </v-list-item>
-      <!-- End of the new layout dialog -->
+      <!-- End of the new dashboard dialog -->
 
       <v-divider class="ml-2 mb-4"></v-divider>
 

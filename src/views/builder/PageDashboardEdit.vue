@@ -14,9 +14,11 @@
 import { createNamespacedHelpers } from 'vuex'
 import { GET_WORKSPACE } from '../../store/types-workspace'
 const { mapGetters: mapWorkspaceGetters } = createNamespacedHelpers('workspace')
-import { GET_DASHBOARD } from '../../store/types-dashboard'
+import { FETCH_DASHBOARD, GET_DASHBOARD } from '../../store/types-dashboard'
 import DashboardBuilder from '../../components/DashboardBuilder'
-const { mapGetters: mapDashboardGetters } = createNamespacedHelpers('dashboard')
+const { mapGetters: mapDashboardGetters, mapActions: mapDashboardActions } = createNamespacedHelpers('dashboard')
+import { INIT } from '../../store/types-user'
+const { mapActions: mapUserActions } = createNamespacedHelpers('user')
 
 export default {
   name: 'PageDashboardEdit',
@@ -49,12 +51,27 @@ export default {
     },
   },
   methods: {
+    ...mapUserActions({
+      initUser: INIT
+    }),
+    ...mapDashboardActions({
+      fetchDashboard: FETCH_DASHBOARD
+    }),
     navigationHamburgerClicked() {
       this.$emit('hamburger-navigation-clicked')
     }
   },
   mounted () {
     console.log("PageDashboardEdit Mounted")
+  },
+  created () {
+    let that = this
+    this.initUser().then(() => {
+      that.fetchDashboard({ dashboardId: that.dashboardId })
+        .then(dashboard => {
+          console.log('Dashboard Fetched: ' + dashboard)
+        })
+    })
   }
 }
 </script>

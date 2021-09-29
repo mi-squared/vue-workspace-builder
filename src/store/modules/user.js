@@ -7,7 +7,7 @@ import {
   ADD_WORKSPACE_TO_NAVIGATION
 } from '../types-user'
 import Vue from 'vue'
-import axios from 'axios'
+import { ws_init } from '../../api'
 
 export const user = {
   namespaced: true,
@@ -37,15 +37,15 @@ export const user = {
      */
     [INIT]: ({ state, commit }) => {
       return new Promise((resolve) => {
-        axios
-          .get("/interface/modules/custom_modules/oe-workspace-server/init.php")
-          .then(function(response) {
-            // If this returns "Site ID is missing from session data!" then we're logged out
-            // TODO handle this case when logged out
-            const userMetaData = response.data
-            commit(SET_USER_META, userMetaData)
-            resolve(state.userMeta)
-          })
+        // Call the ws_init api which starts our user session on the server
+        // and returns a promise. In the promise then() handler, we commit our user state
+        ws_init().then((response) => {
+          // If this returns "Site ID is missing from session data!" then we're logged out
+          // TODO handle this case when logged out
+          const userMetaData = response.data
+          commit(SET_USER_META, userMetaData)
+          resolve(state.userMeta)
+        })
       })
     },
 

@@ -1,10 +1,18 @@
+import axios from 'axios'
+
+export function ws_init() {
+  return axios.get("/interface/modules/custom_modules/oe-workspace-server/init.php")
+}
+
 export function createWorkspace(formData) {
   const defaultDataSource = require('./data/_data_source_template.json')
   return {
-    id: Math.floor(Math.random() * 32768),
+    // id: Math.floor(Math.random() * 32768),
+    id: null,
     title: "[New Workspace]",
     administrator: 1,
     dataSource: defaultDataSource,
+    displayOnPatientMenu: false,
     dashboards: [],
     forms: [],
     filters: [],
