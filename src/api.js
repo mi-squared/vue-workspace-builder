@@ -23,11 +23,35 @@ export function createDataSourceColumn(formData) {
 export function createDashboard(formData, userMeta) {
 
   // Use the model-builder to create a new dashboard using the submitted data
-  const dashboard = newDashboard(formData)
+  const dashboard = newDashboard(formData.workspaceId, formData.dashboard)
 
   return new Promise( (resolve) => {
     //id: Math.floor(Math.random() * 32768),
     axios.post('/apis/api/dashboard', {
+        params: {
+          workspaceId: formData.workspaceId,
+          dashboard: dashboard
+        }
+      },
+      {
+        headers: {
+          'apicsrftoken': userMeta.csrfToken,
+          'Content-Type': 'application/json;charset=utf-8'
+        }
+      }).then(function (response) {
+        const dashboard = response.data
+        resolve(dashboard)
+    }).catch(function () {
+      alert('there was an error.')
+    })
+  })
+}
+
+export function updateDashboard(dashboard, userMeta) {
+
+  return new Promise((resolve) => {
+    axios.put('/apis/api/dashboard',
+      {
         params: {
           dashboard: dashboard
         }
@@ -38,11 +62,11 @@ export function createDashboard(formData, userMeta) {
           'Content-Type': 'application/json;charset=utf-8'
         }
       }).then(function (response) {
-      const dashboard = response.data
-      resolve(dashboard)
-    }).catch(function () {
-      alert('there was an error.')
-    })
+        const dashboard = response.data
+        resolve(dashboard)
+      }).catch(function () {
+        alert('there was an error.')
+      })
   })
 }
 

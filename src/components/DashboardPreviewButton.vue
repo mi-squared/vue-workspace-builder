@@ -23,7 +23,7 @@
 
       <v-card-text>
         <v-container>
-          <PageDashboard :preview="true" :key="Math.floor(Math.random() * 32768)" :dashboard-id="Number(dashboard.id)"></PageDashboard>
+          <Dashboard :dashboard="dashboard"></Dashboard>
         </v-container>
         <small>*indicates required field</small>
       </v-card-text>
@@ -34,11 +34,11 @@
 
 <script>
 
-import PageDashboard from '../views/PageDashboard'
+import Dashboard from './Dashboard'
 
 export default {
   name: "DashboardPreviewButton",
-  components: { PageDashboard },
+  components: { Dashboard },
   props: {
     dashboard: {
       type: Object,
@@ -51,7 +51,10 @@ export default {
     model: {},
     dialog: false,
   }),
-};
+  mounted () {
+    console.log("Dashboard Preview Button Mounted")
+  }
+}
 </script>
 
 <style scoped></style>

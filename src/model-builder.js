@@ -7,10 +7,10 @@ export function newWorkspace(formData) {
     administrator: 1,
     dataSource: defaultDataSource,
     displayOnPatientMenu: false,
-    dashboards: [],
-    forms: [],
-    filters: [],
-    actions: [],
+    dashboards: {},
+    forms: {},
+    filters: {},
+    actions: {},
 
     ...formData,
   };
@@ -27,9 +27,10 @@ export function newDataSourceColumn(formData) {
   };
 }
 
-export function newDashboard(formData) {
+export function newDashboard(workspaceId, dashboard) {
   return {
     id: null,
+    workspaceId: workspaceId,
     title: "[New Dashboard]",
     displayDuration: false,
     durationModel: {
@@ -41,7 +42,7 @@ export function newDashboard(formData) {
     filters: [],
     headers: [],
 
-    ...formData,
+    ...dashboard,
   }
 }
 

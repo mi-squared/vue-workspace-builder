@@ -16,7 +16,7 @@
 
         <v-spacer></v-spacer>
 
-        <DashboardPreviewButton :dashboard="dashboard"></DashboardPreviewButton>
+        <DashboardPreviewButton :dashboard="activeDashboard"></DashboardPreviewButton>
 
         <v-btn class="mt-4 mr-2" color="success" :disabled="!isDirty" @click="save">
           <v-icon>mdi-floppy</v-icon>
@@ -352,7 +352,7 @@ export default {
      */
     storeActiveDashboardElement()
     {
-      this.dashboard.headers.push(this.activeDashboardElement)
+      this.activeDashboard.headers.push(this.activeDashboardElement)
       console.log('save clicked')
       this.drawer = false
     }

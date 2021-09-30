@@ -108,96 +108,7 @@ export const workspace = {
       },
 
     },
-    workspaces: {
-      // "1": {
-      //   "id": 1,
-      //   "title": "CET",
-      //   "administrator": 1,
-      //   "displayOnPatientMenu": false,
-      //   "dataSource": {
-      //     "spec": {
-      //       "columns": {
-      //         "id": {
-      //           "name": "id",
-      //           "type": "integer",
-      //           "comment": "",
-      //           "extra": {
-      //             "createdBy": "system",
-      //             "createdDate": "2021-06-20"
-      //           }
-      //         },
-      //         "created_date": {
-      //           "name": "created_date",
-      //           "type": "datetime",
-      //           "default": "",
-      //           "comment": "",
-      //           "extra": {
-      //             "createdBy": "system",
-      //             "createdDate": "2021-06-20"
-      //           }
-      //         },
-      //         "created_by": {
-      //           "name": "created_by",
-      //           "type": "user",
-      //           "default": "",
-      //           "comment": "refers to users.id",
-      //           "extra": {
-      //             "createdBy": "system",
-      //             "createdDate": "2021-06-20"
-      //           }
-      //         },
-      //         "updated_date": {
-      //           "name": "updated_date",
-      //           "type": "datetime",
-      //           "default": "",
-      //           "comment": "",
-      //           "extra": {
-      //             "createdBy": "system",
-      //             "createdDate": "2021-06-20"
-      //           }
-      //         },
-      //         "updated_by": {
-      //           "name": "updated_by",
-      //           "type": "user",
-      //           "default": "",
-      //           "comment": "refers to users.id",
-      //           "extra": {
-      //             "createdBy": "system",
-      //             "createdDate": "2021-06-20"
-      //           }
-      //         },
-      //         "source": {
-      //           "name": "source",
-      //           "type": "string",
-      //           "default": "",
-      //           "comment": "",
-      //           "extra": {
-      //             "createdBy": "system",
-      //             "createdDate": "2021-06-20"
-      //           }
-      //         }
-      //       },
-      //       "indexes": {
-      //         "id": {
-      //           "key": "PRIMARY",
-      //           "column": "id"
-      //         }
-      //       }
-      //     }
-      //   },
-      //   "dashboards": {
-      //     "10": 10,
-      //     "11": 11,
-      //     "12": 12
-      //   },
-      //   "forms": {
-      //     "100": 100
-      //   },
-      //   "filters": {
-      //     "199": 199
-      //   }
-      // },
-    },
+    workspaces: {}
   },
   getters: {
     [GET_SETTINGS]: state => state.settings,
@@ -213,7 +124,8 @@ export const workspace = {
     [GET_DASHBOARDS]: (state, getters, rootState, rootGetters) => workspaceId => {
       let dashboards = []
       Object.keys(state.workspaces[workspaceId].dashboards).forEach(dashboardId => {
-        dashboards.push(rootGetters['dashboard/GET_DASHBOARD'](dashboardId))
+        const dashboard = rootGetters['dashboard/GET_DASHBOARD'](dashboardId)
+        dashboards.push(dashboard)
       })
       return dashboards
     },
@@ -254,6 +166,11 @@ export const workspace = {
 
               // Tell VUEX to create a new navigation item for this workspace to store navigation state
               dispatch('user/ADD_WORKSPACE_TO_NAVIGATION', { workspaceId: workspace.id }, { root: true })
+
+              // Iterate over all dashboard IDs and fetch the dashboards TODO this could be done in a bulk API
+              Object.values(workspace.dashboards).forEach(dashboardId => {
+                dispatch('dashboard/FETCH_DASHBOARD', { dashboardId }, { root: true })
+              })
             })
             resolve(workspaces)
           }).catch(function () {
@@ -398,12 +315,20 @@ export const workspace = {
       })
     },
 
-    [ADD_DASHBOARD_TO_WORKSPACE]: ({ commit }, { workspaceId, dashboardId }) => {
-      commit(ADD_DASHBOARD_TO_WORKSPACE, { workspaceId, dashboardId })
+    [ADD_DASHBOARD_TO_WORKSPACE]: ({ commit, dispatch, getters }, { workspaceId, dashboardId }) => {
+      let workspace = getters.GET_WORKSPACE(workspaceId)
+      workspace.dashboards[dashboardId] = dashboardId
+      dispatch(PUSH_WORKSPACE, { workspaceId, workspace }).then(workspace => {
+        commit(SET_WORKSPACE, { workspaceId, workspace })
+      })
     },
 
-    [ADD_FORM_TO_WORKSPACE]: ({ commit }, { workspaceId, formId }) => {
-      commit(ADD_FORM_TO_WORKSPACE, { workspaceId, formId })
+    [ADD_FORM_TO_WORKSPACE]: ({ commit, dispatch, getters }, { workspaceId, formId }) => {
+      let workspace = getters.GET_WORKSPACE(workspaceId)
+      workspace.forms[formId] = formId
+      dispatch(PUSH_WORKSPACE, { workspaceId, workspace }).then(workspace => {
+        commit(SET_WORKSPACE, { workspaceId, workspace })
+      })
     },
 
     [SET_WORKSPACE] ({ dispatch, commit }, { workspaceId, workspace }) {
@@ -428,6 +353,13 @@ export const workspace = {
       Vue.set(state.workspaces, workspaceId, workspace)
     },
 
+    /**
+     * This is no longer used, because we set the whole workspace
+     *
+     * @param state
+     * @param workspaceId
+     * @param dashboardId
+     */
     [ADD_DASHBOARD_TO_WORKSPACE]: (state, { workspaceId, dashboardId }) => {
       const vuexWorkspace = state.workspaces[workspaceId]
       Vue.set(vuexWorkspace.dashboards, dashboardId, dashboardId)
