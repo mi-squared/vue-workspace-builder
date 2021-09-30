@@ -183,7 +183,7 @@
 <script>
 import { createNamespacedHelpers } from 'vuex'
 import { GET_WORKSPACE, SET_WORKSPACE } from '../store/types-workspace'
-const { mapState: mapWorkspaceState, mapActions: mapWorkspaceActions, mapGetters: mapWorkspaceGetters } = createNamespacedHelpers('workspace')
+const { mapActions: mapWorkspaceActions, mapGetters: mapWorkspaceGetters } = createNamespacedHelpers('workspace')
 export default {
   name: "WorkspaceBuilder",
   props: {
@@ -194,7 +194,6 @@ export default {
   },
   data () {
     return {
-      ...mapWorkspaceState,
       isDirty: false,
       showInput: false,
       activeWorkspace: { ...this.workspace }

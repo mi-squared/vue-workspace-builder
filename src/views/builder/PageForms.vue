@@ -87,7 +87,7 @@ import { GET_NAVIGATION } from '../../store/types-user'
 import { GET_FORMS } from '../../store/types-workspace'
 const { mapGetters: mapWorkspaceGetters } = createNamespacedHelpers('workspace')
 const { mapGetters: mapUserGetters } = createNamespacedHelpers('user')
-const { mapState: mapFormState, mapActions: mapFormActions, mapGetters: mapFormGetters } = createNamespacedHelpers('form')
+const { mapActions: mapFormActions, mapGetters: mapFormGetters } = createNamespacedHelpers('form')
 
 export default {
   name: "PageForms",
@@ -104,7 +104,6 @@ export default {
   },
   data() {
     return {
-      ...mapFormState,
       activeFormId: this.formId,
       drawer: true,
       showNewFormDialog: false,

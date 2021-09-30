@@ -111,7 +111,7 @@
 <script>
 import { createNamespacedHelpers } from 'vuex'
 import { CREATE_DATA_SOURCE_COLUMN, GET_DATA_TYPES, GET_WORKSPACE } from '../../store/types-workspace'
-const { mapState: mapWorkspaceState, mapActions: mapWorkspaceActions, mapGetters: mapWorkspaceGetters } = createNamespacedHelpers('workspace')
+const { mapActions: mapWorkspaceActions, mapGetters: mapWorkspaceGetters } = createNamespacedHelpers('workspace')
 import { GET_USER_META } from '../../store/types-user'
 const { mapGetters: mapUserGetters } = createNamespacedHelpers('user')
 
@@ -125,7 +125,6 @@ export default {
   },
   data() {
     return {
-      ...mapWorkspaceState,
       dialog: false,
       valid: false,
       model: {

@@ -23,7 +23,7 @@
 
       <v-card-text>
         <v-container>
-          <PageDashboard :key="Math.floor(Math.random() * 32768)" :dashboard-id="dashboard.id"></PageDashboard>
+          <PageDashboard :preview="true" :key="Math.floor(Math.random() * 32768)" :dashboard-id="Number(dashboard.id)"></PageDashboard>
         </v-container>
         <small>*indicates required field</small>
       </v-card-text>

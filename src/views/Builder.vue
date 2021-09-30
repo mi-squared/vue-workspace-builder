@@ -166,7 +166,7 @@ import {
   GET_WORKSPACE
 } from '../store/types-workspace'
 import { INIT } from '../store/types-user'
-const { mapState: mapWorkspaceState, mapActions: mapWorkspaceActions, mapGetters: mapWorkspaceGetters } = createNamespacedHelpers('workspace')
+const { mapActions: mapWorkspaceActions, mapGetters: mapWorkspaceGetters } = createNamespacedHelpers('workspace')
 const { mapActions: mapUserActions } = createNamespacedHelpers('user')
 
 export default {
@@ -180,7 +180,6 @@ export default {
   data() {
     return {
       loaded: false,
-      ...mapWorkspaceState,
       skeletonLoaderAttrs: {
         class: 'mb-6',
         boilerplate: true,

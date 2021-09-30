@@ -88,7 +88,7 @@ import { CREATE_DASHBOARD } from '../../store/types-dashboard'
 import { GET_NAVIGATION, SET_NAVIGATION } from '../../store/types-user'
 import { GET_DASHBOARDS } from '../../store/types-workspace'
 const { mapGetters: mapWorkspaceGetters } = createNamespacedHelpers('workspace')
-const { mapState: mapDashboardState, mapActions: mapDashboardActions, mapGetters: mapDashboardGetters } = createNamespacedHelpers('dashboard')
+const { mapActions: mapDashboardActions, mapGetters: mapDashboardGetters } = createNamespacedHelpers('dashboard')
 const { mapActions: mapUserActions, mapGetters: mapUserGetters } = createNamespacedHelpers('user')
 
 export default {
@@ -105,7 +105,6 @@ export default {
   },
   data () {
     return {
-      ...mapDashboardState,
       activeDashboard: this.dashboardId,
       drawer: true,
       showNewDashboardDialog: false,

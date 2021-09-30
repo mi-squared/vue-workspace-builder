@@ -77,7 +77,7 @@
         "name": "source",
         "type": "string",
         "default": "",
-        "comment": "The source of the entity, whether form, api or some other entry-pint.",
+        "comment": "The source of the entity, whether form, api or some other entry-point.",
         "extra": {
           "createdBy": "system"
         }

@@ -257,6 +257,8 @@ export const workspace = {
             alert('there was an error, you may need to log back in')
           })
         })
+      } else {
+        alert("You have been logged out due to a period of inactivity, please log in gain.")
       }
     },
 
@@ -328,14 +330,16 @@ export const workspace = {
 
         return new Promise((resolve) => {
           axios.post('/apis/api/workspace', {
-            params: {
-              workspace: newWorkspace
+              params: {
+                workspace: newWorkspace
+              }
             },
-            headers: {
-              'apicsrftoken': userMeta.csrfToken,
-              //'HTTP_APICSRFTOKEN': userMeta.csrfToken
-            }
-          }).then(function (response) {
+            {
+              headers: {
+                'apicsrftoken': userMeta.csrfToken,
+                'Content-Type': 'application/json;charset=utf-8'
+              }
+            }).then(function (response) {
             const workspace = response.data
             commit(SET_WORKSPACE, { workspaceId: workspace.id, workspace: workspace })
 

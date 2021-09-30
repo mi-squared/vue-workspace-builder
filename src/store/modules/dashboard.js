@@ -14,82 +14,55 @@ export const dashboard = {
   namespaced: true,
   state: {
     dashboards: {
-      10: {
-        id: 10,
-        title: 'Triage Dashboard',
-        newEntityFormId: null,
-        displayDuration: true,
-        durationModel: {
-          'ranges': [
+      "1": {
+        "id": 1,
+        "title": "Triage Dashboard",
+        "newEntityFormId": null,
+        "displayDuration": true,
+        "durationModel": {
+          "ranges": [
             {
-              'order': 0,
-              'range': [0, 30],
-              'color': '#EC8116FF'
+              "order": 0,
+              "range": [0, 30],
+              "color": "#EC8116FF"
             },
             {
-              'order': 1,
-              'range': [31, 60],
-              'color': '#AD1457F'
+              "order": 1,
+              "range": [31, 60],
+              "color": "#338116FF"
             }
           ],
-          'outOfRangeColor': 'grey',
-          'units': 'minutes'
+          "outOfRangeColor": "grey",
+          "units": "minutes"
         },
-        displayNewButton: false,
-
-        filters: {
-          1200: 1200,
-          1201: 1201
+        "displayNewButton": false,
+        "filters": {
+          "1200": 1200,
+          "1201": 1201
         },
-        headers: [
+        "headers": [
           {
-            text: 'Added',
-            value: 'moved_to_dashboard_date',
+            "text": "Added",
+            "value": "moved_to_dashboard_date"
           },
           {
-            text: 'First Name',
-            align: 'start',
-            value: 'firstName',
+            "text": "First Name",
+            "align": "start",
+            "value": "firstName"
           },
           {
-            text: 'Last Name',
-            align: 'start',
-            value: 'lastName',
+            "text": "Last Name",
+            "align": "start",
+            "value": "lastName"
           },
-          { text: 'DOB', value: 'DOB' },
-          { text: 'Facility', value: 'facility' },
-          { text: 'Status', value: 'status' },
-          { text: 'Completion (%)', value: 'completion' },
-          { text: '', value: 'data-table-expand', groupable: false },
-          { text: '', value: 'data-menu', groupable: false, sortable: false },
-        ],
-      },
-      11: {
-        id: 11,
-        title: 'Dispatch Dashboard',
-        displayDuration: true,
-        displayNewButton: false,
-        durationModel: {
-          ranges: [],
-          units: 'minutes',
-          outOfRangeColor: 'grey'
-        },
-        filters: [],
-        headers: [],
-      },
-      12: {
-        id: 12,
-        title: 'Whiteboard',
-        displayDuration: true,
-        displayNewButton: false,
-        durationModel: {
-          ranges: [],
-          units: 'minutes',
-          outOfRangeColor: 'grey'
-        },
-        filters: [],
-        headers: [],
-      },
+          { "text": "DOB", "value": "DOB" },
+          { "text": "Facility", "value": "facility" },
+          { "text": "Status", "value": "status" },
+          { "text": "Completion (%)", "value": "completion" },
+          { "text": "", "value": "data-table-expand", "groupable": false },
+          { "text": "", "value": "data-menu", "groupable": false, "sortable": false }
+        ]
+      }
     },
     rows: {
       10: [

@@ -225,10 +225,10 @@
 import { createNamespacedHelpers } from 'vuex'
 
 import {} from '../store/types-workspace'
-const { mapState: mapWorkspaceState, mapActions: mapWorkspaceActions, mapGetters: mapWorkspaceGetters } = createNamespacedHelpers('workspace')
+const { mapActions: mapWorkspaceActions, mapGetters: mapWorkspaceGetters } = createNamespacedHelpers('workspace')
 
 import { GET_DASHBOARD, SET_DASHBOARD } from '../store/types-dashboard'
-const { mapState: mapDashboardState, mapActions: mapDashboardActions, mapGetters: mapDashboardGetters } = createNamespacedHelpers('dashboard')
+const { mapActions: mapDashboardActions, mapGetters: mapDashboardGetters } = createNamespacedHelpers('dashboard')
 const { mapGetters: mapFormGetters } = createNamespacedHelpers('form')
 
 import draggable from "vuedraggable";
@@ -257,8 +257,6 @@ export default {
   },
   data() {
     return {
-      ...mapWorkspaceState,
-      ...mapDashboardState,
       isDirty: false,
       tab: null,
       drawer: null,

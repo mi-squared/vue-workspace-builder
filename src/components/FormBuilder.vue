@@ -196,12 +196,12 @@ import FormProperties from "@/components/FormProperties";
 import { createNamespacedHelpers } from 'vuex'
 
 import { GET_DATA_SOURCE, GET_SCHEMA_TEMPLATE_BY_TYPE, GET_WORKSPACE } from '../store/types-workspace'
-const { mapState: mapWorkspaceState, mapActions: mapWorkspaceActions, mapGetters: mapWorkspaceGetters } = createNamespacedHelpers('workspace')
+const { mapActions: mapWorkspaceActions, mapGetters: mapWorkspaceGetters } = createNamespacedHelpers('workspace')
 
 import { GET_FORM, SET_FORM, SET_FORM_GRID, SET_FORM_SCHEMA } from '../store/types-form'
 import FormPreviewButton from './FormPreviewButton'
 import FormElementProperties from './FormElementProperties'
-const { mapState: mapFormState, mapActions: mapFormActions, mapGetters: mapFormGetters } = createNamespacedHelpers('form')
+const { mapActions: mapFormActions, mapGetters: mapFormGetters } = createNamespacedHelpers('form')
 
 export default {
   name: 'FormBuilder',
@@ -227,8 +227,6 @@ export default {
   },
   data: function() {
     return {
-      ...mapFormState,
-      ...mapWorkspaceState,
       isDirty: false,
       tab: null,
       drawer: null,

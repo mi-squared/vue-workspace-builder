@@ -243,6 +243,10 @@ export default {
     dashboardId: {
       type: Number,
       required: true
+    },
+    preview: {
+      type: Boolean,
+      required: false
     }
   },
   components: {
@@ -252,6 +256,7 @@ export default {
   data () {
     return {
       loaded: false,
+      isPreview: this.preview || false,
       skeletonLoaderAttrs: {
         class: 'mb-6',
         boilerplate: true,
@@ -426,23 +431,33 @@ export default {
     }
   },
   created () {
-    document.title = "Dashboard"
-
     let that = this
-    // First we have to init our user and token so we can make API calls
-    this.initUser().then(() => {
-      that.fetchDashboard({ dashboardId: that.dashboardId })
-        .then(dashboard => {
 
-          console.log(dashboard)
-          document.title = that.dashboard.title
-          that.fetchDashboardRows({ dashboardId: that.dashboardId }).then( () => {
-            that.loaded = true
-            // start the counter that uses the current time to determine attrition
-            that.refreshAttrition()
+    if (this.isPreview) {
+      document.title = that.dashboard.title
+      that.fetchDashboardRows({ dashboardId: that.dashboardId }).then(() => {
+        that.loaded = true
+        // start the counter that uses the current time to determine attrition
+        that.refreshAttrition()
+      })
+    } else {
+      document.title = "Dashboard"
+
+      // First we have to init our user and token so we can make API calls
+      this.initUser().then(() => {
+        that.fetchDashboard({ dashboardId: that.dashboardId })
+          .then(dashboard => {
+
+            console.log(dashboard)
+            document.title = that.dashboard.title
+            that.fetchDashboardRows({ dashboardId: that.dashboardId }).then(() => {
+              that.loaded = true
+              // start the counter that uses the current time to determine attrition
+              that.refreshAttrition()
+            })
           })
-        })
-    })
+      })
+    }
   },
   destroyed () {
     this.cancelAutoUpdate()

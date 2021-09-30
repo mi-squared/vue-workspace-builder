@@ -7,7 +7,7 @@ import { createNamespacedHelpers } from 'vuex'
 import { CREATE_WORKSPACE, FETCH_WORKSPACE, GET_WORKSPACE } from '../../store/types-workspace'
 import WorkspaceBuilder from '../../components/WorkspaceBuilder'
 import { INIT } from '../../store/types-user'
-const { mapState: mapWorkspaceState, mapActions: mapWorkspaceActions, mapGetters: mapWorkspaceGetters } = createNamespacedHelpers('workspace')
+const { mapActions: mapWorkspaceActions, mapGetters: mapWorkspaceGetters } = createNamespacedHelpers('workspace')
 const { mapActions: mapUserActions } = createNamespacedHelpers('user')
 
 export default {
@@ -20,9 +20,7 @@ export default {
     }
   },
   data () {
-    return {
-      ...mapWorkspaceState,
-    }
+    return {}
   },
   computed: {
     ...mapWorkspaceGetters({
