@@ -73,6 +73,15 @@
           "createdBy": "system"
         }
       },
+      "pid": {
+        "name": "pid",
+        "type": "patient",
+        "default": "",
+        "comment": "The patient that this data source entity is related to.",
+        "extra": {
+          "createdBy": "system"
+        }
+      },
       "source": {
         "name": "source",
         "type": "string",

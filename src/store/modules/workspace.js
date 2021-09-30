@@ -234,7 +234,7 @@ export const workspace = {
   },
   actions: {
 
-    [FETCH_ALL_WORKSPACES] ({ commit, rootGetters }) {
+    [FETCH_ALL_WORKSPACES] ({ dispatch, commit, rootGetters }) {
       console.log("Fetching All Workspaces:")
       // Get meta data from the user module
       const userMeta = rootGetters['user/GET_USER_META']
@@ -251,6 +251,9 @@ export const workspace = {
             const workspaces = response.data
             workspaces.forEach(workspace => {
               commit(SET_WORKSPACE, { workspaceId: workspace.id, workspace: workspace })
+
+              // Tell VUEX to create a new navigation item for this workspace to store navigation state
+              dispatch('user/ADD_WORKSPACE_TO_NAVIGATION', { workspaceId: workspace.id }, { root: true })
             })
             resolve(workspaces)
           }).catch(function () {
@@ -340,16 +343,16 @@ export const workspace = {
                 'Content-Type': 'application/json;charset=utf-8'
               }
             }).then(function (response) {
-            const workspace = response.data
-            commit(SET_WORKSPACE, { workspaceId: workspace.id, workspace: workspace })
+              const workspace = response.data
+              commit(SET_WORKSPACE, { workspaceId: workspace.id, workspace: workspace })
 
-            // Tell VUEX to create a new navigation item for this workspace to store navigation state
-            dispatch('user/ADD_WORKSPACE_TO_NAVIGATION', { workspaceId: newWorkspace.id }, { root: true })
+              // Tell VUEX to create a new navigation item for this workspace to store navigation state
+              dispatch('user/ADD_WORKSPACE_TO_NAVIGATION', { workspaceId: workspace.id }, { root: true })
 
-            resolve(workspace)
-          }).catch(function () {
-            alert('there was an error, you may need to log back in')
-          })
+              resolve(workspace)
+            }).catch(function () {
+              alert('there was an error, you may need to log back in')
+            })
         })
       }
     },

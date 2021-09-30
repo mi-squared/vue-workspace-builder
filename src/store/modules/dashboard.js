@@ -185,13 +185,17 @@ export const dashboard = {
   },
   actions: {
 
-    [CREATE_DASHBOARD]({ dispatch, commit }, { workspaceId, dashboard }) {
-      let newDashboard = createDashboard(dashboard)
-      // Create the dashboard, the rows, and add the dashboard ID to the workspace
-      commit(SET_DASHBOARD, { dashboardId: newDashboard.id, dashboard: newDashboard });
+    [CREATE_DASHBOARD]({ dispatch, commit, rootGetters }, { workspaceId, dashboard }) {
 
-      // Dispatch to workspace module to add this form to workspace
-      dispatch('workspace/ADD_DASHBOARD_TO_WORKSPACE', { workspaceId, dashboardId: newDashboard.id}, { root: true })
+      // Get meta data from the user module
+      const userMeta = rootGetters['user/GET_USER_META']
+      createDashboard(dashboard, userMeta).then(newDashboard => {
+        // Create the dashboard, the rows, and add the dashboard ID to the workspace
+        commit(SET_DASHBOARD, { dashboardId: newDashboard.id, dashboard: newDashboard });
+
+        // Dispatch to workspace module to add this form to workspace
+        dispatch('workspace/ADD_DASHBOARD_TO_WORKSPACE', { workspaceId, dashboardId: newDashboard.id}, { root: true })
+      })
     },
 
     [SET_DASHBOARD] ({ commit }, { dashboardId, dashboard }) {

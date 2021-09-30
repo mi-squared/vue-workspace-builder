@@ -1,25 +1,12 @@
 import axios from 'axios'
+import { newDashboard, newWorkspace } from './model-builder'
 
 export function ws_init() {
   return axios.get("/interface/modules/custom_modules/oe-workspace-server/init.php")
 }
 
 export function createWorkspace(formData) {
-  const defaultDataSource = require('./data/_data_source_template.json')
-  return {
-    // id: Math.floor(Math.random() * 32768),
-    id: null,
-    title: "[New Workspace]",
-    administrator: 1,
-    dataSource: defaultDataSource,
-    displayOnPatientMenu: false,
-    dashboards: [],
-    forms: [],
-    filters: [],
-    actions: [],
-
-    ...formData,
-  };
+  return newWorkspace(formData)
 }
 
 export function createDataSourceColumn(formData) {
@@ -33,22 +20,30 @@ export function createDataSourceColumn(formData) {
   };
 }
 
-export function createDashboard(formData) {
-  return {
-    id: Math.floor(Math.random() * 32768),
-    title: "[New Dashboard]",
-    displayDuration: false,
-    durationModel: {
-      ranges: [],
-      units: "",
-      outOfRangeColor: ""
-    },
-    displayNewButton: false,
-    filters: [],
-    headers: [],
+export function createDashboard(formData, userMeta) {
 
-    ...formData,
-  };
+  // Use the model-builder to create a new dashboard using the submitted data
+  const dashboard = newDashboard(formData)
+
+  return new Promise( (resolve) => {
+    //id: Math.floor(Math.random() * 32768),
+    axios.post('/apis/api/dashboard', {
+        params: {
+          dashboard: dashboard
+        }
+      },
+      {
+        headers: {
+          'apicsrftoken': userMeta.csrfToken,
+          'Content-Type': 'application/json;charset=utf-8'
+        }
+      }).then(function (response) {
+      const dashboard = response.data
+      resolve(dashboard)
+    }).catch(function () {
+      alert('there was an error.')
+    })
+  })
 }
 
 export function createForm(workspaceId, formData) {

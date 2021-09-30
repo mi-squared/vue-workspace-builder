@@ -92,9 +92,9 @@
             </thead>
             <tbody>
               <tr
-                v-for="column in spec.columns"
+                v-for="column in columns"
                 :key="column.name"
-                :class="{ grey: column.extra.createdBy == 'system' }"
+                :class="getClassForColumn(column)"
               >
                 <td class="text-left">{{ column.name }}</td>
                 <td class="text-left">{{ column.type }}</td>
@@ -154,6 +154,9 @@ export default {
     spec() {
       return this.activeWorkspace.dataSource.spec
     },
+    columns() {
+      return Object.values(this.spec.columns)
+    }
   },
   methods: {
     ...mapWorkspaceActions({
@@ -178,7 +181,16 @@ export default {
         comment: "",
       }
     },
+    getClassForColumn(column) {
+      if (column.extra != undefined &&
+        column.extra.createdBy == 'system') {
+        return 'grey'
+      }
+    }
   },
+  mounted() {
+    console.log("PageDataSource Mounted")
+  }
 }
 </script>
 
