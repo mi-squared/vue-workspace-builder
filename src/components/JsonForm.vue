@@ -1,10 +1,13 @@
 <template>
 <v-form v-model="valid">
+  <!-- TODO Does this need:
+
+    -->
   <v-jsf
     v-model="activeModel"
-    :key="Math.floor(Math.random() * 32768)"
+    :key="form.id"
     :schema="schema"
-    :options="activeOptions"
+    :options="optionsForForm"
     @input="onFormChange"
     @input-child="onFormChange"
     @change="onFormChange"
@@ -63,14 +66,20 @@ export default {
       activeModel: { ...this.model }
     }
   },
-  computed: {
-    activeOptions() {
+  computed: {},
+  methods: {
+    onFormChange(param) {
+      this.optionsForForm = this.calculateOptions()
+      console.log(param)
+    },
+    calculateOptions() {
       let that = this
+      let options = { ...this.optionsForForm }
       // Need to combine the options stored in VUEX, and merge with computed options
       // so that we can provide the context for conditional rendering. Here we process
       // the conditional logic and set the properties on the options object. We build context here
-      that.optionsForForm.idPrefix = 'example-_x-if-'
-      that.optionsForForm.context = {}
+      options.idPrefix = 'example-_x-if-'
+      options.context = {}
       Object.values(this.schema.properties).forEach(function(properties) {
 
         // Get the string key for context object
@@ -78,7 +87,7 @@ export default {
         contextKey = contextKey.replace("context.", "")
 
         // Always set option to show by default
-        that.optionsForForm.context[contextKey] = true
+        options.context[contextKey] = true
         if (properties.hasConditionalLogic) {
           // Check to see if conditions are met to display this field
 
@@ -124,22 +133,19 @@ export default {
           // If the result of our conditions are to "NOT SHOW" then we set our context key to false,
           // which will tell VJSF to not display the form using v-if directive
           if (!show) {
-            that.optionsForForm.context[contextKey] = false
+            options.context[contextKey] = false
           }
 
           console.log('Condition Result: show = ' + show)
         }
       })
 
-      return this.optionsForForm
-    }
-  },
-  methods: {
-    onFormChange(param) {
-      console.log(param)
+      return options
     }
   },
   mounted () {
+    console.log("JsonForm Mounted")
+    this.optionsForForm = this.calculateOptions()
   }
 }
 </script>

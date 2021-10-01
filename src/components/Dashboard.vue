@@ -180,11 +180,13 @@
               <v-card-text>
                 <v-container>
                   <JsonForm
+                    v-if="newEntityForm"
                     :form="newEntityForm"
                     :model="newEntityModel"
                     :schema="newEntityForm.schema"
                     :options="newEntityForm.options"
                   ></JsonForm>
+                  <v-alert v-else dark color="red">No Form Selected For New Entity</v-alert>
                 </v-container>
                 <small>*indicates required field</small>
               </v-card-text>
@@ -200,7 +202,7 @@
                 <v-btn
                   color="blue darken-1"
                   text
-                  @click="dialog = false"
+                  @click="saveNewEntity"
                 >
                   Save
                 </v-btn>
@@ -307,8 +309,13 @@ export default {
       getForm: GET_FORM
     }),
     newEntityForm() {
-      const formId = this.dashboard.newEntityFormId
-      return this.getForm(formId)
+      let form = null
+      if (this.dashboard.newEntityFormId) {
+        const formId = this.dashboard.newEntityFormId
+        form =  this.getForm(formId)
+      }
+
+      return form
     },
     headers () {
       return this.dashboard.headers
@@ -372,6 +379,10 @@ export default {
       this.snack = true
       this.snackColor = 'error'
       this.snackText = 'Canceled'
+    },
+    saveNewEntity () {
+      // Save the entity
+      this.dialog = false
     },
     open () {
       this.snack = true
