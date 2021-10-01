@@ -164,7 +164,7 @@
 
       </v-data-table>
 
-      <!-- FOrm Dialog -->
+      <!-- Form Dialog for NEW button-->
       <template>
         <v-row justify="center">
           <v-dialog
@@ -179,7 +179,12 @@
               </v-card-title>
               <v-card-text>
                 <v-container>
-                  <JsonForm></JsonForm>
+                  <JsonForm
+                    :form="newEntityForm"
+                    :model="newEntityModel"
+                    :schema="newEntityForm.schema"
+                    :options="newEntityForm.options"
+                  ></JsonForm>
                 </v-container>
                 <small>*indicates required field</small>
               </v-card-text>
@@ -229,6 +234,9 @@ const { mapGetters: mapDashboardGetters, mapActions: mapDashboardActions } = cre
 import { INIT } from '../store/types-user'
 const { mapActions: mapUserActions } = createNamespacedHelpers('user')
 
+import { GET_FORM } from '../store/types-form'
+const { mapGetters: mapFormGetters } = createNamespacedHelpers('form')
+
 export default {
   name: 'Dashboard',
   props: {
@@ -247,6 +255,7 @@ export default {
   },
   data () {
     return {
+      newEntityModel: {},
       loaded: false,
       isPreview: this.preview || false,
       skeletonLoaderAttrs: {
@@ -294,6 +303,13 @@ export default {
     ...mapListGetters({
       getList: GET_LIST
     }),
+    ...mapFormGetters({
+      getForm: GET_FORM
+    }),
+    newEntityForm() {
+      const formId = this.dashboard.newEntityFormId
+      return this.getForm(formId)
+    },
     headers () {
       return this.dashboard.headers
     },
