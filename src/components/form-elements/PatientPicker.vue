@@ -145,6 +145,9 @@ export default {
       drawer: false, // Matching patients nav drawer
       modal: false, // DOB date-picker modal
     }
+  },
+  mounted () {
+
   }
 }
 </script>

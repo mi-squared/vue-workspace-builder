@@ -51,7 +51,7 @@
 
             <v-switch
                 v-model="activeDashboard.displayDuration"
-                label="Display 'Date Added' Column"
+                label="Color-code the 'Date Added' Column"
                 hint="Displays the date and time that an entity was added to this dashboard"
             ></v-switch>
             <v-divider></v-divider>

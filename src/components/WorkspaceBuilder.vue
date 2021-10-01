@@ -17,7 +17,11 @@
               <v-card-text>
                 <v-form>
                   <v-text-field label="Title" v-model="activeWorkspace.title"></v-text-field>
+
+                  <v-select label="Default Dashboard" v-model="activeWorkspace.defaultDashboard" :items="dashboardOptions"></v-select>
+
                   <v-select label="Administrator" v-model="activeWorkspace.administrator" :items="administrators" item-text="displayName" item-value="userId" hint="The administrator of this workspace" persistent-hint></v-select>
+
                   <v-switch
                     v-model="activeWorkspace.displayOnPatientMenu"
                     label="Display as patient menu item"
@@ -183,7 +187,10 @@
 <script>
 import { createNamespacedHelpers } from 'vuex'
 import { GET_WORKSPACE, SET_WORKSPACE } from '../store/types-workspace'
+import { GET_DASHBOARD } from '../store/types-dashboard'
 const { mapActions: mapWorkspaceActions, mapGetters: mapWorkspaceGetters } = createNamespacedHelpers('workspace')
+const { mapGetters: mapDashboardGetters } = createNamespacedHelpers('dashboard')
+
 export default {
   name: "WorkspaceBuilder",
   props: {
@@ -214,9 +221,28 @@ export default {
     ...mapWorkspaceGetters({
       getWorkspace: GET_WORKSPACE
     }),
+    ...mapDashboardGetters({
+      getDashboard: GET_DASHBOARD
+    }),
 
     title () {
       return this.activeWorkspace.title
+    },
+    dashboardOptions() {
+      // return options for dashboard when entity is created outside, but we
+      // don't want to fetch from API, just use getter
+      let options = []
+      // Object.values(this.activeWorkspace.dashboards).forEach(dashboardId => {
+      //   const dashboard = this.getDashboard(dashboardId)
+      //   // If the dashboards haven't loaded from API yet, they will be undefined
+      //   if (dashboard != undefined) {
+      //     options.push({
+      //       text: dashboard.title,
+      //       value: dashboard.id
+      //     })
+      //   }
+      // })
+      return options
     },
     administrators () {
       return this.$store.state.administrators

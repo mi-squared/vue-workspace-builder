@@ -69,6 +69,7 @@ export default {
   computed: {},
   methods: {
     onFormChange(param) {
+      this.$emit('changed', this.activeModel)
       this.optionsForForm = this.calculateOptions()
       console.log(param)
     },

@@ -1,6 +1,6 @@
 import {
   ALL_DASHBOARDS,
-  CREATE_DASHBOARD,
+  CREATE_DASHBOARD, CREATE_ENTITY,
   FETCH_DASHBOARD, FETCH_DASHBOARD_ROWS,
   GET_DASHBOARD,
   GET_DASHBOARD_ROWS,
@@ -8,7 +8,7 @@ import {
 } from '../types-dashboard'
 import axios from 'axios'
 import Vue from 'vue'
-import { createDashboard, getDashboardById, updateDashboard } from '../../api'
+import { createDashboard, createEntity, getDashboardById, updateDashboard } from '../../api'
 
 export const dashboard = {
   namespaced: true,
@@ -29,6 +29,20 @@ export const dashboard = {
 
   },
   actions: {
+
+    [CREATE_ENTITY] ({ commit, rootGetters }, { workspaceId, dashboardId, entity }) {
+      // Push a new entity and then update the dashboard rows
+      // Get meta data from the user module
+      const userMeta = rootGetters['user/GET_USER_META']
+      createEntity(workspaceId, dashboardId, entity, userMeta).then(newEntity => {
+        commit(CREATE_ENTITY, { dashboardId: newEntity.dashboard_id, entity: newEntity })
+      })
+    },
+
+    // [PUSH_ENTITY] ({ dispatch, commit, rootGetters }, { workspaceId, entity }) {
+    //   // Push an update to an entity and then update the dashboard rows
+    //
+    // },
 
     [CREATE_DASHBOARD]({ dispatch, commit, rootGetters }, { workspaceId, dashboard }) {
 
@@ -104,6 +118,10 @@ export const dashboard = {
     // },
   },
   mutations: {
+
+    [CREATE_ENTITY] (state, { dashboardId, entity }) {
+      state.rows[dashboardId].push(entity)
+    },
 
     // Dashboard Builder Mutations
     [SET_DASHBOARD] (state, { dashboardId, dashboard }) {

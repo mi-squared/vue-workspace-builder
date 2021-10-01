@@ -9,6 +9,30 @@ export function createWorkspace(formData) {
   return newWorkspace(formData)
 }
 
+export function createEntity(workspaceId, dashboardId, entity, userMeta)
+{
+  return new Promise((resolve) => {
+    axios.post('/apis/api/entity', {
+        params: {
+          workspaceId: workspaceId,
+          dashboardId: dashboardId,
+          entity: entity
+        }
+      },
+      {
+        headers: {
+          'apicsrftoken': userMeta.csrfToken,
+          'Content-Type': 'application/json;charset=utf-8'
+        }
+      }).then(function (response) {
+      const entity = response.data
+      resolve(entity)
+    }).catch(function () {
+      alert('there was an error.')
+    })
+  })
+}
+
 export function createDataSourceColumn(userId, workspaceId, column, userMeta) {
   const dataSourceColumn = newDataSourceColumn(userId, column)
   return new Promise((resolve) => {

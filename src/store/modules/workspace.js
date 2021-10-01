@@ -7,7 +7,6 @@ import {
   SET_WORKSPACE
 } from '../types-workspace'
 import Vue from "vue";
-// import axios from 'axios'
 import { createDataSourceColumn, createWorkspace } from '../../api'
 import axios from 'axios'
 
@@ -108,7 +107,8 @@ export const workspace = {
       },
 
     },
-    workspaces: {}
+    workspaces: {},
+    patients: {}
   },
   getters: {
     [GET_SETTINGS]: state => state.settings,
@@ -343,6 +343,8 @@ export const workspace = {
         commit(SET_WORKSPACE, { workspaceId, workspace })
       })
     },
+
+
   },
   mutations: {
 

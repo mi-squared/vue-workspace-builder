@@ -47,44 +47,45 @@
 
 
         <!-- Header Row template - with column filters -->
-        <template v-slot:body.prepend>
-          <!-- Hide on screens smaller than "small" otherwise display as table-row -->
-          <tr class='d-none d-sm-table-row'>
+        <!-- TODO implement column filters based on columns -->
+<!--        <template v-slot:body.prepend>-->
+<!--          &lt;!&ndash; Hide on screens smaller than "small" otherwise display as table-row &ndash;&gt;-->
+<!--          <tr class='d-none d-sm-table-row'>-->
 
-            <!--            If we are showing the Date Added to Board, then this is the first column -->
-            <td>&nbsp;</td>
-            <td>
-              <v-text-field v-model="filters.firstName" type="text" label="First Name"></v-text-field>
-            </td>
-            <td>
-              <v-text-field v-model="filters.lastName" type="text" label="Last Name"></v-text-field>
-            </td>
-            <td>
-              <v-text-field v-model="filters.DOB" type="number" label="Less than"></v-text-field>
-            </td>
-            <td>
-              <v-select
-                :items="facilities"
-                item-text="title"
-                item-value="value"
-                v-model="filters.facility"
-                label="Facilities"
-              ></v-select>
-            </td>
-            <td>
-              <v-text-field v-model="filters.status" type="number" label="Less than"></v-text-field>
-            </td>
-            <td>
-              <v-text-field v-model="filters.completion" type="number" label="Exact number"></v-text-field>
-            </td>
-            <td>
+<!--            &lt;!&ndash;            If we are showing the Date Added to Board, then this is the first column &ndash;&gt;-->
+<!--            <td>&nbsp;</td>-->
+<!--            <td>-->
+<!--              <v-text-field v-model="filters.firstName" type="text" label="First Name"></v-text-field>-->
+<!--            </td>-->
+<!--            <td>-->
+<!--              <v-text-field v-model="filters.lastName" type="text" label="Last Name"></v-text-field>-->
+<!--            </td>-->
+<!--            <td>-->
+<!--              <v-text-field v-model="filters.DOB" type="number" label="Less than"></v-text-field>-->
+<!--            </td>-->
+<!--            <td>-->
+<!--              <v-select-->
+<!--                :items="facilities"-->
+<!--                item-text="title"-->
+<!--                item-value="value"-->
+<!--                v-model="filters.facility"-->
+<!--                label="Facilities"-->
+<!--              ></v-select>-->
+<!--            </td>-->
+<!--            <td>-->
+<!--              <v-text-field v-model="filters.status" type="number" label="Less than"></v-text-field>-->
+<!--            </td>-->
+<!--            <td>-->
+<!--              <v-text-field v-model="filters.completion" type="number" label="Exact number"></v-text-field>-->
+<!--            </td>-->
+<!--            <td>-->
 
-            </td>
-            <td>
-              <v-spacer></v-spacer>
-            </td>
-          </tr>
-        </template>
+<!--            </td>-->
+<!--            <td>-->
+<!--              <v-spacer></v-spacer>-->
+<!--            </td>-->
+<!--          </tr>-->
+<!--        </template>-->
 
         <!-- Display the created_datetime within a chip that indicates how old (attrition) the row is -->
         <template v-slot:item.moved_to_dashboard_date="{ item }">
@@ -185,6 +186,7 @@
                     :model="newEntityModel"
                     :schema="newEntityForm.schema"
                     :options="newEntityForm.options"
+                    @changed="newEntityChanged"
                   ></JsonForm>
                   <v-alert v-else dark color="red">No Form Selected For New Entity</v-alert>
                 </v-container>
@@ -229,7 +231,13 @@ import { GET_LIST } from '../store/types-list'
 
 const { mapGetters: mapListGetters } = createNamespacedHelpers('list')
 
-import { FETCH_DASHBOARD, FETCH_DASHBOARD_ROWS, GET_DASHBOARD, GET_DASHBOARD_ROWS } from '../store/types-dashboard'
+import {
+  CREATE_ENTITY,
+  FETCH_DASHBOARD,
+  FETCH_DASHBOARD_ROWS,
+  GET_DASHBOARD,
+  GET_DASHBOARD_ROWS
+} from '../store/types-dashboard'
 
 const { mapGetters: mapDashboardGetters, mapActions: mapDashboardActions } = createNamespacedHelpers('dashboard')
 
@@ -365,7 +373,8 @@ export default {
   methods: {
     ...mapDashboardActions({
       fetchDashboard: FETCH_DASHBOARD,
-      fetchDashboardRows: FETCH_DASHBOARD_ROWS
+      fetchDashboardRows: FETCH_DASHBOARD_ROWS,
+      createEntity: CREATE_ENTITY
     }),
     ...mapUserActions({
       initUser: INIT
@@ -382,7 +391,16 @@ export default {
     },
     saveNewEntity () {
       // Save the entity
+      console.log("Saving New Entity: " + this.newEntityModel)
+      this.createEntity({
+        workspaceId: this.dashboard.workspaceId,
+        dashboardId: this.dashboard.id,
+        entity: this.newEntityModel
+      })
       this.dialog = false
+    },
+    newEntityChanged(model) {
+      this.newEntityModel = model
     },
     open () {
       this.snack = true
@@ -411,8 +429,10 @@ export default {
         const range = this.dashboard.durationModel.ranges[i]
         // Convert our ranges to seconds
         const minSeconds = moment.duration(range.range[0], this.dashboard.durationModel.units).asSeconds()
-        const maxSeconds = moment.duration(range.range[1], this.dashboard.durationModel.units).asSeconds()
-        if (seconds > minSeconds && seconds <= maxSeconds) {
+        // We add one to the max range before we convert so we make sure to cover the in-between
+        // because the ranges are like 0-1, 2-5, 6-10 where the next min is one more than the previous max
+        const maxSeconds = moment.duration(range.range[1] + 1, this.dashboard.durationModel.units).asSeconds()
+        if (seconds >= minSeconds && seconds < maxSeconds) {
           return range.color
         }
       }
