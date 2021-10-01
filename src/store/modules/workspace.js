@@ -8,7 +8,7 @@ import {
 } from '../types-workspace'
 import Vue from "vue";
 // import axios from 'axios'
-import { createWorkspace } from '../../api'
+import { createDataSourceColumn, createWorkspace } from '../../api'
 import axios from 'axios'
 
 export const workspace = {
@@ -298,20 +298,21 @@ export const workspace = {
     //   }
     // },
 
-    [CREATE_DATA_SOURCE_COLUMN]: ({ commit }, { userId, workspaceId, column }) => {
-      // POST to create new column
+    [CREATE_DATA_SOURCE_COLUMN]: ({ commit, dispatch, getters, rootGetters }, { userId, workspaceId, column }) => {
+      // Get meta data from the user module
+      const userMeta = rootGetters['user/GET_USER_META']
 
       if (userId === null) {
         console.log('Error: userId not set')
       }
-      // Then commit mutation
-      column.extra = {
-        createdBy: userId,
-        createdDate: Date.now(),
-      };
-      commit(CREATE_DATA_SOURCE_COLUMN, {
-        workspaceId: workspaceId,
-        column: column,
+
+      createDataSourceColumn(userId, workspaceId, column, userMeta).then(({ workspaceId, column }) => {
+        let workspace = getters.GET_WORKSPACE(workspaceId)
+        workspace.dataSource.spec.columns[column.name] = column
+        // Then commit mutation
+        dispatch(PUSH_WORKSPACE, { workspaceId, workspace }).then(workspace => {
+          commit(SET_WORKSPACE, { workspaceId, workspace })
+        })
       })
     },
 

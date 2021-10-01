@@ -16,14 +16,19 @@ export function newWorkspace(formData) {
   };
 }
 
-export function newDataSourceColumn(formData) {
+export function newDataSourceColumn(userId, column) {
+
   return {
     title: "[New Data Source Column]",
     name: "",
     type: "",
     comment: "",
+    extra: {
+      createdBy: userId,
+      createdDate: Date.now(),
+    },
 
-    ...formData,
+    ...column,
   };
 }
 

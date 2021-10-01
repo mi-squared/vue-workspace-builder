@@ -1,5 +1,5 @@
 import axios from 'axios'
-import { newDashboard, newWorkspace } from './model-builder'
+import { newDashboard, newDataSourceColumn, newWorkspace } from './model-builder'
 
 export function ws_init() {
   return axios.get("/interface/modules/custom_modules/oe-workspace-server/init.php")
@@ -9,15 +9,27 @@ export function createWorkspace(formData) {
   return newWorkspace(formData)
 }
 
-export function createDataSourceColumn(formData) {
-  return {
-    title: "[New Data Source Column]",
-    name: "",
-    type: "",
-    comment: "",
-
-    ...formData,
-  };
+export function createDataSourceColumn(userId, workspaceId, column, userMeta) {
+  const dataSourceColumn = newDataSourceColumn(userId, column)
+  return new Promise((resolve) => {
+    axios.post('/apis/api/datasourcecolumn', {
+        params: {
+          workspaceId: workspaceId,
+          column: dataSourceColumn
+        }
+      },
+      {
+        headers: {
+          'apicsrftoken': userMeta.csrfToken,
+          'Content-Type': 'application/json;charset=utf-8'
+        }
+      }).then(function (response) {
+        const dataSourceColumn = response.data
+        resolve({ workspaceId, column: dataSourceColumn })
+      }).catch(function () {
+        alert('there was an error.')
+      })
+  })
 }
 
 export function createDashboard(formData, userMeta) {
