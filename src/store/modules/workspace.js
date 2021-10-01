@@ -171,6 +171,11 @@ export const workspace = {
               Object.values(workspace.dashboards).forEach(dashboardId => {
                 dispatch('dashboard/FETCH_DASHBOARD', { dashboardId }, { root: true })
               })
+
+              // Iterate over all form IDs and fetch the forms TODO this could be done in a bulk API
+              Object.values(workspace.forms).forEach(formId => {
+                dispatch('form/FETCH_FORM', { formId }, { root: true })
+              })
             })
             resolve(workspaces)
           }).catch(function () {

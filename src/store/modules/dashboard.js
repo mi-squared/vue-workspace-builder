@@ -8,7 +8,7 @@ import {
 } from '../types-dashboard'
 import axios from 'axios'
 import Vue from 'vue'
-import { createDashboard, updateDashboard } from '../../api'
+import { createDashboard, getDashboardById, updateDashboard } from '../../api'
 
 export const dashboard = {
   namespaced: true,
@@ -38,7 +38,7 @@ export const dashboard = {
         // Create the dashboard, the rows, and add the dashboard ID to the workspace
         commit(SET_DASHBOARD, { dashboardId: newDashboard.id, dashboard: newDashboard });
 
-        // Dispatch to workspace module to add this form to workspace
+        // Dispatch to workspace module to add this dashboard to workspace
         dispatch('workspace/ADD_DASHBOARD_TO_WORKSPACE', { workspaceId, dashboardId: newDashboard.id}, { root: true })
       })
     },
@@ -70,21 +70,8 @@ export const dashboard = {
 
       // If we have a token, make the API call
       if (userMeta.csrfToken) {
-        return new Promise((resolve) => {
-          axios.get('/apis/api/dashboard', {
-            params: {
-                id: dashboardId
-            },
-            headers: {
-              'apicsrftoken': userMeta.csrfToken
-            }
-          }).then(function (response) {
-            const dashboard = response.data
-            commit(SET_DASHBOARD, { dashboardId: dashboard.id, dashboard })
-            resolve(dashboard)
-          }).catch(function () {
-            alert('there was an error, you may need to log back in')
-          })
+        getDashboardById(dashboardId, userMeta).then(dashboard => {
+          commit(SET_DASHBOARD, { dashboardId: dashboard.id, dashboard })
         })
       }
     },

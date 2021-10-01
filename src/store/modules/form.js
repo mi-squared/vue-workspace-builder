@@ -1,8 +1,8 @@
-import { createForm } from '../../api'
+import { createForm, getFormById, updateForm } from '../../api'
 import Vue from 'vue'
 import {
   ALL_FORMS,
-  CREATE_FORM,
+  CREATE_FORM, FETCH_FORM,
   GET_FORM,
   SET_FORM,
   SET_FORM_GRID,
@@ -25,12 +25,31 @@ export const form = {
   },
   actions: {
 
-    [CREATE_FORM]({ dispatch, commit }, { workspaceId, form }) {
-      const newForm = createForm(workspaceId, form);
-      commit(CREATE_FORM, { formId: newForm.id, form: newForm });
+    [CREATE_FORM]({ dispatch, commit, rootGetters }, { workspaceId, form }) {
 
-      // Dispatch to workspace module to add this form to workspace
-      dispatch('workspace/ADD_FORM_TO_WORKSPACE', { workspaceId, formId: newForm.id}, { root: true })
+      // Get meta data from the user module
+      const userMeta = rootGetters['user/GET_USER_META']
+      createForm({ workspaceId, form }, userMeta).then(newForm => {
+        // Set the form using vuex mutation
+        commit(SET_FORM, { formId: newForm.id, form: newForm });
+
+        // Dispatch to workspace module to add this form to workspace
+        dispatch('workspace/ADD_FORM_TO_WORKSPACE', { workspaceId, formId: newForm.id}, { root: true })
+      })
+
+    },
+
+    [FETCH_FORM] ({ commit, rootGetters }, { formId }) {
+      console.log("Fetching Form: " + formId)
+      // Get meta data from the user module
+      const userMeta = rootGetters['user/GET_USER_META']
+
+      // If we have a token, make the API call
+      if (userMeta.csrfToken) {
+        getFormById(formId, userMeta).then(form => {
+          commit(SET_FORM, { formId: form.id, form })
+        })
+      }
     },
 
     [SET_FORM_GRID]: ({ commit }, { formId, grid }) => {
@@ -41,10 +60,13 @@ export const form = {
       commit(SET_FORM_SCHEMA, { formId, schema })
     },
 
-    [SET_FORM] ({ commit }, { formId, form }) {
-      return new Promise((resolve) => {
+    [SET_FORM] ({ commit, rootGetters }, { formId, form }) {
+
+      // Get meta data from the user module
+      const userMeta = rootGetters['user/GET_USER_META']
+      updateForm(form, userMeta).then(form => {
         commit(SET_FORM, { formId, form })
-        resolve(form)
+        return form
       })
     },
 
@@ -59,9 +81,6 @@ export const form = {
     [SET_FORM_GRID](state, { formId, grid }) {
       let form = state.forms[formId]
       Vue.set(form, 'grid', grid)
-    },
-    [CREATE_FORM]: (state, { formId, form }) => {
-      Vue.set(state.forms, formId, form)
     },
 
     [SET_FORM] (state, { formId, form }) {

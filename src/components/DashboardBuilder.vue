@@ -70,6 +70,13 @@
         <!-- Column list -->
         <v-tab-item :key="'tab-columns'">
           <v-list>
+
+            <v-list-item>
+              <!-- Button adn Dialog to add a new dashboard column -->
+              <DataSourceColPickerBtn :workspace="workspace" @selected="addColumn"></DataSourceColPickerBtn>
+
+            </v-list-item>
+            <v-divider></v-divider>
             <v-list-item-group
                 color="primary"
             >
@@ -96,55 +103,6 @@
               </draggable>
 
             </v-list-item-group>
-
-            <v-list-item>
-              <!-- Button adn Dialog to add a new dashboard column -->
-              <v-dialog v-model="showDashboardColumnSelector" width="500">
-                <template v-slot:activator="{ on, attrs }">
-                  <v-btn v-bind="attrs" v-on="on">
-                    + Add Column
-                  </v-btn>
-                </template>
-
-                <v-card>
-
-                  <v-card-title class="text-h5 grey lighten-2">
-                    Data Source Elements
-                  </v-card-title>
-
-                  <v-card-text>
-                    <v-list-item
-                      two-line
-                      v-for="(column, i) in dataSourceColumns"
-                      :key="i"
-                      link
-                      @click="addColumn(column)"
-                    >
-                      <v-list-item-content>
-                        <v-list-item-title>{{ column.name }}</v-list-item-title>
-                        <v-list-item-subtitle>{{
-                            column.comment
-                          }}</v-list-item-subtitle>
-                      </v-list-item-content>
-                    </v-list-item>
-                  </v-card-text>
-
-                  <v-divider></v-divider>
-
-                  <v-card-actions>
-                    <v-spacer></v-spacer>
-                    <v-btn
-                      color="primary"
-                      text
-                      @click="showDashboardColumnSelector = false"
-                    >
-                      Close
-                    </v-btn>
-                  </v-card-actions>
-                </v-card>
-              </v-dialog>
-
-            </v-list-item>
           </v-list>
 
           <!-- JSON schema preview -->
@@ -236,11 +194,13 @@ import MultiRangePicker from './MultiRangePicker'
 import DashboardPreviewButton from './DashboardPreviewButton'
 import { ALL_FORMS } from '../store/types-form'
 import { humanizeDataSourceString } from '../display-helpers'
+import DataSourceColPickerBtn from './DataSourceColPickerBtn'
 
 
 export default {
   name: "DashboardBuilder",
   components: {
+    DataSourceColPickerBtn,
     DashboardPreviewButton,
     MultiRangePicker,
     draggable
@@ -260,7 +220,6 @@ export default {
       isDirty: false,
       tab: null,
       drawer: null,
-      showDashboardColumnSelector: false,
       activeDashboardElement: {},
       validElement: true, // true if the properties of a new or modified column are valid
       activeDashboard: { ...this.dashboard }
@@ -308,8 +267,6 @@ export default {
       setDashboard: SET_DASHBOARD
     }),
     addColumn: function(column) {
-      // Hide the element selector modal
-      this.showDashboardColumnSelector = false
 
       // Map the data source column's properties on to the dashboard element
       this.activeDashboardElement = {

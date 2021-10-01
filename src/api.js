@@ -1,5 +1,5 @@
 import axios from 'axios'
-import { newDashboard, newDataSourceColumn, newWorkspace } from './model-builder'
+import { newDashboard, newDataSourceColumn, newForm, newWorkspace } from './model-builder'
 
 export function ws_init() {
   return axios.get("/interface/modules/custom_modules/oe-workspace-server/init.php")
@@ -29,6 +29,25 @@ export function createDataSourceColumn(userId, workspaceId, column, userMeta) {
       }).catch(function () {
         alert('there was an error.')
       })
+  })
+}
+
+export function getDashboardById(dashboardId, userMeta)
+{
+  return new Promise((resolve) => {
+    axios.get('/apis/api/dashboard', {
+      params: {
+        id: dashboardId
+      },
+      headers: {
+        'apicsrftoken': userMeta.csrfToken
+      }
+    }).then(function (response) {
+      const dashboard = response.data
+      resolve(dashboard)
+    }).catch(function () {
+      alert('there was an error, you may need to log back in')
+    })
   })
 }
 
@@ -82,15 +101,70 @@ export function updateDashboard(dashboard, userMeta) {
   })
 }
 
-export function createForm(workspaceId, formData) {
-  return {
-    id: Math.floor(Math.random() * 32768),
-    workspaceId: workspaceId,
-    title: "[New Form]",
-    grid: [],
-    options: {},
-    schema: {},
+export function getFormById(formId, userMeta)
+{
+  return new Promise((resolve) => {
+    axios.get('/apis/api/form', {
+      params: {
+        id: formId
+      },
+      headers: {
+        'apicsrftoken': userMeta.csrfToken
+      }
+    }).then(function (response) {
+      const form = response.data
+      resolve(form)
+    }).catch(function () {
+      alert('there was an error, you may need to log back in')
+    })
+  })
+}
 
-    ...formData,
-  };
+export function createForm(formData, userMeta) {
+  // Use the model-builder to create a new form using the submitted data
+  const form = newForm(formData.workspaceId, formData.form)
+
+  return new Promise( (resolve) => {
+    //id: Math.floor(Math.random() * 32768),
+    axios.post('/apis/api/form', {
+        params: {
+          workspaceId: formData.workspaceId,
+          form: form
+        }
+      },
+      {
+        headers: {
+          'apicsrftoken': userMeta.csrfToken,
+          'Content-Type': 'application/json;charset=utf-8'
+        }
+      }).then(function (response) {
+      const form = response.data
+      resolve(form)
+    }).catch(function () {
+      alert('there was an error.')
+    })
+  })
+}
+
+export function updateForm(form, userMeta) {
+
+  return new Promise((resolve) => {
+    axios.put('/apis/api/form',
+      {
+        params: {
+          form: form
+        }
+      },
+      {
+        headers: {
+          'apicsrftoken': userMeta.csrfToken,
+          'Content-Type': 'application/json;charset=utf-8'
+        }
+      }).then(function (response) {
+      const form = response.data
+      resolve(form)
+    }).catch(function () {
+      alert('there was an error.')
+    })
+  })
 }

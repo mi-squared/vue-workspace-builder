@@ -53,7 +53,8 @@ export function newDashboard(workspaceId, dashboard) {
 
 export function newForm(workspaceId, formData) {
   return {
-    id: Math.floor(Math.random() * 32768),
+    //id: Math.floor(Math.random() * 32768),
+    id: null,
     workspaceId: workspaceId,
     title: "[New Form]",
     grid: [],
