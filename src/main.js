@@ -2,6 +2,8 @@ import Vue from "vue";
 import vuetify from "@/plugins/vuetify"; // path to vuetify export
 import App from "./App.vue";
 
+import { makeServer } from "./server"
+
 import store from "./store";
 import router from "./router";
 
@@ -14,6 +16,10 @@ library.add(faCheck, faTimes, faCopy);
 Vue.component("font-awesome-icon", FontAwesomeIcon);
 
 Vue.config.productionTip = false;
+
+if (process.env.NODE_ENV === "development") {
+  makeServer()
+}
 
 import { createNamespacedHelpers } from 'vuex'
 import { INIT } from './store/types-user'
