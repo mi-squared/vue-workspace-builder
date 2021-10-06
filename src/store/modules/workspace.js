@@ -7,9 +7,7 @@ import {
   SET_WORKSPACE
 } from '../types-workspace'
 import Vue from "vue";
-// import axios from 'axios'
-import { createWorkspace } from '../../api'
-import axios from 'axios'
+import { createDataSourceColumn, createWorkspace, fetchAllWorkspaces, fetchWorkspace, pushWorkspace } from '../../api'
 
 export const workspace = {
   namespaced: true,
@@ -108,96 +106,8 @@ export const workspace = {
       },
 
     },
-    workspaces: {
-      // "1": {
-      //   "id": 1,
-      //   "title": "CET",
-      //   "administrator": 1,
-      //   "displayOnPatientMenu": false,
-      //   "dataSource": {
-      //     "spec": {
-      //       "columns": {
-      //         "id": {
-      //           "name": "id",
-      //           "type": "integer",
-      //           "comment": "",
-      //           "extra": {
-      //             "createdBy": "system",
-      //             "createdDate": "2021-06-20"
-      //           }
-      //         },
-      //         "created_date": {
-      //           "name": "created_date",
-      //           "type": "datetime",
-      //           "default": "",
-      //           "comment": "",
-      //           "extra": {
-      //             "createdBy": "system",
-      //             "createdDate": "2021-06-20"
-      //           }
-      //         },
-      //         "created_by": {
-      //           "name": "created_by",
-      //           "type": "user",
-      //           "default": "",
-      //           "comment": "refers to users.id",
-      //           "extra": {
-      //             "createdBy": "system",
-      //             "createdDate": "2021-06-20"
-      //           }
-      //         },
-      //         "updated_date": {
-      //           "name": "updated_date",
-      //           "type": "datetime",
-      //           "default": "",
-      //           "comment": "",
-      //           "extra": {
-      //             "createdBy": "system",
-      //             "createdDate": "2021-06-20"
-      //           }
-      //         },
-      //         "updated_by": {
-      //           "name": "updated_by",
-      //           "type": "user",
-      //           "default": "",
-      //           "comment": "refers to users.id",
-      //           "extra": {
-      //             "createdBy": "system",
-      //             "createdDate": "2021-06-20"
-      //           }
-      //         },
-      //         "source": {
-      //           "name": "source",
-      //           "type": "string",
-      //           "default": "",
-      //           "comment": "",
-      //           "extra": {
-      //             "createdBy": "system",
-      //             "createdDate": "2021-06-20"
-      //           }
-      //         }
-      //       },
-      //       "indexes": {
-      //         "id": {
-      //           "key": "PRIMARY",
-      //           "column": "id"
-      //         }
-      //       }
-      //     }
-      //   },
-      //   "dashboards": {
-      //     "10": 10,
-      //     "11": 11,
-      //     "12": 12
-      //   },
-      //   "forms": {
-      //     "100": 100
-      //   },
-      //   "filters": {
-      //     "199": 199
-      //   }
-      // },
-    },
+    workspaces: {},
+    patients: {}
   },
   getters: {
     [GET_SETTINGS]: state => state.settings,
@@ -213,7 +123,8 @@ export const workspace = {
     [GET_DASHBOARDS]: (state, getters, rootState, rootGetters) => workspaceId => {
       let dashboards = []
       Object.keys(state.workspaces[workspaceId].dashboards).forEach(dashboardId => {
-        dashboards.push(rootGetters['dashboard/GET_DASHBOARD'](dashboardId))
+        const dashboard = rootGetters['dashboard/GET_DASHBOARD'](dashboardId)
+        dashboards.push(dashboard)
       })
       return dashboards
     },
@@ -241,24 +152,31 @@ export const workspace = {
 
       // If we have a token, make the API call
       if (userMeta.csrfToken) {
-        return new Promise((resolve) => {
-          axios.get('/apis/api/workspaces', {
-            headers: {
-              'apicsrftoken': userMeta.csrfToken
-            }
-          }).then(function (response) {
-            // Set all the workspaces that we get in the response
-            const workspaces = response.data
-            workspaces.forEach(workspace => {
-              commit(SET_WORKSPACE, { workspaceId: workspace.id, workspace: workspace })
+        // Don't return the promise that is created in the api,
+        // we need to wait until all of the dashboards and forms are loaded into vuex,
+        // then we can resolve.
+        return new Promise(resolve => {
+          fetchAllWorkspaces(userMeta).then(workspaces => {
+              // Set all the workspaces that we get in the response
+              workspaces.forEach(workspace => {
+                commit(SET_WORKSPACE, { workspaceId: workspace.id, workspace: workspace })
 
-              // Tell VUEX to create a new navigation item for this workspace to store navigation state
-              dispatch('user/ADD_WORKSPACE_TO_NAVIGATION', { workspaceId: workspace.id }, { root: true })
+                // Tell VUEX to create a new navigation item for this workspace to store navigation state
+                dispatch('user/ADD_WORKSPACE_TO_NAVIGATION', { workspaceId: workspace.id }, { root: true })
+
+                // Iterate over all dashboard IDs and fetch the dashboards TODO this could be done in a bulk API
+                Object.values(workspace.dashboards).forEach(dashboardId => {
+                  dispatch('dashboard/FETCH_DASHBOARD', { dashboardId }, { root: true })
+                })
+
+                // Iterate over all form IDs and fetch the forms TODO this could be done in a bulk API
+                Object.values(workspace.forms).forEach(formId => {
+                  dispatch('form/FETCH_FORM', { formId }, { root: true })
+                })
+              })
+
+              resolve(workspaces)
             })
-            resolve(workspaces)
-          }).catch(function () {
-            alert('there was an error, you may need to log back in')
-          })
         })
       } else {
         alert("You have been logged out due to a period of inactivity, please log in gain.")
@@ -272,21 +190,8 @@ export const workspace = {
 
       // If we have a token, make the API call
       if (userMeta.csrfToken) {
-        return new Promise((resolve) => {
-          axios.get('/apis/api/workspace', {
-            params: {
-              id: workspaceId
-            },
-            headers: {
-              'apicsrftoken': userMeta.csrfToken
-            }
-          }).then(function (response) {
-            const workspace = response.data
-            commit(SET_WORKSPACE, { workspaceId: workspace.id, workspace: workspace })
-            resolve(workspace)
-          }).catch(function () {
-            alert('there was an error, you may need to log back in')
-          })
+        fetchWorkspace(workspaceId, userMeta).then(workspace => {
+          commit(SET_WORKSPACE, { workspaceId: workspace.id, workspace: workspace })
         })
       }
     },
@@ -298,27 +203,10 @@ export const workspace = {
 
       // If we have a token, make the API call
       if (userMeta.csrfToken) {
-        return new Promise((resolve) => {
-          axios.put('/apis/api/workspace', {
-            params: {
-              id: workspaceId,
-              workspace: workspace
-            }
-          },
-            {
-          headers: {
-            'apicsrftoken': userMeta.csrfToken,
-            'Content-Type': 'application/json;charset=utf-8'
-          }
-        }
-          ).then(function (response) {
-            const workspace = response.data
-            // Setting workspace mutation happens in set action
-            // commit(SET_WORKSPACE, { workspaceId: workspace.id, workspace: workspace })
-            resolve(workspace)
-          }).catch(function () {
-            alert('there was an error, you may need to log back in')
-          })
+        pushWorkspace(workspaceId, workspace, userMeta).then(workspace => {
+          // Setting workspace mutation happens in set action so we don't do it here
+          // commit(SET_WORKSPACE, { workspaceId: workspace.id, workspace: workspace })
+          console.log("pushed workspace: " + workspace)
         })
       }
     },
@@ -329,30 +217,11 @@ export const workspace = {
 
       // If we have a token, make the API call
       if (userMeta.csrfToken) {
-        let newWorkspace = createWorkspace({ title, administrator })
+        createWorkspace({ title, administrator }).then(workspace => {
+          commit(SET_WORKSPACE, { workspaceId: workspace.id, workspace: workspace })
 
-        return new Promise((resolve) => {
-          axios.post('/apis/api/workspace', {
-              params: {
-                workspace: newWorkspace
-              }
-            },
-            {
-              headers: {
-                'apicsrftoken': userMeta.csrfToken,
-                'Content-Type': 'application/json;charset=utf-8'
-              }
-            }).then(function (response) {
-              const workspace = response.data
-              commit(SET_WORKSPACE, { workspaceId: workspace.id, workspace: workspace })
-
-              // Tell VUEX to create a new navigation item for this workspace to store navigation state
-              dispatch('user/ADD_WORKSPACE_TO_NAVIGATION', { workspaceId: workspace.id }, { root: true })
-
-              resolve(workspace)
-            }).catch(function () {
-              alert('there was an error, you may need to log back in')
-            })
+          // Tell VUEX to create a new navigation item for this workspace to store navigation state
+          dispatch('user/ADD_WORKSPACE_TO_NAVIGATION', { workspaceId: workspace.id }, { root: true })
         })
       }
     },
@@ -381,29 +250,38 @@ export const workspace = {
     //   }
     // },
 
-    [CREATE_DATA_SOURCE_COLUMN]: ({ commit }, { userId, workspaceId, column }) => {
-      // POST to create new column
+    [CREATE_DATA_SOURCE_COLUMN]: ({ commit, dispatch, getters, rootGetters }, { userId, workspaceId, column }) => {
+      // Get meta data from the user module
+      const userMeta = rootGetters['user/GET_USER_META']
 
       if (userId === null) {
         console.log('Error: userId not set')
       }
-      // Then commit mutation
-      column.extra = {
-        createdBy: userId,
-        createdDate: Date.now(),
-      };
-      commit(CREATE_DATA_SOURCE_COLUMN, {
-        workspaceId: workspaceId,
-        column: column,
+
+      createDataSourceColumn(userId, workspaceId, column, userMeta).then(({ workspaceId, column }) => {
+        let workspace = getters.GET_WORKSPACE(workspaceId)
+        workspace.dataSource.spec.columns[column.name] = column
+        // Then commit mutation
+        dispatch(PUSH_WORKSPACE, { workspaceId, workspace }).then(workspace => {
+          commit(SET_WORKSPACE, { workspaceId, workspace })
+        })
       })
     },
 
-    [ADD_DASHBOARD_TO_WORKSPACE]: ({ commit }, { workspaceId, dashboardId }) => {
-      commit(ADD_DASHBOARD_TO_WORKSPACE, { workspaceId, dashboardId })
+    [ADD_DASHBOARD_TO_WORKSPACE]: ({ commit, dispatch, getters }, { workspaceId, dashboardId }) => {
+      let workspace = getters.GET_WORKSPACE(workspaceId)
+      workspace.dashboards[dashboardId] = dashboardId
+      dispatch(PUSH_WORKSPACE, { workspaceId, workspace }).then(workspace => {
+        commit(SET_WORKSPACE, { workspaceId, workspace })
+      })
     },
 
-    [ADD_FORM_TO_WORKSPACE]: ({ commit }, { workspaceId, formId }) => {
-      commit(ADD_FORM_TO_WORKSPACE, { workspaceId, formId })
+    [ADD_FORM_TO_WORKSPACE]: ({ commit, dispatch, getters }, { workspaceId, formId }) => {
+      let workspace = getters.GET_WORKSPACE(workspaceId)
+      workspace.forms[formId] = formId
+      dispatch(PUSH_WORKSPACE, { workspaceId, workspace }).then(workspace => {
+        commit(SET_WORKSPACE, { workspaceId, workspace })
+      })
     },
 
     [SET_WORKSPACE] ({ dispatch, commit }, { workspaceId, workspace }) {
@@ -412,6 +290,8 @@ export const workspace = {
         commit(SET_WORKSPACE, { workspaceId, workspace })
       })
     },
+
+
   },
   mutations: {
 
@@ -428,6 +308,13 @@ export const workspace = {
       Vue.set(state.workspaces, workspaceId, workspace)
     },
 
+    /**
+     * This is no longer used, because we set the whole workspace
+     *
+     * @param state
+     * @param workspaceId
+     * @param dashboardId
+     */
     [ADD_DASHBOARD_TO_WORKSPACE]: (state, { workspaceId, dashboardId }) => {
       const vuexWorkspace = state.workspaces[workspaceId]
       Vue.set(vuexWorkspace.dashboards, dashboardId, dashboardId)

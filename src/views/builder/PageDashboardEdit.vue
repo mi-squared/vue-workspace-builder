@@ -63,8 +63,7 @@ export default {
   },
   mounted () {
     console.log("PageDashboardEdit Mounted")
-  },
-  created () {
+
     let that = this
     this.initUser().then(() => {
       that.fetchDashboard({ dashboardId: that.dashboardId })
@@ -72,7 +71,8 @@ export default {
           console.log('Dashboard Fetched: ' + dashboard)
         })
     })
-  }
+  },
+  created () {}
 }
 </script>
 <style scoped></style>

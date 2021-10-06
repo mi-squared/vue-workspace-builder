@@ -1,7 +1,7 @@
 <template>
   <v-dialog v-model="dialog" fullscreen>
     <template v-slot:activator="{ on, attrs }">
-      <v-btn class="mt-4 mr-2" color="primary" dark v-bind="attrs" v-on="on">
+      <v-btn class="mt-4 mr-2" color="primary" dark v-bind="attrs" v-on="on" @click="changeKey">
         Preview
       </v-btn>
     </template>
@@ -23,7 +23,7 @@
 
       <v-card-text>
         <v-container>
-          <PageDashboard :preview="true" :key="Math.floor(Math.random() * 32768)" :dashboard-id="Number(dashboard.id)"></PageDashboard>
+          <Dashboard :key="dashboardKey" :dashboard="dashboard"></Dashboard>
         </v-container>
         <small>*indicates required field</small>
       </v-card-text>
@@ -34,24 +34,33 @@
 
 <script>
 
-import PageDashboard from '../views/PageDashboard'
+import Dashboard from './Dashboard'
 
 export default {
   name: "DashboardPreviewButton",
-  components: { PageDashboard },
+  components: { Dashboard },
   props: {
     dashboard: {
       type: Object,
       required: true,
     }
   },
-  methods: {},
-  computed: {},
   data: () => ({
     model: {},
     dialog: false,
+    dashboardKey: Math.floor(Math.random() * 32768)
   }),
-};
+  computed: {
+  },
+  methods: {
+    changeKey() {
+      this.dashboardKey++
+    }
+  },
+  mounted () {
+    console.log("Dashboard Preview Button Mounted")
+  }
+}
 </script>
 
 <style scoped></style>

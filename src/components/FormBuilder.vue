@@ -34,52 +34,11 @@
 
       <v-tab-item :key="'tab-layout'">
         <!-- <v-btn @click="addItem">Add Form Element</v-btn> -->
-        <v-dialog v-model="showFormElementSelector" width="500">
-          <template v-slot:activator="{ on, attrs }">
-            <v-btn color="red lighten-2" dark v-bind="attrs" v-on="on">
-              + Element
-            </v-btn>
-          </template>
+        <DataSourceColPickerBtn :workspace="workspace" @selected="addItem"></DataSourceColPickerBtn>
 
-          <v-card>
+        <v-divider class="mt-2" ></v-divider>
 
-            <v-card-title class="text-h5 grey lighten-2">
-              Data Source Elements
-            </v-card-title>
-
-            <v-card-text>
-              <v-list-item
-                two-line
-                v-for="(column, i) in columns"
-                :key="i"
-                link
-                @click="addItem(column)"
-              >
-                <v-list-item-content>
-                  <v-list-item-title>{{ column.name }}</v-list-item-title>
-                  <v-list-item-subtitle>{{
-                      column.comment
-                    }}</v-list-item-subtitle>
-                </v-list-item-content>
-              </v-list-item>
-            </v-card-text>
-
-            <v-divider></v-divider>
-
-            <v-card-actions>
-              <v-spacer></v-spacer>
-              <v-btn
-                color="primary"
-                text
-                @click="showFormElementSelector = false"
-              >
-                Close
-              </v-btn>
-            </v-card-actions>
-          </v-card>
-        </v-dialog>
-
-        <v-sheet rounded="lg" min-height="268" elevation="1">
+        <v-sheet>
           <grid-layout
             :layout.sync="activeForm.grid"
             :col-num="12"
@@ -126,6 +85,9 @@
             </grid-item>
           </grid-layout>
         </v-sheet>
+
+        <v-divider class="mt-2" ></v-divider>
+
         <v-row>
           <v-col>
         <v-textarea
@@ -201,11 +163,13 @@ const { mapActions: mapWorkspaceActions, mapGetters: mapWorkspaceGetters } = cre
 import { GET_FORM, SET_FORM, SET_FORM_GRID, SET_FORM_SCHEMA } from '../store/types-form'
 import FormPreviewButton from './FormPreviewButton'
 import FormElementProperties from './FormElementProperties'
+import DataSourceColPickerBtn from './DataSourceColPickerBtn'
 const { mapActions: mapFormActions, mapGetters: mapFormGetters } = createNamespacedHelpers('form')
 
 export default {
   name: 'FormBuilder',
   components: {
+    DataSourceColPickerBtn,
     FormElementProperties,
     FormPreviewButton,
     FormProperties,
@@ -304,8 +268,6 @@ export default {
       })
       // Increment the counter to ensure key is always unique.
       this.index++
-      // close the dialog
-      this.showFormElementSelector = false;
     },
     setSelectedElement(name) {
       console.log("Active Element: " + name)

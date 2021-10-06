@@ -265,18 +265,16 @@ export default {
     // this.$router.push({ path: `/builder/workspace/${this.activeWorkspaceId}/home` })
     console.log('hello')
     document.title = "Workspace Builder"
-  },
-  created () {
+
     let that = this
     this.initUser().then(() => {
-      that.fetchAllWorkspaces().then(workspaces => {
-        console.log('Fetched all workspaces: ' + workspaces.length)
-      }).then(() => {
-        this.loaded = true
-        // this.getWorkspace(this.workspaceId)
+      that.fetchAllWorkspaces().then(() => {
+        // When we're done loading all the data in vuex, set loaded to true
+        that.loaded = true
       })
     })
-  }
+  },
+  created () {}
 }
 </script>
 

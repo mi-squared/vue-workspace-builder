@@ -42,6 +42,7 @@ export const user = {
         ws_init().then((response) => {
           // If this returns "Site ID is missing from session data!" then we're logged out
           // TODO handle this case when logged out
+          console.log("Init complete")
           const userMetaData = response.data
           commit(SET_USER_META, userMetaData)
           resolve(state.userMeta)

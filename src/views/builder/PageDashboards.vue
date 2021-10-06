@@ -84,7 +84,7 @@
 
 <script>
 import { createNamespacedHelpers } from 'vuex'
-import { CREATE_DASHBOARD } from '../../store/types-dashboard'
+import { CREATE_DASHBOARD, FETCH_DASHBOARD } from '../../store/types-dashboard'
 import { GET_NAVIGATION, SET_NAVIGATION } from '../../store/types-user'
 import { GET_DASHBOARDS } from '../../store/types-workspace'
 const { mapGetters: mapWorkspaceGetters } = createNamespacedHelpers('workspace')
@@ -132,10 +132,11 @@ export default {
   },
   methods: {
     ...mapDashboardActions({
-      createDashboard: CREATE_DASHBOARD
+      createDashboard: CREATE_DASHBOARD,
+      fetchDashboard: FETCH_DASHBOARD,
     }),
     ...mapUserActions({
-      setNavigation: SET_NAVIGATION
+      setNavigation: SET_NAVIGATION,
     }),
     onListItemClicked(id) {
       console.log(id)
@@ -156,6 +157,7 @@ export default {
     },
   },
   mounted () {
+
     // If there is no param set for dashboardId, we look in user vuex for navigation
     if (!this.dashboardId) {
       if (this.navigation.workspaces[this.workspaceId].dashboard) {
