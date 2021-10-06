@@ -268,10 +268,9 @@ export default {
 
     let that = this
     this.initUser().then(() => {
-      that.fetchAllWorkspaces().then(workspaces => {
-        console.log('Fetched all workspaces: ' + workspaces.length)
-      }).then(() => {
-        this.loaded = true
+      that.fetchAllWorkspaces().then(() => {
+        // When we're done loading all the data in vuex, set loaded to true
+        that.loaded = true
       })
     })
   },

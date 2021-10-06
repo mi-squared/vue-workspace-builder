@@ -7,8 +7,7 @@ import {
   SET_WORKSPACE
 } from '../types-workspace'
 import Vue from "vue";
-import { createDataSourceColumn, createWorkspace } from '../../api'
-import axios from 'axios'
+import { createDataSourceColumn, createWorkspace, fetchAllWorkspaces, fetchWorkspace, pushWorkspace } from '../../api'
 
 export const workspace = {
   namespaced: true,
@@ -153,34 +152,31 @@ export const workspace = {
 
       // If we have a token, make the API call
       if (userMeta.csrfToken) {
-        return new Promise((resolve) => {
-          axios.get('/apis/api/workspaces', {
-            headers: {
-              'apicsrftoken': userMeta.csrfToken
-            }
-          }).then(function (response) {
-            // Set all the workspaces that we get in the response
-            const workspaces = response.data
-            workspaces.forEach(workspace => {
-              commit(SET_WORKSPACE, { workspaceId: workspace.id, workspace: workspace })
+        // Don't return the promise that is created in the api,
+        // we need to wait until all of the dashboards and forms are loaded into vuex,
+        // then we can resolve.
+        return new Promise(resolve => {
+          fetchAllWorkspaces(userMeta).then(workspaces => {
+              // Set all the workspaces that we get in the response
+              workspaces.forEach(workspace => {
+                commit(SET_WORKSPACE, { workspaceId: workspace.id, workspace: workspace })
 
-              // Tell VUEX to create a new navigation item for this workspace to store navigation state
-              dispatch('user/ADD_WORKSPACE_TO_NAVIGATION', { workspaceId: workspace.id }, { root: true })
+                // Tell VUEX to create a new navigation item for this workspace to store navigation state
+                dispatch('user/ADD_WORKSPACE_TO_NAVIGATION', { workspaceId: workspace.id }, { root: true })
 
-              // Iterate over all dashboard IDs and fetch the dashboards TODO this could be done in a bulk API
-              Object.values(workspace.dashboards).forEach(dashboardId => {
-                dispatch('dashboard/FETCH_DASHBOARD', { dashboardId }, { root: true })
+                // Iterate over all dashboard IDs and fetch the dashboards TODO this could be done in a bulk API
+                Object.values(workspace.dashboards).forEach(dashboardId => {
+                  dispatch('dashboard/FETCH_DASHBOARD', { dashboardId }, { root: true })
+                })
+
+                // Iterate over all form IDs and fetch the forms TODO this could be done in a bulk API
+                Object.values(workspace.forms).forEach(formId => {
+                  dispatch('form/FETCH_FORM', { formId }, { root: true })
+                })
               })
 
-              // Iterate over all form IDs and fetch the forms TODO this could be done in a bulk API
-              Object.values(workspace.forms).forEach(formId => {
-                dispatch('form/FETCH_FORM', { formId }, { root: true })
-              })
+              resolve(workspaces)
             })
-            resolve(workspaces)
-          }).catch(function () {
-            alert('there was an error, you may need to log back in')
-          })
         })
       } else {
         alert("You have been logged out due to a period of inactivity, please log in gain.")
@@ -194,21 +190,8 @@ export const workspace = {
 
       // If we have a token, make the API call
       if (userMeta.csrfToken) {
-        return new Promise((resolve) => {
-          axios.get('/apis/api/workspace', {
-            params: {
-              id: workspaceId
-            },
-            headers: {
-              'apicsrftoken': userMeta.csrfToken
-            }
-          }).then(function (response) {
-            const workspace = response.data
-            commit(SET_WORKSPACE, { workspaceId: workspace.id, workspace: workspace })
-            resolve(workspace)
-          }).catch(function () {
-            alert('there was an error, you may need to log back in')
-          })
+        fetchWorkspace(workspaceId, userMeta).then(workspace => {
+          commit(SET_WORKSPACE, { workspaceId: workspace.id, workspace: workspace })
         })
       }
     },
@@ -220,27 +203,10 @@ export const workspace = {
 
       // If we have a token, make the API call
       if (userMeta.csrfToken) {
-        return new Promise((resolve) => {
-          axios.put('/apis/api/workspace', {
-            params: {
-              id: workspaceId,
-              workspace: workspace
-            }
-          },
-            {
-          headers: {
-            'apicsrftoken': userMeta.csrfToken,
-            'Content-Type': 'application/json;charset=utf-8'
-          }
-        }
-          ).then(function (response) {
-            const workspace = response.data
-            // Setting workspace mutation happens in set action
-            // commit(SET_WORKSPACE, { workspaceId: workspace.id, workspace: workspace })
-            resolve(workspace)
-          }).catch(function () {
-            alert('there was an error, you may need to log back in')
-          })
+        pushWorkspace(workspaceId, workspace, userMeta).then(workspace => {
+          // Setting workspace mutation happens in set action so we don't do it here
+          // commit(SET_WORKSPACE, { workspaceId: workspace.id, workspace: workspace })
+          console.log("pushed workspace: " + workspace)
         })
       }
     },
@@ -251,30 +217,11 @@ export const workspace = {
 
       // If we have a token, make the API call
       if (userMeta.csrfToken) {
-        let newWorkspace = createWorkspace({ title, administrator })
+        createWorkspace({ title, administrator }).then(workspace => {
+          commit(SET_WORKSPACE, { workspaceId: workspace.id, workspace: workspace })
 
-        return new Promise((resolve) => {
-          axios.post('/apis/api/workspace', {
-              params: {
-                workspace: newWorkspace
-              }
-            },
-            {
-              headers: {
-                'apicsrftoken': userMeta.csrfToken,
-                'Content-Type': 'application/json;charset=utf-8'
-              }
-            }).then(function (response) {
-              const workspace = response.data
-              commit(SET_WORKSPACE, { workspaceId: workspace.id, workspace: workspace })
-
-              // Tell VUEX to create a new navigation item for this workspace to store navigation state
-              dispatch('user/ADD_WORKSPACE_TO_NAVIGATION', { workspaceId: workspace.id }, { root: true })
-
-              resolve(workspace)
-            }).catch(function () {
-              alert('there was an error, you may need to log back in')
-            })
+          // Tell VUEX to create a new navigation item for this workspace to store navigation state
+          dispatch('user/ADD_WORKSPACE_TO_NAVIGATION', { workspaceId: workspace.id }, { root: true })
         })
       }
     },

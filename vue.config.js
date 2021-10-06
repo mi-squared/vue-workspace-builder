@@ -1,8 +1,8 @@
 require('dotenv').config()
 
 let base_path = '/interface/modules/custom_modules/vue-workspace-builder'
-if (process.env.APP_BASE_URL) {
-    base_path = process.env.APP_BASE_URL + base_path
+if (process.env.VUE_APP_BASE_URL) {
+    base_path = process.env.VUE_APP_BASE_URL + base_path
 }
 if (process.env.NODE_ENV === 'production') {
     base_path = base_path + '/dist'

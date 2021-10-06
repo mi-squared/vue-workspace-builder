@@ -218,7 +218,7 @@
 
 <script>
 
-import moment from 'moment'
+import moment from 'moment-timezone'
 import AppDate from '@/components/AppDate'
 import JsonForm from '@/components/JsonForm'
 import { createNamespacedHelpers } from 'vuex'
@@ -241,8 +241,8 @@ import {
 
 const { mapGetters: mapDashboardGetters, mapActions: mapDashboardActions } = createNamespacedHelpers('dashboard')
 
-import { INIT } from '../store/types-user'
-const { mapActions: mapUserActions } = createNamespacedHelpers('user')
+import { GET_USER_META } from '../store/types-user'
+const { mapGetters: mapUserGetters } = createNamespacedHelpers('user')
 
 import { GET_FORM } from '../store/types-form'
 const { mapGetters: mapFormGetters } = createNamespacedHelpers('form')
@@ -265,6 +265,7 @@ export default {
   },
   data () {
     return {
+      timeZone: '',
       newEntityModel: {},
       loaded: false,
       isPreview: this.preview || false,
@@ -306,6 +307,9 @@ export default {
     ...mapDashboardGetters({
       getDashboard: GET_DASHBOARD,
       getDashboardRows: GET_DASHBOARD_ROWS
+    }),
+    ...mapUserGetters({
+      getUserMeta: GET_USER_META
     }),
     ...mapWorkspaceGetters({
       allWorkspaces: ALL_WORKSPACES
@@ -376,9 +380,6 @@ export default {
       fetchDashboardRows: FETCH_DASHBOARD_ROWS,
       createEntity: CREATE_ENTITY
     }),
-    ...mapUserActions({
-      initUser: INIT
-    }),
     save () {
       this.snack = true
       this.snackColor = 'success'
@@ -411,7 +412,7 @@ export default {
       console.log('Dialog closed')
     },
     getCurrentTimestamp () {
-      return moment().format('X')
+      return moment().tz(this.timeZone).format('X')
     },
     refreshAttrition: function () {
       setInterval(() => {
@@ -422,8 +423,8 @@ export default {
       clearInterval(this.timer)
     },
     getColor (timestamp) {
-      let a = moment()
-      let b = moment(timestamp)
+      let a = moment().tz(this.timeZone)
+      let b = moment(timestamp).tz(this.timeZone)
       let seconds = a.diff(b, 'seconds')
       for (let i = 0; i < this.dashboard.durationModel.ranges.length; ++i) {
         const range = this.dashboard.durationModel.ranges[i]
@@ -469,6 +470,13 @@ export default {
   mounted () {
 
     console.log("Dashboard Mounted")
+
+    const userMeta = this.getUserMeta
+    if (userMeta.timeZone != undefined && userMeta.timeZone) {
+      this.timeZone = userMeta.timeZone
+    } else {
+      this.timeZone = 'America/New_York'
+    }
 
     let that = this
 

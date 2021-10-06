@@ -6,9 +6,8 @@ import {
   GET_DASHBOARD_ROWS,
   SET_DASHBOARD, SET_DASHBOARD_ROWS
 } from '../types-dashboard'
-import axios from 'axios'
 import Vue from 'vue'
-import { createDashboard, createEntity, getDashboardById, updateDashboard } from '../../api'
+import { createDashboard, createEntity, fetchDashboardRows, getDashboardById, updateDashboard } from '../../api'
 
 export const dashboard = {
   namespaced: true,
@@ -84,32 +83,23 @@ export const dashboard = {
 
       // If we have a token, make the API call
       if (userMeta.csrfToken) {
-        getDashboardById(dashboardId, userMeta).then(dashboard => {
+        // Return the promise created by the API
+        return getDashboardById(dashboardId, userMeta).then(dashboard => {
           commit(SET_DASHBOARD, { dashboardId: dashboard.id, dashboard })
         })
       }
     },
 
-    [FETCH_DASHBOARD_ROWS] ({ state, commit, rootGetters }, { dashboardId }) {
+    [FETCH_DASHBOARD_ROWS] ({ commit, rootGetters }, { dashboardId }) {
       const userMeta = rootGetters['user/GET_USER_META']
 
       // If we have a token, make the API call
       if (userMeta.csrfToken) {
-        return new Promise((resolve) => {
-          axios.get('/apis/api/dashboardrows', {
-            params: {
-              id: dashboardId
-            },
-            headers: {
-              'apicsrftoken': userMeta.csrfToken
-            }
-          }).then(function (response) {
-            const rows = response.data
-            commit(SET_DASHBOARD_ROWS, { dashboardId: dashboardId, rows })
-            resolve(state.rows[dashboardId])
-          }).catch(function () {
-            alert('there was an error, you may need to log back in')
-          })
+        // Return the promise created by the API
+        return fetchDashboardRows(dashboardId, userMeta).then(rows => {
+          commit(SET_DASHBOARD_ROWS, { dashboardId: dashboardId, rows })
+        }).catch(function () {
+          alert('there was an error, you may need to log back in')
         })
       }
     },
@@ -120,6 +110,9 @@ export const dashboard = {
   mutations: {
 
     [CREATE_ENTITY] (state, { dashboardId, entity }) {
+      if (state.rows[dashboardId] == undefined) {
+        state.rows[dashboardId] = []
+      }
       state.rows[dashboardId].push(entity)
     },
 

@@ -1,18 +1,102 @@
 import axios from 'axios'
 import { newDashboard, newDataSourceColumn, newForm, newWorkspace } from './model-builder'
 
+const baseUrl = process.env.VUE_APP_API_BASE_URL
+
+console.log('Base URL FOR API = ' + process.env.VUE_APP_API_BASE_URL)
+
+
 export function ws_init() {
-  return axios.get("/interface/modules/custom_modules/oe-workspace-server/init.php")
+  return axios.get(baseUrl + "/interface/modules/custom_modules/oe-workspace-server/init.php")
 }
 
-export function createWorkspace(formData) {
-  return newWorkspace(formData)
+export function createWorkspace({title, administrator}, userMeta) {
+  let workspace = newWorkspace({title, administrator})
+
+  return new Promise((resolve) => {
+    axios.post(baseUrl + '/apis/api/workspace', {
+        params: {
+          workspace: workspace
+        }
+      },
+      {
+        headers: {
+          'apicsrftoken': userMeta.csrfToken,
+          'Content-Type': 'application/json;charset=utf-8'
+        }
+      }).then(function (response) {
+      const workspace = response.data
+      resolve(workspace)
+    }).catch(function () {
+      alert('there was an error, you may need to log back in')
+    })
+  })
+}
+
+export function fetchAllWorkspaces(userMeta)
+{
+  return new Promise((resolve) => {
+    axios.get(baseUrl + '/apis/api/workspaces', {
+      headers: {
+        'apicsrftoken': userMeta.csrfToken
+      }
+    }).then(response => {
+      // Set all the workspaces that we get in the response
+      const workspaces = response.data
+      resolve(workspaces)
+    }).catch(function () {
+      alert('there was an error, you may need to log back in')
+    })
+  })
+}
+
+export function fetchWorkspace(workspaceId, userMeta)
+{
+  return new Promise((resolve) => {
+    axios.get(baseUrl+ '/apis/api/workspace', {
+      params: {
+        id: workspaceId
+      },
+      headers: {
+        'apicsrftoken': userMeta.csrfToken
+      }
+    }).then(function (response) {
+      const workspace = response.data
+      resolve(workspace)
+    }).catch(function () {
+      alert('there was an error, you may need to log back in')
+    })
+  })
+}
+
+export function pushWorkspace(workspaceId, workspace, userMeta)
+{
+  return new Promise((resolve) => {
+    axios.put('/apis/api/workspace', {
+        params: {
+          id: workspaceId,
+          workspace: workspace
+        }
+      },
+      {
+        headers: {
+          'apicsrftoken': userMeta.csrfToken,
+          'Content-Type': 'application/json;charset=utf-8'
+        }
+      }
+    ).then(function (response) {
+      const workspace = response.data
+      resolve(workspace)
+    }).catch(function () {
+      alert('there was an error, you may need to log back in')
+    })
+  })
 }
 
 export function createEntity(workspaceId, dashboardId, entity, userMeta)
 {
   return new Promise((resolve) => {
-    axios.post('/apis/api/entity', {
+    axios.post(baseUrl + '/apis/api/entity', {
         params: {
           workspaceId: workspaceId,
           dashboardId: dashboardId,
@@ -36,7 +120,7 @@ export function createEntity(workspaceId, dashboardId, entity, userMeta)
 export function createDataSourceColumn(userId, workspaceId, column, userMeta) {
   const dataSourceColumn = newDataSourceColumn(userId, column)
   return new Promise((resolve) => {
-    axios.post('/apis/api/datasourcecolumn', {
+    axios.post(baseUrl + '/apis/api/datasourcecolumn', {
         params: {
           workspaceId: workspaceId,
           column: dataSourceColumn
@@ -59,7 +143,7 @@ export function createDataSourceColumn(userId, workspaceId, column, userMeta) {
 export function getDashboardById(dashboardId, userMeta)
 {
   return new Promise((resolve) => {
-    axios.get('/apis/api/dashboard', {
+    axios.get(baseUrl + '/apis/api/dashboard', {
       params: {
         id: dashboardId
       },
@@ -75,6 +159,25 @@ export function getDashboardById(dashboardId, userMeta)
   })
 }
 
+export function fetchDashboardRows(dashboardId, userMeta)
+{
+  return new Promise((resolve) => {
+    axios.get(baseUrl + '/apis/api/dashboardrows', {
+      params: {
+        id: dashboardId
+      },
+      headers: {
+        'apicsrftoken': userMeta.csrfToken
+      }
+    }).then(function (response) {
+      const rows = response.data
+      resolve(rows)
+    }).catch(function () {
+      alert('there was an error, you may need to log back in')
+    })
+  })
+}
+
 export function createDashboard(formData, userMeta) {
 
   // Use the model-builder to create a new dashboard using the submitted data
@@ -82,7 +185,7 @@ export function createDashboard(formData, userMeta) {
 
   return new Promise( (resolve) => {
     //id: Math.floor(Math.random() * 32768),
-    axios.post('/apis/api/dashboard', {
+    axios.post(baseUrl + '/apis/api/dashboard', {
         params: {
           workspaceId: formData.workspaceId,
           dashboard: dashboard
@@ -105,7 +208,7 @@ export function createDashboard(formData, userMeta) {
 export function updateDashboard(dashboard, userMeta) {
 
   return new Promise((resolve) => {
-    axios.put('/apis/api/dashboard',
+    axios.put(baseUrl + '/apis/api/dashboard',
       {
         params: {
           dashboard: dashboard
@@ -128,7 +231,7 @@ export function updateDashboard(dashboard, userMeta) {
 export function getFormById(formId, userMeta)
 {
   return new Promise((resolve) => {
-    axios.get('/apis/api/form', {
+    axios.get(baseUrl + '/apis/api/form', {
       params: {
         id: formId
       },
@@ -150,7 +253,7 @@ export function createForm(formData, userMeta) {
 
   return new Promise( (resolve) => {
     //id: Math.floor(Math.random() * 32768),
-    axios.post('/apis/api/form', {
+    axios.post(baseUrl + '/apis/api/form', {
         params: {
           workspaceId: formData.workspaceId,
           form: form
@@ -173,7 +276,7 @@ export function createForm(formData, userMeta) {
 export function updateForm(form, userMeta) {
 
   return new Promise((resolve) => {
-    axios.put('/apis/api/form',
+    axios.put(baseUrl + '/apis/api/form',
       {
         params: {
           form: form
