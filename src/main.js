@@ -17,8 +17,8 @@ Vue.component("font-awesome-icon", FontAwesomeIcon);
 
 Vue.config.productionTip = false;
 
-if (process.env.NODE_ENV === "development") {
-  makeServer()
+if (process.env.NODE_ENV === "development" && process.env.VUE_APP_API_MOCK) {
+  makeServer();
 }
 
 import { createNamespacedHelpers } from 'vuex'
