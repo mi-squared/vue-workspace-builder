@@ -28,6 +28,9 @@
 import VJsf from "@koumoul/vjsf/lib/VJsf.js";
 import "@koumoul/vjsf/dist/main.css";
 import PatientPicker from './form-elements/PatientPicker'
+import { createNamespacedHelpers } from 'vuex'
+import { FETCH_LISTS_WITH_DATA_BULK, GET_LIST } from '../store/types-list'
+const { mapGetters: mapListGetters, mapActions: mapListActions } = createNamespacedHelpers('list')
 
 export default {
   name: "JsonForm",
@@ -59,7 +62,9 @@ export default {
   },
   data () {
     return {
+      loaded: false,
       valid: false,
+      listOptions: {},
       /**
        * Options are cloned, and modified in the mounted() function to add some dynamic
        * capabilities like conditional rendering.
@@ -68,8 +73,15 @@ export default {
       activeModel: { ...this.model }
     }
   },
-  computed: {},
+  computed: {
+    ...mapListGetters({
+      getList: GET_LIST
+    })
+  },
   methods: {
+    ...mapListActions({
+      fetchListsBulk: FETCH_LISTS_WITH_DATA_BULK
+    }),
     onFormChange(param) {
       this.$emit('changed', this.activeModel)
       this.optionsForForm = this.calculateOptions()
@@ -79,7 +91,7 @@ export default {
       let that = this
       let options = { ...this.optionsForForm }
       // Need to combine the options stored in VUEX, and merge with computed options
-      // so that we can provide the context for conditional rendering. Here we process
+      // so that we can provide the context for dynamic lists, or conditional rendering, etc. Here we process
       // the conditional logic and set the properties on the options object. We build context here
       options.idPrefix = 'example-_x-if-'
       options.context = {}
@@ -141,6 +153,19 @@ export default {
 
           console.log('Condition Result: show = ' + show)
         }
+
+        // Done working on conditional logic
+        // If we have to pull in data, pull it in!
+        if (properties['x-display'] == 'autocomplete' || properties['x-display'] == 'list') {
+          // Get the context key by taking out 'context.'
+          let listItemsContextKey = properties['x-fromData']
+          listItemsContextKey = listItemsContextKey.replace("context.", "")
+          const listId = properties['listId']
+          const listOptions = that.listOptions[listId]
+          // Get the array of text/value pairs
+          const listOptionsData = listOptions.data
+          options.context[listItemsContextKey] = listOptionsData
+        }
       })
 
       return options
@@ -148,7 +173,23 @@ export default {
   },
   mounted () {
     console.log("JsonForm Mounted")
-    this.optionsForForm = this.calculateOptions()
+
+
+    // Push all of the listIds of lists required for this form into an array, and fetch them all
+    let listIdsForFetch = []
+    Object.values(this.schema.properties).forEach(function(properties) {
+      if (properties['listId'] != undefined) {
+        listIdsForFetch.push(properties['listId'])
+      }
+    })
+    const that = this
+    this.fetchListsBulk({ arrayOfListIds: listIdsForFetch }).then(listOptions => {
+      // We are basically copying all the lists to local state here (TODO we really only need the ones with IDs we identified)
+      that.listOptions = listOptions
+      that.optionsForForm = that.calculateOptions()
+      that.loaded = true
+    })
+
   }
 }
 </script>

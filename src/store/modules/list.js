@@ -13,6 +13,25 @@ export const list = {
   namespaced: true,
   state: {
     lists: {
+      Private_Insurance: {
+        title: 'Private_Insurance',
+        id: 'Private_Insurance',
+        type: 'list_options',
+        data: [
+          {
+            text: 'BCBS',
+            value: 'BCBS'
+          },
+          {
+            text: 'Aetna',
+            value: 'Aetna'
+          },
+          {
+            text: 'Zilo',
+            value: 'Zilo'
+          },
+        ]
+      },
       abook_type: {
         title: 'Address Book Types',
         id: 'abook_type',
@@ -79,7 +98,7 @@ export const list = {
     [ALL_LISTS]: state => state.lists,
 
     /**
-     * Build an items list for a vuetify select input using the lists in vuex, neec
+     * Build an items list for a vuetify select input using the lists in vuex, need
      * to map the title/id onto text/value
      *
      * @param state
@@ -119,11 +138,17 @@ export const list = {
      * @param rootGetters
      * @param arrayOfListIds
      */
-    [FETCH_LISTS_WITH_DATA_BULK]: ({ commit, rootGetters }, { arrayOfListIds }) => {
+    [FETCH_LISTS_WITH_DATA_BULK]: ({ commit, getters, rootGetters }, { arrayOfListIds }) => {
       const userMeta = rootGetters['user/GET_USER_META']
-      fetchListsWithDataBulk(arrayOfListIds, userMeta).then(lists => {
-        Object.values(lists).forEach(list => {
-          commit(SET_LIST, { listId: list.id, list: list })
+      return new Promise(resolve => {
+        fetchListsWithDataBulk(arrayOfListIds, userMeta).then(lists => {
+          Object.values(lists).forEach(list => {
+            commit(SET_LIST, { listId: list.id, list: list })
+          })
+
+          const allLists = getters.ALL_LISTS
+          resolve(allLists)
+
         })
       })
     }

@@ -357,6 +357,18 @@ export default {
           element.readOnly = true
         }
 
+        // If this is a list, then create a context placeholder so that we can pass the items to populate
+        // the Select input. For example, if the list column name is 'insurance' we will set the x-fromData
+        // dynamically here to be 'context.insurance_items'. Then when we render the form, we'll pass in the
+        // items from that list_options list.
+        if (schemaTemplate['x-display'] == 'autocomplete' || element['x-display'] == 'list' ) {
+          // If a 'list' type is selected, the user is required to select a LIST to go with it. The listId
+          // is stored in the 'extra' section so it can be retrieved here, so we know what list to fetch when
+          // rendering the form
+          element["listId"] = this.dataSource.spec.columns[row.meta.name].extra.listId
+          element["x-fromData"] = "context." + this.dataSource.spec.columns[row.meta.name].name + "_items"
+        }
+
         // Create a v-if element so this element can be responsive to conditional rendering
         // The v-if property will be passed to the form as an option if it should be rendered
         // or not. The options are generated dynamically in the JsonForm Component based on

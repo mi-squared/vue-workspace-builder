@@ -49,7 +49,7 @@
                       <v-col v-if="model.type == 'list'">
                         <v-autocomplete
                           :items="listSelectItems"
-                          v-model="model.extra.list"
+                          v-model="model.extra.listId"
                           label="List*"
                           :rules="[required]"
                           required
