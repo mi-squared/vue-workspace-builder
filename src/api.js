@@ -33,6 +33,24 @@ export function createWorkspace({title, administrator}, userMeta) {
   })
 }
 
+export function fetchDataTypes(userMeta)
+{
+  return new Promise((resolve) => {
+    axios.get(baseUrl + '/apis/api/datatypes', {
+      headers: {
+        'apicsrftoken': userMeta.csrfToken
+      }
+    }).then(response => {
+      // The response contains data-types, etc
+      const dataTypes = response.data
+      console.log(dataTypes)
+      resolve(dataTypes)
+    }).catch(function () {
+      alert('there was an error, you may need to log back in')
+    })
+  })
+}
+
 export function fetchAllWorkspaces(userMeta)
 {
   return new Promise((resolve) => {
@@ -72,7 +90,7 @@ export function fetchWorkspace(workspaceId, userMeta)
 export function pushWorkspace(workspaceId, workspace, userMeta)
 {
   return new Promise((resolve) => {
-    axios.put('/apis/api/workspace', {
+    axios.put(baseUrl + '/apis/api/workspace', {
         params: {
           id: workspaceId,
           workspace: workspace
@@ -89,6 +107,45 @@ export function pushWorkspace(workspaceId, workspace, userMeta)
       resolve(workspace)
     }).catch(function () {
       alert('there was an error, you may need to log back in')
+    })
+  })
+}
+
+export function fetchAllLists(userMeta)
+{
+  return new Promise((resolve) => {
+    axios.get(baseUrl+ '/apis/api/fetchlists', {
+      params: {},
+      headers: {
+        'apicsrftoken': userMeta.csrfToken
+      }
+    }).then(function (response) {
+      // Returns an object, containing objects with list ID as key
+      const lists = response.data
+      resolve(lists)
+    }).catch(function (error) {
+      console.log("There was an error:" + error)
+    })
+  })
+}
+
+export function fetchListsWithDataBulk(arrayOfListId, userMeta)
+{
+  return new Promise((resolve) => {
+    axios.post(baseUrl+ '/apis/api/fetchlistdata', {
+      params: {
+        listIds: arrayOfListId
+      },
+    }, {
+      headers: {
+        'apicsrftoken': userMeta.csrfToken
+      }
+    }).then(function (response) {
+      // Returns an object, containing objects with list ID as key
+      const lists = response.data
+      resolve(lists)
+    }).catch(function (error) {
+      console.log("There was an error:" + error)
     })
   })
 }

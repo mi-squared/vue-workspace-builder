@@ -17,6 +17,8 @@
     <template slot="custom-patient" slot-scope="context">
       <PatientPicker :pid="pid" v-bind="context"></PatientPicker>
 <!--      <v-date-picker v-bind="context"></v-date-picker>-->
+
+
     </template>
   </v-jsf>
 </v-form>

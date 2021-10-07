@@ -46,6 +46,18 @@
                         ></v-text-field>
                       </v-col>
 
+                      <v-col v-if="model.type == 'list'">
+                        <v-autocomplete
+                          :items="listSelectItems"
+                          v-model="model.extra.list"
+                          label="List*"
+                          :rules="[required]"
+                          required
+
+                          hint="This list where the select input will pull options from."
+                        ></v-autocomplete>
+                      </v-col>
+
                       <v-col cols="12">
                         <v-text-field
                           v-model="model.comment"
@@ -114,6 +126,8 @@ import { CREATE_DATA_SOURCE_COLUMN, GET_DATA_TYPES, GET_WORKSPACE } from '../../
 const { mapActions: mapWorkspaceActions, mapGetters: mapWorkspaceGetters } = createNamespacedHelpers('workspace')
 import { GET_USER_META } from '../../store/types-user'
 const { mapGetters: mapUserGetters } = createNamespacedHelpers('user')
+import { GET_LIST_SELECT_ITEMS } from '../../store/types-list'
+const { mapGetters: mapListGetters } = createNamespacedHelpers('list')
 
 export default {
   name: "PageDataSource",
@@ -131,6 +145,7 @@ export default {
         name: "",
         type: "",
         comment: "",
+        extra: {}
       },
       max25chars: (v) => v.length <= 25 || "Input too long!",
       noSpaces: (v) => (v || "").indexOf(" ") < 0 || "No spaces allowed",
@@ -144,6 +159,9 @@ export default {
     }),
     ...mapUserGetters({
       getUserMeta: GET_USER_META
+    }),
+    ...mapListGetters({
+      listSelectItems: GET_LIST_SELECT_ITEMS
     }),
     dataTypes() {
       return Object.keys(this.getDataTypes)
@@ -179,6 +197,7 @@ export default {
         name: "",
         type: "",
         comment: "",
+        extra: {}
       }
     },
     getClassForColumn(column) {

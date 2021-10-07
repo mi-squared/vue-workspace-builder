@@ -1,20 +1,24 @@
 import {
   ADD_DASHBOARD_TO_WORKSPACE,
   ADD_FORM_TO_WORKSPACE, ALL_WORKSPACES,
-  CREATE_DATA_SOURCE_COLUMN, CREATE_WORKSPACE, FETCH_ALL_WORKSPACES, FETCH_WORKSPACE, GET_DASHBOARDS,
-  GET_DATA_SOURCE, GET_DATA_TYPES, GET_FORMS, GET_SCHEMA_TEMPLATE_BY_TYPE, GET_SETTINGS,
-  GET_WORKSPACE, PUSH_WORKSPACE,
+  CREATE_DATA_SOURCE_COLUMN, CREATE_WORKSPACE, FETCH_ALL_WORKSPACES, FETCH_DATA_TYPES, FETCH_WORKSPACE, GET_DASHBOARDS,
+  GET_DATA_SOURCE, GET_DATA_TYPES, GET_FORMS, GET_SCHEMA_TEMPLATE_BY_TYPE,
+  GET_WORKSPACE, SET_DATA_TYPES,
   SET_WORKSPACE
 } from '../types-workspace'
 import Vue from "vue";
-import { createDataSourceColumn, createWorkspace, fetchAllWorkspaces, fetchWorkspace, pushWorkspace } from '../../api'
+import {
+  createDataSourceColumn,
+  createWorkspace,
+  fetchAllWorkspaces,
+  fetchDataTypes,
+  fetchWorkspace,
+  pushWorkspace
+} from '../../api'
 
 export const workspace = {
   namespaced: true,
   state: {
-    settings: {
-      test: false
-    },
     dataTypes: {
       "list": {
         mysql: "VARCHAR(255)",
@@ -42,7 +46,7 @@ export const workspace = {
           "x-itemKey": "val",
           "x-itemTitle": "label",
         },
-        dashboardFields: {
+        dataSourceColumns: {
           "fname": {
 
           },
@@ -55,7 +59,8 @@ export const workspace = {
         },
         customFilters: {
           isHighUtilizer: {
-            title: 'High Utilizer'
+            title: 'High Utilizer',
+            endpoint: '/api/apis/is_high_utilizer'
           }
         }
       },
@@ -110,7 +115,6 @@ export const workspace = {
     patients: {}
   },
   getters: {
-    [GET_SETTINGS]: state => state.settings,
 
     [ALL_WORKSPACES]: state => state.workspaces,
 
@@ -156,6 +160,16 @@ export const workspace = {
         // we need to wait until all of the dashboards and forms are loaded into vuex,
         // then we can resolve.
         return new Promise(resolve => {
+
+          // Fetch all lists (for building dashboards and forms that contain list types)
+          dispatch('list/FETCH_ALL_LISTS', {}, { root: true })
+
+          // We bypass the action, and just call API directly. We are only doing this at builder init-time
+          // at least for now
+          fetchDataTypes(userMeta).then(dataTypes => {
+            commit(SET_DATA_TYPES, { dataTypes })
+          })
+
           fetchAllWorkspaces(userMeta).then(workspaces => {
               // Set all the workspaces that we get in the response
               workspaces.forEach(workspace => {
@@ -183,6 +197,13 @@ export const workspace = {
       }
     },
 
+    [FETCH_DATA_TYPES]: ({ commit, rootGetters }) => {
+      const userMeta = rootGetters['user/GET_USER_META']
+      fetchDataTypes(userMeta).then(dataTypes => {
+        commit(SET_DATA_TYPES, { dataTypes })
+      })
+    },
+
     [FETCH_WORKSPACE] ({ commit, rootGetters }, { workspaceId }) {
       console.log("Fetching Workspace: " + workspaceId)
       // Get meta data from the user module
@@ -192,21 +213,6 @@ export const workspace = {
       if (userMeta.csrfToken) {
         fetchWorkspace(workspaceId, userMeta).then(workspace => {
           commit(SET_WORKSPACE, { workspaceId: workspace.id, workspace: workspace })
-        })
-      }
-    },
-
-    [PUSH_WORKSPACE] ({ rootGetters }, { workspaceId, workspace }) {
-      console.log("Pushing Workspace: " + workspaceId)
-      // Get meta data from the user module
-      const userMeta = rootGetters['user/GET_USER_META']
-
-      // If we have a token, make the API call
-      if (userMeta.csrfToken) {
-        pushWorkspace(workspaceId, workspace, userMeta).then(workspace => {
-          // Setting workspace mutation happens in set action so we don't do it here
-          // commit(SET_WORKSPACE, { workspaceId: workspace.id, workspace: workspace })
-          console.log("pushed workspace: " + workspace)
         })
       }
     },
@@ -226,31 +232,7 @@ export const workspace = {
       }
     },
 
-    // [SET_WORKSPACE] ({ state, commit, rootState }, { workspaceId }) {
-    //   console.log(workspaceId);
-    //   if (rootState.metaData.csrfToken) {
-    //     return new Promise((resolve) => {
-    //       axios.get("/apis/api/workspace", {
-    //         // params: {
-    //         //     id: dashboardId
-    //         // },
-    //         headers: {
-    //           apicsrftoken: rootState.metaData.csrfToken,
-    //         },
-    //       })
-    //         .then(function (response) {
-    //           const workspace = response.data;
-    //           commit(SET_WORKSPACE, workspace);
-    //           resolve(state.workspace[workspaceId]);
-    //         })
-    //         .catch(function () {
-    //           alert("there was an error, you may need to log back in");
-    //         });
-    //     });
-    //   }
-    // },
-
-    [CREATE_DATA_SOURCE_COLUMN]: ({ commit, dispatch, getters, rootGetters }, { userId, workspaceId, column }) => {
+    [CREATE_DATA_SOURCE_COLUMN]: ({ dispatch, getters, rootGetters }, { userId, workspaceId, column }) => {
       // Get meta data from the user module
       const userMeta = rootGetters['user/GET_USER_META']
 
@@ -262,35 +244,38 @@ export const workspace = {
         let workspace = getters.GET_WORKSPACE(workspaceId)
         workspace.dataSource.spec.columns[column.name] = column
         // Then commit mutation
-        dispatch(PUSH_WORKSPACE, { workspaceId, workspace }).then(workspace => {
-          commit(SET_WORKSPACE, { workspaceId, workspace })
-        })
+        dispatch(SET_WORKSPACE, { workspaceId, workspace })
       })
     },
 
-    [ADD_DASHBOARD_TO_WORKSPACE]: ({ commit, dispatch, getters }, { workspaceId, dashboardId }) => {
+    [ADD_DASHBOARD_TO_WORKSPACE]: ({ commit, getters, rootGetters }, { workspaceId, dashboardId }) => {
       let workspace = getters.GET_WORKSPACE(workspaceId)
       workspace.dashboards[dashboardId] = dashboardId
-      dispatch(PUSH_WORKSPACE, { workspaceId, workspace }).then(workspace => {
+      const userMeta = rootGetters['user/GET_USER_META']
+      pushWorkspace(workspaceId, workspace, userMeta).then(workspace => {
         commit(SET_WORKSPACE, { workspaceId, workspace })
+        return workspace
       })
     },
 
-    [ADD_FORM_TO_WORKSPACE]: ({ commit, dispatch, getters }, { workspaceId, formId }) => {
+    [ADD_FORM_TO_WORKSPACE]: ({ commit, getters, rootGetters }, { workspaceId, formId }) => {
       let workspace = getters.GET_WORKSPACE(workspaceId)
       workspace.forms[formId] = formId
-      dispatch(PUSH_WORKSPACE, { workspaceId, workspace }).then(workspace => {
+      const userMeta = rootGetters['user/GET_USER_META']
+      pushWorkspace(workspaceId, workspace, userMeta).then(workspace => {
         commit(SET_WORKSPACE, { workspaceId, workspace })
+        return workspace
       })
     },
 
-    [SET_WORKSPACE] ({ dispatch, commit }, { workspaceId, workspace }) {
-      // Make a POST to server, then update VUEX
-      dispatch(PUSH_WORKSPACE, { workspaceId, workspace }).then((workspace) => {
+    [SET_WORKSPACE] ({ commit, rootGetters }, { workspaceId, workspace }) {
+      // Get meta data from the user module
+      const userMeta = rootGetters['user/GET_USER_META']
+      pushWorkspace(workspaceId, workspace, userMeta).then(workspace => {
         commit(SET_WORKSPACE, { workspaceId, workspace })
+        return workspace
       })
     },
-
 
   },
   mutations: {
@@ -306,6 +291,10 @@ export const workspace = {
 
     [SET_WORKSPACE] (state, { workspaceId, workspace }) {
       Vue.set(state.workspaces, workspaceId, workspace)
+    },
+
+    [SET_DATA_TYPES] (state, { dataTypes }) {
+      Vue.set(state, 'dataTypes', dataTypes)
     },
 
     /**
