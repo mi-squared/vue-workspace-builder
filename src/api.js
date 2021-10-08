@@ -5,6 +5,34 @@ const baseUrl = process.env.VUE_APP_API_BASE_URL
 
 console.log('Base URL FOR API = ' + process.env.VUE_APP_API_BASE_URL)
 
+function handleApiError(error) {
+  if (axios.isAxiosError(error)) {
+    handleAxiosError(error);
+  } else {
+    throw error;
+  }
+}
+
+function handleAxiosError(error) {
+  if (error.response) {
+    // The request was made and the server responded with a status code
+    // that falls out of the range of 2xx
+    console.log(error.response.data);
+    console.log(error.response.status);
+    console.log(error.response.headers);
+    alert('there was an error talking to the api, you may need to log back in.');
+  } else if (error.request) {
+    // The request was made but no response was received
+    // `error.request` is an instance of XMLHttpRequest in the browser and an instance of
+    // http.ClientRequest in node.js
+    console.log(error.request);
+    alert('there was an error, try again.');
+  } else {
+    // Something happened in setting up the request that triggered an Error
+    console.log("Error", error.message);
+  }
+  console.log(error.config);
+}
 
 export function ws_init() {
   return axios.get(baseUrl + "/interface/modules/custom_modules/oe-workspace-server/init.php")
@@ -27,9 +55,7 @@ export function createWorkspace({title, administrator}, userMeta) {
       }).then(function (response) {
       const workspace = response.data
       resolve(workspace)
-    }).catch(function () {
-      alert('there was an error, you may need to log back in')
-    })
+    }).catch(handleApiError)
   })
 }
 
@@ -45,9 +71,7 @@ export function fetchDataTypes(userMeta)
       const dataTypes = response.data
       console.log(dataTypes)
       resolve(dataTypes)
-    }).catch(function () {
-      alert('there was an error, you may need to log back in')
-    })
+    }).catch(handleApiError)
   })
 }
 
@@ -62,9 +86,7 @@ export function fetchAllWorkspaces(userMeta)
       // Set all the workspaces that we get in the response
       const workspaces = response.data
       resolve(workspaces)
-    }).catch(function () {
-      alert('there was an error, you may need to log back in')
-    })
+    }).catch(handleApiError)
   })
 }
 
@@ -81,9 +103,7 @@ export function fetchWorkspace(workspaceId, userMeta)
     }).then(function (response) {
       const workspace = response.data
       resolve(workspace)
-    }).catch(function () {
-      alert('there was an error, you may need to log back in')
-    })
+    }).catch(handleApiError)
   })
 }
 
@@ -105,9 +125,7 @@ export function pushWorkspace(workspaceId, workspace, userMeta)
     ).then(function (response) {
       const workspace = response.data
       resolve(workspace)
-    }).catch(function () {
-      alert('there was an error, you may need to log back in')
-    })
+    }).catch(handleApiError)
   })
 }
 
@@ -123,9 +141,7 @@ export function fetchAllLists(userMeta)
       // Returns an object, containing objects with list ID as key
       const lists = response.data
       resolve(lists)
-    }).catch(function (error) {
-      console.log("There was an error:" + error)
-    })
+    }).catch(handleApiError)
   })
 }
 
@@ -144,9 +160,7 @@ export function fetchListsWithDataBulk(arrayOfListId, userMeta)
       // Returns an object, containing objects with list ID as key
       const lists = response.data
       resolve(lists)
-    }).catch(function (error) {
-      console.log("There was an error:" + error)
-    })
+    }).catch(handleApiError)
   })
 }
 
@@ -168,9 +182,7 @@ export function createEntity(workspaceId, dashboardId, entity, userMeta)
       }).then(function (response) {
       const entity = response.data
       resolve(entity)
-    }).catch(function () {
-      alert('there was an error.')
-    })
+    }).catch(handleApiError)
   })
 }
 
@@ -191,9 +203,7 @@ export function createDataSourceColumn(userId, workspaceId, column, userMeta) {
       }).then(function (response) {
         const dataSourceColumn = response.data
         resolve({ workspaceId, column: dataSourceColumn })
-      }).catch(function () {
-        alert('there was an error.')
-      })
+      }).catch(handleApiError)
   })
 }
 
@@ -210,9 +220,7 @@ export function getDashboardById(dashboardId, userMeta)
     }).then(function (response) {
       const dashboard = response.data
       resolve(dashboard)
-    }).catch(function () {
-      alert('there was an error, you may need to log back in')
-    })
+    }).catch(handleApiError)
   })
 }
 
@@ -229,9 +237,7 @@ export function fetchDashboardRows(dashboardId, userMeta)
     }).then(function (response) {
       const rows = response.data
       resolve(rows)
-    }).catch(function () {
-      alert('there was an error, you may need to log back in')
-    })
+    }).catch(handleApiError)
   })
 }
 
@@ -256,9 +262,7 @@ export function createDashboard(formData, userMeta) {
       }).then(function (response) {
         const dashboard = response.data
         resolve(dashboard)
-    }).catch(function () {
-      alert('there was an error.')
-    })
+    }).catch(handleApiError)
   })
 }
 
@@ -279,9 +283,7 @@ export function updateDashboard(dashboard, userMeta) {
       }).then(function (response) {
         const dashboard = response.data
         resolve(dashboard)
-      }).catch(function () {
-        alert('there was an error.')
-      })
+      }).catch(handleApiError)
   })
 }
 
@@ -298,9 +300,7 @@ export function getFormById(formId, userMeta)
     }).then(function (response) {
       const form = response.data
       resolve(form)
-    }).catch(function () {
-      alert('there was an error, you may need to log back in')
-    })
+    }).catch(handleApiError)
   })
 }
 
@@ -324,9 +324,7 @@ export function createForm(formData, userMeta) {
       }).then(function (response) {
       const form = response.data
       resolve(form)
-    }).catch(function () {
-      alert('there was an error.')
-    })
+    }).catch(handleApiError)
   })
 }
 
@@ -347,8 +345,6 @@ export function updateForm(form, userMeta) {
       }).then(function (response) {
       const form = response.data
       resolve(form)
-    }).catch(function () {
-      alert('there was an error.')
-    })
+    }).catch(handleApiError)
   })
 }
