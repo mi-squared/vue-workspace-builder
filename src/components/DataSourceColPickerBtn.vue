@@ -14,20 +14,50 @@
       </v-card-title>
 
       <v-card-text>
-        <v-list-item
-          two-line
-          v-for="(column, i) in dataSourceColumns"
-          :key="i"
-          link
-          @click="addColumn(column)"
-        >
-          <v-list-item-content>
-            <v-list-item-title>{{ column.name }}</v-list-item-title>
-            <v-list-item-subtitle>{{
-                column.comment
-              }}</v-list-item-subtitle>
-          </v-list-item-content>
-        </v-list-item>
+        <v-list>
+
+          <!-- first list all the columns with joined subcolumns -->
+          <v-list-group
+            v-for="item in columnsWithSubcolumns"
+            :key="item.column.name"
+            v-model="activeSubcolumns[item]"
+            no-action
+          >
+            <template v-slot:activator>
+              <v-list-item-content>
+                <v-list-item-title v-text="item.column.name"></v-list-item-title>
+              </v-list-item-content>
+            </template>
+
+            <v-list-item
+              v-for="child in item.subColumns"
+              :key="child.name"
+              @click="addColumn(child)"
+            >
+              <v-list-item-content>
+                <v-list-item-title v-text="child.name"></v-list-item-title>
+                <v-list-item-subtitle>{{
+                    child.type
+                  }}</v-list-item-subtitle>
+              </v-list-item-content>
+            </v-list-item>
+          </v-list-group>
+
+          <v-list-item
+            two-line
+            v-for="(column, i) in dataSourceColumns"
+            :key="i"
+            link
+            @click="addColumn(column)"
+          >
+            <v-list-item-content>
+              <v-list-item-title>{{ column.name }}</v-list-item-title>
+              <v-list-item-subtitle>{{
+                  column.comment
+                }}</v-list-item-subtitle>
+            </v-list-item-content>
+          </v-list-item>
+        </v-list>
       </v-card-text>
 
       <v-divider></v-divider>
@@ -47,6 +77,12 @@
 </template>
 
 <script>
+import { createNamespacedHelpers } from 'vuex'
+
+import { GET_DATA_TYPES } from '../store/types-workspace'
+
+const { mapGetters: mapWorkspaceGetters } = createNamespacedHelpers('workspace')
+
 export default {
   name: 'DataSourceColPickerBtn',
   props: {
@@ -57,13 +93,40 @@ export default {
   },
   data() {
     return {
-      showDashboardColumnSelector: false
+      showDashboardColumnSelector: false,
+      activeSubcolumns: {}
     }
   },
   computed: {
+    ...mapWorkspaceGetters({
+      getDataTypes: GET_DATA_TYPES
+      }
+    ),
     dataSourceColumns () {
-      return this.workspace.dataSource.spec.columns
-    }
+      let dataTypes = this.getDataTypes
+      return Object.values(this.workspace.dataSource.spec.columns).filter(column => {
+        if (dataTypes[column.type].databaseColumns == undefined) {
+          return column
+        }
+      })
+    },
+    columnsWithSubcolumns () {
+      let dataTypes = this.getDataTypes
+      // Look in the datatypes for this column type, and see if it has additional
+      // database columns that it gets through a join, ie: patient.
+      // First we filter based on type, then we map so the result contains both cols and subcols
+      let colsWithSubcols = Object.values(this.workspace.dataSource.spec.columns).filter(column => {
+
+        if (dataTypes[column.type].databaseColumns != undefined) {
+          return column
+        }
+      }).map(column => {
+          const subColumns = dataTypes[column.type].databaseColumns
+          return { column: column, subColumns: subColumns }
+      })
+
+      return colsWithSubcols
+    },
   },
   methods: {
     addColumn(column) {
