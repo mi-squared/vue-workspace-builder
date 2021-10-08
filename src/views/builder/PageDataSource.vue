@@ -87,34 +87,84 @@
           </v-dialog>
         </v-toolbar>
 
-        <v-simple-table>
-          <template v-slot:default>
-            <thead>
-              <tr>
-                <th class="text-left">
-                  Column
-                </th>
-                <th class="text-left">
-                  Type
-                </th>
-                <th class="text-left">
-                  Comment
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr
-                v-for="column in columns"
-                :key="column.name"
-                :class="getClassForColumn(column)"
-              >
-                <td class="text-left">{{ column.name }}</td>
-                <td class="text-left">{{ column.type }}</td>
-                <td class="text-left">{{ column.comment }}</td>
-              </tr>
-            </tbody>
-          </template>
-        </v-simple-table>
+        <v-expansion-panels accordion>
+          <v-expansion-panel expanded>
+            <v-expansion-panel-header>Custom Columns</v-expansion-panel-header>
+            <v-expansion-panel-content>
+              <v-simple-table>
+                <template v-slot:default>
+                  <thead>
+                    <tr>
+                      <th class="text-left">
+                        Column
+                      </th>
+                      <th class="text-left">
+                        Type
+                      </th>
+                      <th class="text-left">
+                        Comment
+                      </th>
+                      <th class="text-left">
+                        &nbsp;
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr
+                      v-for="column in columns"
+                      :key="column.name"
+                      :class="getClassForColumn(column)"
+                    >
+                      <td class="text-left">{{ column.name }}</td>
+                      <td class="text-left">{{ column.type }}</td>
+                      <td class="text-left">{{ column.comment }}</td>
+                      <td v-if="column.type == 'list'">
+                        LIST ID: {{ column.extra.listId }}
+                      </td>
+                      <td v-else>
+                        &nbsp;
+                      </td>
+                    </tr>
+                  </tbody>
+                </template>
+              </v-simple-table>
+            </v-expansion-panel-content>
+          </v-expansion-panel>
+
+          <v-expansion-panel>
+            <v-expansion-panel-header>System Columns</v-expansion-panel-header>
+            <v-expansion-panel-content>
+              <v-simple-table>
+                <template v-slot:default>
+                  <thead>
+                  <tr>
+                    <th class="text-left">
+                      Column
+                    </th>
+                    <th class="text-left">
+                      Type
+                    </th>
+                    <th class="text-left">
+                      Comment
+                    </th>
+                  </tr>
+                  </thead>
+                  <tbody>
+                  <tr
+                    v-for="column in systemColumns"
+                    :key="column.name"
+                    :class="getClassForColumn(column)"
+                  >
+                    <td class="text-left">{{ column.name }}</td>
+                    <td class="text-left">{{ column.type }}</td>
+                    <td class="text-left">{{ column.comment }}</td>
+                  </tr>
+                  </tbody>
+                </template>
+              </v-simple-table>
+            </v-expansion-panel-content>
+          </v-expansion-panel>
+        </v-expansion-panels>
       </v-card>
     </v-container>
   </v-main>
@@ -172,8 +222,21 @@ export default {
     spec() {
       return this.activeWorkspace.dataSource.spec
     },
+    systemColumns() {
+      return Object.values(this.spec.columns).filter(column => {
+        if (column.extra != undefined &&
+          column.extra.category == 'system') {
+          return column
+        }
+      })
+    },
     columns() {
-      return Object.values(this.spec.columns)
+      return Object.values(this.spec.columns).filter(column => {
+        if (column.extra == undefined ||
+          column.extra.category != 'system') {
+          return column
+        }
+      })
     }
   },
   methods: {
@@ -202,7 +265,7 @@ export default {
     },
     getClassForColumn(column) {
       if (column.extra != undefined &&
-        column.extra.createdBy == 'system') {
+        column.extra.category == 'system') {
         return 'grey'
       }
     }

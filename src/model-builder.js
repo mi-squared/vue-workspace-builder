@@ -26,6 +26,7 @@ export function newDataSourceColumn(userId, column) {
     extra: {
       createdBy: userId,
       createdDate: Date.now(),
+      category: 'custom'
     },
 
     ...column,
@@ -44,6 +45,8 @@ export function newDashboard(workspaceId, dashboard) {
       outOfRangeColor: ""
     },
     displayNewButton: false,
+    hasConditionalLogic: false,
+    conditionalLogic: {},
     filters: [],
     headers: [],
 

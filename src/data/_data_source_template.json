@@ -7,7 +7,8 @@
         "default": "",
         "comment": "Unique identifier for this entity.",
         "extra": {
-          "createdBy": "system"
+          "createdBy": "system",
+          "category": "system"
         }
       },
       "created_datetime": {
@@ -16,7 +17,8 @@
         "default": "",
         "comment": "Date and time that this entity was created.",
         "extra": {
-          "createdBy": "system"
+          "createdBy": "system",
+          "category": "system"
         }
       },
       "created_by": {
@@ -25,7 +27,8 @@
         "default": "",
         "comment": "User that created this entity. Refers to users.id",
         "extra": {
-          "createdBy": "system"
+          "createdBy": "system",
+          "category": "system"
         }
       },
       "updated_datetime": {
@@ -34,7 +37,8 @@
         "default": "",
         "comment": "Date and time that this entity was last updated.",
         "extra": {
-          "createdBy": "system"
+          "createdBy": "system",
+          "category": "system"
         }
       },
       "updated_by": {
@@ -43,7 +47,8 @@
         "default": "",
         "comment": "User that last updated any field on this entity. Refers to users.id.",
         "extra": {
-          "createdBy": "system"
+          "createdBy": "system",
+          "category": "system"
         }
       },
       "dashboard_id": {
@@ -52,7 +57,8 @@
         "default": "",
         "comment": "Refers to the dashboard that the entity is currently on, OR NULL if not on a dashboard.",
         "extra": {
-          "createdBy": "system"
+          "createdBy": "system",
+          "category": "system"
         }
       },
       "moved_to_dashboard_date": {
@@ -61,7 +67,8 @@
         "default": "",
         "comment": "Datetime that an entity was moved to the dashboard that it is currently on.",
         "extra": {
-          "createdBy": "system"
+          "createdBy": "system",
+          "category": "system"
         }
       },
       "moved_to_dashboard_by": {
@@ -70,7 +77,8 @@
         "default": "",
         "comment": "User that moved the entity to the dashboard that it is currently on. Refers to users.id.",
         "extra": {
-          "createdBy": "system"
+          "createdBy": "system",
+          "category": "system"
         }
       },
       "pid": {
@@ -79,7 +87,8 @@
         "default": "",
         "comment": "The patient that this data source entity is related to.",
         "extra": {
-          "createdBy": "system"
+          "createdBy": "system",
+          "category": "custom"
         }
       },
       "source": {
@@ -88,7 +97,8 @@
         "default": "",
         "comment": "The source of the entity, whether form, api or some other entry-point.",
         "extra": {
-          "createdBy": "system"
+          "createdBy": "system",
+          "category": "custom"
         }
       }
     },

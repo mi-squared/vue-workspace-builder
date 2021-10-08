@@ -64,6 +64,22 @@
               @change="onRangePickerChanged"
             ></MultiRangePicker>
 
+            <v-divider class="mt-4"></v-divider>
+            <div v-text="`Conditional Logic`" class="text-h6"></div>
+
+            <v-switch
+              v-model="activeDashboard.hasConditionalLogic"
+              label="Conditional Logic"
+            ></v-switch>
+
+            <DashboardConditionBuilder
+              v-if="activeDashboard.hasConditionalLogic == true"
+              :dashboard="activeDashboard"
+              :dataSource="dataSource"
+              :key="activeDashboard.id"
+              @change="onConditionalLogicChanged"
+            ></DashboardConditionBuilder>
+
           </v-container>
         </v-tab-item>
 
@@ -195,11 +211,13 @@ import DashboardPreviewButton from './DashboardPreviewButton'
 import { ALL_FORMS } from '../store/types-form'
 import { humanizeDataSourceString } from '../display-helpers'
 import DataSourceColPickerBtn from './DataSourceColPickerBtn'
+import DashboardConditionBuilder from './DashboardConditionBuilder'
 
 
 export default {
   name: "DashboardBuilder",
   components: {
+    DashboardConditionBuilder,
     DataSourceColPickerBtn,
     DashboardPreviewButton,
     MultiRangePicker,
@@ -295,6 +313,9 @@ export default {
     dashboardElementClicked(element) {
       this.$emit('dashboard-element-clicked', element)
       this.showDashboardElementProperties(element)
+    },
+    onConditionalLogicChanged(conditionalLogic) {
+      this.activeDashboard.conditionalLogic = conditionalLogic
     },
 
     showDashboardElementProperties(element)
