@@ -1,5 +1,7 @@
 import { belongsTo, createServer, hasMany, Model, Serializer } from "miragejs";
 
+import { dataTypes } from "./data/response.dataTypes";
+
 export function makeServer({ environment = "development" } = {}) {
   let server = createServer({
     environment,
@@ -10,11 +12,20 @@ export function makeServer({ environment = "development" } = {}) {
       }),
       form: Model.extend({
         workspace: belongsTo()
-      })
+      }),
+      list: Model
     },
 
     serializers: {
       workspace: Serializer.extend({
+        embed: true,
+        root: false
+      }),
+      form: Serializer.extend({
+        embed: true,
+        root: false
+      }),
+      list: Serializer.extend({
         embed: true,
         root: false
       })
@@ -154,6 +165,14 @@ export function makeServer({ environment = "development" } = {}) {
 
       this.get("/apis/api/workspaces", schema => {
         return schema.workspaces.all();
+      });
+
+      this.get("/apis/api/fetchlists", schema => {
+        return schema.lists.all();
+      });
+
+      this.get("/apis/api/datatypes", () => {
+        return dataTypes;
       });
     }
   });
