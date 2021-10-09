@@ -1,6 +1,6 @@
 import { belongsTo, createServer, hasMany, Model, Serializer } from "miragejs";
 
-import { dataTypes } from "./data/response.dataTypes";
+import { dataTypes } from "./data/response.datatypes";
 
 export function makeServer({ environment = "development" } = {}) {
   let server = createServer({

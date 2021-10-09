@@ -359,7 +359,7 @@ export const dataTypes = {
       'comment': null,
       'extra': []
     }, { 'name': 'language', 'type': 'text', 'comment': null, 'extra': [] }],
-    'customFilters': { 'isHighUtilizer': { 'title': 'High Utilizer', 'endpoint': '\/api\/apis\/is_high_utilizer' } }
+    'customFilters': { 'isHighUtilizer': { 'title': 'High Utilizer', 'endpoint': '/api/apis/is_high_utilizer' } }
   },
   'string': {
     'mysql': 'VARCHAR(255)',
