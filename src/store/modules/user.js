@@ -4,7 +4,8 @@ import {
   SET_NAVIGATION,
   SET_USER_META,
   GET_USER_META,
-  ADD_WORKSPACE_TO_NAVIGATION
+  ADD_WORKSPACE_TO_NAVIGATION,
+  SET_WORKSPACE
 } from '../types-user'
 import Vue from 'vue'
 import { ws_init } from '../../api'
@@ -71,11 +72,17 @@ export const user = {
       commit(SET_NAVIGATION, { workspaceId, key, id })
     },
 
-    [ADD_WORKSPACE_TO_NAVIGATION]: ({ commit }, {workspaceId }) => {
+    [ADD_WORKSPACE_TO_NAVIGATION]: ({ commit }, { workspaceId }) => {
       // Since this is a new navigation item, initialize the pages to null
       const item = { dashboard: null, form: null }
       commit(ADD_WORKSPACE_TO_NAVIGATION, { workspaceId, item })
-    }
+    },
+
+    [SET_WORKSPACE]: ({ commit }, { workspaceId }) => {
+      // Since this is a new navigation item, initialize the pages to null
+      commit(SET_WORKSPACE, { workspaceId })
+    },
+
   },
   mutations: {
     [SET_NAVIGATION]: (state, { workspaceId, key, id }) => {
@@ -86,6 +93,9 @@ export const user = {
     },
     [ADD_WORKSPACE_TO_NAVIGATION]: (state, { workspaceId, item }) => {
       Vue.set(state.navigation.workspaces, workspaceId, item )
+    },
+    [SET_WORKSPACE]: (state, { workspaceId }) => {
+      Vue.set(state.navigation, 'workspace', workspaceId )
     }
   },
 }

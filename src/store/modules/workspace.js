@@ -19,98 +19,7 @@ import {
 export const workspace = {
   namespaced: true,
   state: {
-    dataTypes: {
-      "list": {
-        mysql: "VARCHAR(255)",
-        formSchemaTemplate: {
-          type: "string",
-          "x-display": "autocomplete"
-        },
-      },
-      "user": {
-        mysql: "BIGINT",
-        formSchemaTemplate: {
-          type: "integer",
-          "x-display": "custom-user",
-          "x-fromData": "context.users",
-          "x-itemKey": "val",
-          "x-itemTitle": "label",
-        },
-      },
-      "patient": {
-        mysql: "BIGINT",
-        formSchemaTemplate: {
-          type: "integer",
-          "x-display": "custom-patient",
-          "x-fromData": "context.patient",
-          "x-itemKey": "val",
-          "x-itemTitle": "label",
-        },
-        dataSourceColumns: {
-          "fname": {
-
-          },
-          "lname": {
-
-          },
-          "DOB": {
-
-          }
-        },
-        customFilters: {
-          isHighUtilizer: {
-            title: 'High Utilizer',
-            endpoint: '/api/apis/is_high_utilizer'
-          }
-        }
-      },
-      "string": {
-        mysql: "VARCHAR(255)",
-        formSchemaTemplate: {
-          type: "string",
-          title: "I'm a string",
-          format: "string",
-        },
-      },
-      "text": {
-        mysql: "LONGTEXT",
-        formSchemaTemplate: {
-          type: "string",
-          title: "I'm a string in a textarea",
-          "x-display": "textarea"
-        },
-      },
-      "integer": {
-        mysql: "BIGINT",
-        formSchemaTemplate: {
-          type: "integer",
-        },
-      },
-      "boolean": {
-        mysql: "BOOLEAN",
-        formSchemaTemplate: {
-          type: "boolean",
-          title: "I'm a boolean",
-          "x-display": "switch",
-          description: "This description is used as a help message."
-        },
-      },
-      "date": {
-        mysql: "DATE",
-        formSchemaTemplate: {
-          type: "string",
-          format: "date",
-        },
-      },
-      "datetime": {
-        mysql: "DATETIME",
-        formSchemaTemplate: {
-          type: "string",
-          format: "date-time",
-        },
-      },
-
-    },
+    dataTypes: {},
     workspaces: {},
     patients: {}
   },
@@ -173,6 +82,7 @@ export const workspace = {
           fetchAllWorkspaces(userMeta).then(workspaces => {
               // Set all the workspaces that we get in the response
               workspaces.forEach(workspace => {
+
                 commit(SET_WORKSPACE, { workspaceId: workspace.id, workspace: workspace })
 
                 // Tell VUEX to create a new navigation item for this workspace to store navigation state
@@ -188,6 +98,11 @@ export const workspace = {
                   dispatch('form/FETCH_FORM', { formId }, { root: true })
                 })
               })
+
+              // Set the navigation with the first workspace as active
+              if (workspaces.length > 0) {
+                dispatch('user/SET_WORKSPACE', { workspaceId: workspaces[0].id }, { root: true })
+              }
 
               resolve(workspaces)
             })
