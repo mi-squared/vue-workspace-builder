@@ -44,5 +44,7 @@ export const dashboard_id_6 = {
   },
   'displayDuration': true,
   'newEntityFormId': 7,
-  'displayNewButton': true
+  'displayNewButton': true,
+  'dashboardsInWorkspace': { '6': 'Ken test 1', '8': 'Test 2' },
+  'workspaces': { '1': 'Crisis', '9': 'ken' }
 }
