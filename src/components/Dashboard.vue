@@ -150,12 +150,34 @@
 
             <v-list>
               <v-list-item>
-                <v-list-item-title>Move To Workspace</v-list-item-title>
+                <v-list-item-icon>
+                  <v-icon>mdi-table</v-icon>
+                </v-list-item-icon>
+                <v-list-item-content>
+                  <v-list-item-title class="text-h6">Move To Dashboard</v-list-item-title>
+                </v-list-item-content>
+              </v-list-item>
+              <v-divider></v-divider>
+              <v-list-item
+                v-for="(item, i) in dashboards"
+                :key="i"
+                link
+              >
+                <v-list-item-title>{{ item.title }}</v-list-item-title>
+              </v-list-item>
+              <v-list-item>
+                <v-list-item-icon>
+                  <v-icon>mdi-domain</v-icon>
+                </v-list-item-icon>
+                <v-list-item-content>
+                  <v-list-item-title class="text-h6">Send To Workspace</v-list-item-title>
+                </v-list-item-content>
               </v-list-item>
               <v-divider></v-divider>
               <v-list-item
                 v-for="(item, i) in workspaces"
                 :key="i"
+                link
               >
                 <v-list-item-title>{{ item.title }}</v-list-item-title>
               </v-list-item>
@@ -223,7 +245,7 @@ import AppDate from '@/components/AppDate'
 import JsonForm from '@/components/JsonForm'
 import { createNamespacedHelpers } from 'vuex'
 
-import { ALL_WORKSPACES } from '../store/types-workspace'
+import { ALL_WORKSPACES, GET_DASHBOARDS } from '../store/types-workspace'
 
 const { mapGetters: mapWorkspaceGetters } = createNamespacedHelpers('workspace')
 
@@ -301,18 +323,30 @@ export default {
           component: 'Text'
         }
       ],
+      expandHeader: {
+        "text": "",
+        "value": "data-table-expand",
+        "groupable": false
+      },
+      actionHeader: {
+        "text": "",
+        "value": "data-menu",
+        "sortable": false,
+        "groupable": false
+      }
     }
   },
   computed: {
     ...mapDashboardGetters({
       getDashboard: GET_DASHBOARD,
-      getDashboardRows: GET_DASHBOARD_ROWS
+      getDashboardRows: GET_DASHBOARD_ROWS,
     }),
     ...mapUserGetters({
       getUserMeta: GET_USER_META
     }),
     ...mapWorkspaceGetters({
-      allWorkspaces: ALL_WORKSPACES
+      allWorkspaces: ALL_WORKSPACES,
+      getDashboards: GET_DASHBOARDS
     }),
     ...mapListGetters({
       getList: GET_LIST
@@ -330,7 +364,11 @@ export default {
       return form
     },
     headers () {
-      return this.dashboard.headers
+      // We use spread operator to clone headers, otherwise we'd keep appending expand and action headers!
+      let headers = [...this.dashboard.headers]
+      headers.push(this.expandHeader)
+      headers.push(this.actionHeader)
+      return headers
     },
     rows () {
       return this.getDashboardRows(this.dashboard.id)
@@ -345,6 +383,10 @@ export default {
     },
     workspaces () {
       return Object.values(this.allWorkspaces)
+    },
+    dashboards () {
+      const dashbaords = this.getDashboards(this.dashboard.workspaceId)
+      return dashbaords
     },
     slots () {
       // Get the slot data for displaying editable content based on the header definition
