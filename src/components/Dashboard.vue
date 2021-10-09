@@ -159,11 +159,11 @@
               </v-list-item>
               <v-divider></v-divider>
               <v-list-item
-                v-for="(item, i) in dashboards"
-                :key="i"
+                v-for="(title, id) in dashboards"
+                :key="id"
                 link
               >
-                <v-list-item-title>{{ item.title }}</v-list-item-title>
+                <v-list-item-title>{{ title }}</v-list-item-title>
               </v-list-item>
               <v-list-item>
                 <v-list-item-icon>
@@ -175,11 +175,11 @@
               </v-list-item>
               <v-divider></v-divider>
               <v-list-item
-                v-for="(item, i) in workspaces"
-                :key="i"
+                v-for="(title, id) in workspaces"
+                :key="id"
                 link
               >
-                <v-list-item-title>{{ item.title }}</v-list-item-title>
+                <v-list-item-title>{{ title }}</v-list-item-title>
               </v-list-item>
             </v-list>
           </v-menu>
@@ -382,11 +382,14 @@ export default {
       return this.getList('facilities').data
     },
     workspaces () {
-      return Object.values(this.allWorkspaces)
+      // Dashboard model has workspaces = { { id: title }, { id: title } } format for workspaces
+      const workspaces = this.dashboard.workspaces
+      return workspaces
     },
     dashboards () {
-      const dashbaords = this.getDashboards(this.dashboard.workspaceId)
-      return dashbaords
+      // Dashboard model has workspaces = { { id: title }, { id: title } } format for dashboards
+      const dashboards = this.dashboard.dashboardsInWorkspace
+      return dashboards
     },
     slots () {
       // Get the slot data for displaying editable content based on the header definition
@@ -512,21 +515,22 @@ export default {
   mounted () {
 
     console.log("Dashboard Mounted")
-
+    let that = this
+    this.fetchDashboardRows({ dashboardId: this.dashboard.id }).then(() => {
+      that.loaded = true
+      // start the counter that uses the current time to determine attrition
+      that.refreshAttrition()
+    })
+  },
+  created () {
+    // Init and Set up our timeZone in created hook so it doesn't trigger reactivity in computed properties like getColo()
+    // that work with the timeZone data
     const userMeta = this.getUserMeta
     if (userMeta.timeZone != undefined && userMeta.timeZone) {
       this.timeZone = userMeta.timeZone
     } else {
       this.timeZone = 'America/New_York'
     }
-
-    let that = this
-
-    this.fetchDashboardRows({ dashboardId: this.dashboard.id }).then(() => {
-      that.loaded = true
-      // start the counter that uses the current time to determine attrition
-      that.refreshAttrition()
-    })
   },
   destroyed () {
     this.cancelAutoUpdate()

@@ -76,15 +76,20 @@ export const dashboard = {
      * @param dashboardId
      * @returns {Promise<unknown>}
      */
-    [FETCH_DASHBOARD] ({ commit, rootGetters }, { dashboardId }) {
+    [FETCH_DASHBOARD] ({ commit, dispatch, rootGetters }, { dashboardId }) {
       console.log("Fetching Dashboard: " + dashboardId)
       // Get meta data from the user module
       const userMeta = rootGetters['user/GET_USER_META']
 
       // If we have a token, make the API call
       if (userMeta.csrfToken) {
+
         // Return the promise created by the API
         return getDashboardById(dashboardId, userMeta).then(dashboard => {
+
+          // We also have to fetch the form identified as the "new entity form"
+          dispatch('form/FETCH_FORM', { formId: dashboard.newEntityFormId }, { root: true })
+
           commit(SET_DASHBOARD, { dashboardId: dashboard.id, dashboard })
         })
       }

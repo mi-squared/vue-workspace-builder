@@ -100,10 +100,11 @@ export default {
     let that = this
     // First we have to init our user and token so we can make API calls
     this.initUser().then(() => {
-      that.fetchDashboard({ dashboardId: that.dashboardId })
-        .then(dashboard => {
 
-          console.log(dashboard)
+      that.fetchDashboard({ dashboardId: that.dashboardId })
+        .then(() => {
+          // For some reason, the dashboard object that is returned from the vuex action FETCH_DASHBOARD is undefined,
+          // but this still works because it sets the dashboard object in vuex and becomes reactive
           document.title = that.dashboard.title
           that.fetchDashboardRows({ dashboardId: that.dashboardId }).then(() => {
             that.loaded = true
