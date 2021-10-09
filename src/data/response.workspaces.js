@@ -1,4 +1,59 @@
-export const workspace = {
+export const workspaces = [{
+  'id': 1,
+  'forms': {},
+  'title': 'Crisis',
+  'filters': { '199': 199 },
+  'dashboards': { '1': 1 },
+  'dataSource': {
+    'spec': {
+      'columns': {
+        'id': {
+          'name': 'id',
+          'type': 'integer',
+          'extra': { 'createdBy': 'system', 'createdDate': '2021-06-20' },
+          'comment': ''
+        },
+        'source': {
+          'name': 'source',
+          'type': 'string',
+          'extra': { 'createdBy': 'system', 'createdDate': '2021-06-20' },
+          'comment': '',
+          'default': ''
+        },
+        'created_by': {
+          'name': 'created_by',
+          'type': 'user',
+          'extra': { 'createdBy': 'system', 'createdDate': '2021-06-20' },
+          'comment': 'refers to users.id',
+          'default': ''
+        },
+        'updated_by': {
+          'name': 'updated_by',
+          'type': 'user',
+          'extra': { 'createdBy': 'system', 'createdDate': '2021-06-20' },
+          'comment': 'refers to users.id',
+          'default': ''
+        },
+        'created_date': {
+          'name': 'created_date',
+          'type': 'datetime',
+          'extra': { 'createdBy': 'system', 'createdDate': '2021-06-20' },
+          'comment': '',
+          'default': ''
+        },
+        'updated_date': {
+          'name': 'updated_date',
+          'type': 'datetime',
+          'extra': { 'createdBy': 'system', 'createdDate': '2021-06-20' },
+          'comment': '',
+          'default': ''
+        }
+      }, 'indexes': { 'id': { 'key': 'PRIMARY', 'column': 'id' } }
+    }
+  },
+  'administrator': 1,
+  'displayOnPatientMenu': false
+}, {
   'id': 9,
   'forms': { '7': 7 },
   'title': 'ken',
@@ -146,4 +201,4 @@ export const workspace = {
   },
   'administrator': '',
   'displayOnPatientMenu': false
-}
+}]
