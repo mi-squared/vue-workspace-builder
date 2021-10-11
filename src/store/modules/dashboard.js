@@ -44,8 +44,11 @@ export const dashboard = {
       // Push a new entity and then update the dashboard entities
       // Get meta data from the user module
       const userMeta = rootGetters['user/GET_USER_META']
-      createEntity(workspaceId, dashboardId, entity, userMeta).then(newEntity => {
-        commit(SET_ENTITY, { entityId: newEntity.id, entity: newEntity })
+      return new Promise(resolve => {
+        createEntity(workspaceId, dashboardId, entity, userMeta).then(newEntity => {
+          commit(SET_ENTITY, { entityId: newEntity.id, entity: newEntity })
+          resolve(newEntity)
+        })
       })
     },
 
@@ -143,9 +146,14 @@ export const dashboard = {
 
     [SET_ENTITY] (state, { entityId, entity }) {
       let entityToUpdate = state.entities[entityId]
-      state.entities[entityId] = {
-        entityToUpdate,
-        ...entity
+      if (entityToUpdate == undefined) {
+        Vue.set(state.entities, entityId, entity)
+      } else {
+        let toSave = {
+          ...entityToUpdate,
+          ...entity
+        }
+        Vue.set(state.entities, entityId, toSave)
       }
     },
 

@@ -238,6 +238,7 @@
                   <JsonForm
                     v-if="newEntityForm"
                     :form="newEntityForm"
+                    :key="entityCreateKey"
                     :model="newEntityModel"
                     :schema="newEntityForm.schema"
                     :options="newEntityForm.options"
@@ -323,6 +324,7 @@ export default {
     return {
       timeZone: '',
       newEntityModel: {},
+      entityCreateKey: 0,
       loaded: false,
       isPreview: this.preview || false,
       skeletonLoaderAttrs: {
@@ -500,12 +502,22 @@ export default {
     saveNewEntity () {
       // Save the entity
       console.log("Saving New Entity: " + this.newEntityModel)
+      let that = this
       this.createEntity({
         workspaceId: this.dashboard.workspaceId,
         dashboardId: this.dashboard.id,
         entity: this.newEntityModel
+      }).then(() => {
+
+        // TODO we shouldn't have to do this if the API returned the correctly formatted entity on the create endpoint
+        that.reloadEntities()
+        // Reset the model
+        that.newEntityModel = {}
+        that.entityCreateKey++
+
+        that.dialog = false
       })
-      this.dialog = false
+
     },
     newEntityChanged(model) {
       this.newEntityModel = model
