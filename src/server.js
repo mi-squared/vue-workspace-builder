@@ -1,6 +1,8 @@
 import { belongsTo, createServer, hasMany, Model, Serializer } from "miragejs";
 
-import { dataTypes } from "./data/response.datatypes";
+import { dataTypes as dataTypesResponse } from "./data/response.datatypes";
+import { fetchlists as fetchListResponse } from "./data/response.fetchlists";
+import { init as initResponse } from "./data/response.init";
 
 export function makeServer({ environment = "development" } = {}) {
   let server = createServer({
@@ -12,8 +14,7 @@ export function makeServer({ environment = "development" } = {}) {
       }),
       form: Model.extend({
         workspace: belongsTo()
-      }),
-      list: Model
+      })
     },
 
     serializers: {
@@ -22,10 +23,6 @@ export function makeServer({ environment = "development" } = {}) {
         root: false
       }),
       form: Serializer.extend({
-        embed: true,
-        root: false
-      }),
-      list: Serializer.extend({
         embed: true,
         root: false
       })
@@ -155,11 +152,7 @@ export function makeServer({ environment = "development" } = {}) {
       this.get(
         "/interface/modules/custom_modules/oe-workspace-server/init.php",
         () => {
-          return {
-            csrfToken: "ff8a6d73d1751f3cdf5752de4bc4493899427cd0",
-            userId: "1",
-            username: "admin"
-          };
+          return initResponse;
         }
       );
 
@@ -167,12 +160,12 @@ export function makeServer({ environment = "development" } = {}) {
         return schema.workspaces.all();
       });
 
-      this.get("/apis/api/fetchlists", schema => {
-        return schema.lists.all();
+      this.get("/apis/api/fetchlists", () => {
+        return fetchListResponse;
       });
 
       this.get("/apis/api/datatypes", () => {
-        return dataTypes;
+        return dataTypesResponse;
       });
     }
   });
