@@ -1,20 +1,24 @@
 <template>
-  <span :title="timestamp | humanFriendlyDate">{{timestamp | humanFriendlyDate}}</span>
+  <span :title="timestamp | humanFriendlyDate(timezone)">{{timestamp | humanFriendlyDate(timezone)}}</span>
 </template>
 <script>
-import moment from 'moment'
+import moment from 'moment-timezone'
 export default {
   name: 'AppDate',
   props: {
     timestamp: {
       required: true,
       type: String
+    },
+    timezone: {
+      required: true,
+      type: String
     }
   },
   filters: {
-    humanFriendlyDate (ts) {
+    humanFriendlyDate (ts, timezone) {
       let formatted = ''
-      const rightNow = moment().toISOString()
+      const rightNow = moment().tz(timezone).toISOString()
       const timestamp = moment(ts).toISOString()
       if (moment(timestamp).isSame(rightNow, 'hour')) {
         formatted = moment(timestamp).fromNow()

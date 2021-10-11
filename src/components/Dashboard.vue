@@ -43,6 +43,7 @@
               prepend-inner-icon="mdi-magnify"
               class="mt-6 expanding-search"
             ></v-text-field>
+            <v-chip>{{ clocktime }}</v-chip>
 
             <v-btn icon>
               <v-icon>mdi-dots-vertical</v-icon>
@@ -122,11 +123,11 @@
         <!-- Display the created_datetime within a chip that indicates how old (attrition) the row is -->
         <template v-slot:item.moved_to_dashboard_date="{ item }">
           <v-chip
-            :key="currentTimestamp"
-            :color="getColor(item.moved_to_dashboard_date)"
+            :key="currentTimestamp.unix()"
+            :color="getColor(item)"
             dark
           >
-            <AppDate :timestamp="item.moved_to_dashboard_date"></AppDate>
+            <AppDate :timestamp="item.moved_to_dashboard_date" :timezone="timeZone"></AppDate>
           </v-chip>
         </template>
 
@@ -335,7 +336,7 @@ export default {
       attrs: {},
       dialog: false,
       timer: '',
-      currentTimestamp: '',
+      currentTimestamp: null,
       expanded: [],
       singleExpand: false,
       slotName: 'item.name',
@@ -472,6 +473,10 @@ export default {
       })
 
       return slots
+    },
+    clocktime() {
+      let m = this.currentTimestamp
+      return m.tz(this.timeZone).format("MM/DD/YYYY HH:mm:ss")
     }
   },
   methods: {
@@ -496,7 +501,7 @@ export default {
       this.fetchDashboardRows({ dashboardId: this.dashboard.id }).then(() => {
         that.loaded = true
         // start the counter that uses the current time to determine attrition
-        that.refreshAttrition()
+        // that.refreshAttrition()
       })
     },
     saveNewEntity () {
@@ -564,7 +569,8 @@ export default {
       console.log('Dialog closed')
     },
     getCurrentTimestamp () {
-      return moment().tz(this.timeZone).format('X')
+      // Get the current timestamp
+      return moment()
     },
     refreshAttrition: function () {
       setInterval(() => {
@@ -574,9 +580,11 @@ export default {
     cancelAutoUpdate () {
       clearInterval(this.timer)
     },
-    getColor (timestamp) {
+    getColor (entity) {
+      // We need to calculate "now" based on the system timezone so our diff relative to the timestamp is correct
+      let moved_to_dashboard_date = entity.moved_to_dashboard_date
       let a = moment().tz(this.timeZone)
-      let b = moment(timestamp).tz(this.timeZone)
+      let b = moment.tz(moved_to_dashboard_date, this.timeZone)
       let seconds = a.diff(b, 'seconds')
       for (let i = 0; i < this.dashboard.durationModel.ranges.length; ++i) {
         const range = this.dashboard.durationModel.ranges[i]
@@ -601,7 +609,7 @@ export default {
         let val
 
         if (key == 'timestamp') {
-          val = this.getColor(item['timestamp'])
+          val = this.getColor(item)
         } else {
           val = item[key]
         }
@@ -638,6 +646,8 @@ export default {
     } else {
       this.timeZone = 'America/New_York'
     }
+
+    this.currentTimestamp = this.getCurrentTimestamp()
   },
   destroyed () {
     this.cancelAutoUpdate()
