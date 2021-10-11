@@ -1,5 +1,9 @@
 <template>
-  <v-dialog v-model="dialog" fullscreen>
+  <v-dialog
+    v-model="dialog"
+    fullscreen
+    hide-overlay
+  >
     <template v-slot:activator="{ on, attrs }">
       <v-btn class="mt-4 mr-2" color="primary" dark v-bind="attrs" v-on="on" @click="changeKey">
         Preview
@@ -21,13 +25,7 @@
         </v-btn>
       </v-toolbar>
 
-      <v-card-text>
-        <v-container>
-          <Dashboard :key="dashboardKey" :dashboard="dashboard"></Dashboard>
-        </v-container>
-        <small>*indicates required field</small>
-      </v-card-text>
-
+        <Dashboard :key="dashboardKey" :dashboard="dashboard"></Dashboard>
     </v-card>
   </v-dialog>
 </template>

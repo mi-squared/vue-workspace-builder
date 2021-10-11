@@ -89,10 +89,8 @@ export default {
     },
     onPatientChanged(data) {
       const patient = data.patient
-      if (this.activeModel.pid != undefined) {
-        this.activeModel.pid = patient.pid
-        this.onFormChange(this.activeModel.pid)
-      }
+      this.activeModel.pid = patient.pid
+      this.onFormChange(this.activeModel.pid)
     },
     calculateOptions() {
       let that = this

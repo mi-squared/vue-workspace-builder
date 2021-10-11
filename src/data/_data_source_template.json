@@ -93,9 +93,9 @@
       },
       "source": {
         "name": "source",
-        "type": "string",
+        "type": "json",
         "default": "",
-        "comment": "The source of the entity, whether form, api or some other entry-point.",
+        "comment": "JSON representation of source of the entity, whether form, api or some other entry-point.",
         "extra": {
           "createdBy": "system",
           "category": "custom"

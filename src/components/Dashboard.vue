@@ -9,12 +9,19 @@
         show-expand
         show-group-by
         :custom-group="customGroup"
+        :sort-by.sync="sortBy"
+        :sort-desc.sync="sortDesc"
       >
 
         <!-- This is the toolbar at the top of the table -->
         <template v-slot:top>
           <v-toolbar flat>
             <v-toolbar-title>{{ dashboard.title }} <span class="text--lighten-1">(#{{ dashboard.id }})</span></v-toolbar-title>
+
+            <v-btn icon @click="reloadEntities">
+              <v-icon>mdi-refresh</v-icon>
+            </v-btn>
+
             <v-spacer></v-spacer>
 
             <v-btn
@@ -86,13 +93,30 @@
 <!--            </td>-->
 <!--          </tr>-->
 <!--        </template>-->
+        <template v-slot:item.id="{ item }">
+          <span style="font-size: 16px" class="mt-4 font-weight-light">#{{ item.id }}</span>
+        </template>
 
         <!-- Display indicators -->
         <template v-slot:item.data-indicators="{ item }">
-          <v-icon v-if="item.something == 'dsafdsfad'" class="d-inline" color="green">mdi-circle</v-icon>
-          <v-icon class="d-inline">mdi-circle</v-icon>
-          <v-icon class="d-inline">mdi-airplane</v-icon>
-          <v-icon class="d-inline">mdi-table</v-icon>
+
+          <!-- This should check the last source, and display an icon if it exists, ie: the last dashboard -->
+          <v-tooltip bottom>
+            <template v-slot:activator="{ on, attrs }">
+              <v-icon
+                v-if="isSourceDashboard(item)"
+                v-bind="attrs"
+                v-on="on"
+                class="d-inline"
+              >mdi-table</v-icon>
+            </template>
+            <span>{{ dashboardSource(item) }}</span>
+          </v-tooltip>
+
+          <!-- now we check conditions to add indicators -->
+<!--          <v-icon v-if="item.something == 'dsafdsfad'" class="d-inline" color="green">mdi-circle</v-icon>-->
+<!--          <v-icon class="d-inline">mdi-circle</v-icon>-->
+<!--          <v-icon class="d-inline">mdi-airplane</v-icon>-->
         </template>
 
         <!-- Display the created_datetime within a chip that indicates how old (attrition) the row is -->
@@ -252,6 +276,7 @@
 import moment from 'moment-timezone'
 import AppDate from '@/components/AppDate'
 import JsonForm from '@/components/JsonForm'
+import { newDashboardSourceDashboard } from '../model-builder'
 import { createNamespacedHelpers } from 'vuex'
 
 import { ALL_WORKSPACES, GET_DASHBOARDS } from '../store/types-workspace'
@@ -332,6 +357,14 @@ export default {
           component: 'Text'
         }
       ],
+      sortBy: 'moved_to_dashboard_date',
+      sortDesc: true,
+      idHeader: {
+        "text": "ID",
+        "value": "id",
+        "groupable": false,
+        "sortable": true
+      },
       indicatorsHeader: {
         "text": "",
         "value": "data-indicators",
@@ -380,7 +413,7 @@ export default {
     },
     headers () {
       // We use spread operator to clone headers, otherwise we'd keep appending expand and action headers!
-      let headers = [this.indicatorsHeader, ...this.dashboard.headers]
+      let headers = [this.idHeader, this.indicatorsHeader, ...this.dashboard.headers]
       headers.push(this.expandHeader)
       headers.push(this.actionHeader)
       return headers
@@ -456,6 +489,14 @@ export default {
       this.snackColor = 'error'
       this.snackText = 'Canceled'
     },
+    reloadEntities () {
+      let that = this
+      this.fetchDashboardRows({ dashboardId: this.dashboard.id }).then(() => {
+        that.loaded = true
+        // start the counter that uses the current time to determine attrition
+        that.refreshAttrition()
+      })
+    },
     saveNewEntity () {
       // Save the entity
       console.log("Saving New Entity: " + this.newEntityModel)
@@ -472,11 +513,28 @@ export default {
     // sendToWorkspace(entity) {
     //
     // },
+    isSourceDashboard(entity) {
+      if (entity.source != undefined) {
+        if (entity.source.type == 'dashboard') {
+          return true
+        }
+      }
+    },
+    dashboardSource(entity) {
+      if (entity.source != undefined &&
+        entity.source.type != undefined &&
+        entity.source.extra != undefined) {
+        return "Moved from " + entity.source.type + " " + this.dashboards[entity.source.extra.dashboardId]
+      }
+
+      return ""
+    },
     moveToDashboard(entity, dashboardId) {
       console.log("Moving Entity to dashboard: " + dashboardId)
       console.log(entity)
       // We need to update the source field with our data, then send it to API for persist
-      let source = { dashboardId: this.dashboard.id }
+      let source = newDashboardSourceDashboard(this.dashboard.id)
+
       entity.source = source
       this.pushEntity({
         workspaceId: this.dashboard.workspaceId,

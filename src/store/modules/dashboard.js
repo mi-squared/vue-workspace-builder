@@ -30,7 +30,7 @@ export const dashboard = {
     },
 
     [GET_DASHBOARD_ROWS]: state => dashboardId => {
-      return Object.values(state.entities).reverse().filter(entity => {
+      return Object.values(state.entities).filter(entity => {
         if (entity.dashboard_id == dashboardId) {
           return entity
         }
