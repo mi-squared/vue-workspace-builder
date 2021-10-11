@@ -1,5 +1,5 @@
 export const fetchlists = {
-  "yesno": { "id": "yesno", "title": "Yes\/No", "type": "list_options", "defaultOption": "", "data": [] },
+  "yesno": { "id": "yesno", "title": "Yes/No", "type": "list_options", "defaultOption": "", "data": [] },
   "warehouse": { "id": "warehouse", "title": "Warehouses", "type": "list_options", "defaultOption": "", "data": [] },
   "_ActEncounterCode": {
     "id": "_ActEncounterCode",
@@ -104,7 +104,7 @@ export const fetchlists = {
   },
   "SMI_GMH_Clinics": {
     "id": "SMI_GMH_Clinics",
-    "title": "SMI\/GMH Clinics",
+    "title": "SMI/GMH Clinics",
     "type": "list_options",
     "defaultOption": "",
     "data": []
@@ -161,7 +161,7 @@ export const fetchlists = {
     "data": []
   },
   "reaction": { "id": "reaction", "title": "Reaction", "type": "list_options", "defaultOption": "", "data": [] },
-  "ethrace": { "id": "ethrace", "title": "Race\/Ethnicity", "type": "list_options", "defaultOption": "", "data": [] },
+  "ethrace": { "id": "ethrace", "title": "Race/Ethnicity", "type": "list_options", "defaultOption": "", "data": [] },
   "race": { "id": "race", "title": "Race", "type": "list_options", "defaultOption": "", "data": [] },
   "publicity_code": {
     "id": "publicity_code",
@@ -669,7 +669,7 @@ export const fetchlists = {
     "defaultOption": "",
     "data": []
   },
-  "exams": { "id": "exams", "title": "Exams\/Tests", "type": "list_options", "defaultOption": "", "data": [] },
+  "exams": { "id": "exams", "title": "Exams/Tests", "type": "list_options", "defaultOption": "", "data": [] },
   "ethnicity": { "id": "ethnicity", "title": "Ethnicity", "type": "list_options", "defaultOption": "", "data": [] },
   "eligibility": {
     "id": "eligibility",
