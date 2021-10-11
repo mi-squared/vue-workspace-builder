@@ -14,7 +14,7 @@
           </v-col>
         </v-row>
 
-        <v-row v-for="(condition, index) in rule.conditions" :key="index">
+        <v-row v-for="(condition, conditionIndex) in rule.conditions" :key="conditionIndex">
           <v-col>
             <v-select :items="fieldOptions" v-model="condition.field"></v-select>
           </v-col>
@@ -29,16 +29,17 @@
 
           <v-col>
             <v-toolbar dense>
+              <v-spacer></v-spacer>
               <v-btn
                 icon
-                @click="removeCondition(index)"
+                @click="removeCondition(ruleIndex, conditionIndex)"
               >
                 <v-icon>mdi-close</v-icon>
               </v-btn>
               <v-btn
-                v-if="index == rule.conditions.length - 1"
+                v-if="conditionIndex == rule.conditions.length - 1"
                 icon
-                @click="addCondition(index)"
+                @click="addCondition(ruleIndex)"
               >
                 <v-icon>mdi-plus</v-icon>
               </v-btn>
@@ -48,13 +49,77 @@
 
         <v-row>
           <v-col>
-            <v-select v-model="rule.action" :items="actions"></v-select>
+            <v-select
+              v-model="rule.action"
+              :items="actions"
+            ></v-select>
           </v-col>
           <v-col>
+            <v-select
+              v-if="rule.action == 'Add Row Indicator'"
+              v-model="rule.actionData.icon"
+              :items="iconList"
+            >
+              <template v-slot:selection="{ item }">
+                <v-icon  :color="rule.actionData.color">{{ item }}</v-icon>&nbsp; {{ item }}
+              </template>
+
+              <template v-slot:item="{ item }">
+                <v-icon>{{ item }}</v-icon>&nbsp; {{ item }}
+              </template>
+
+            </v-select>
           </v-col>
           <v-col>
+            <v-dialog
+              v-if="rule.action == 'Add Row Indicator'"
+              v-model="colorDialogs[ruleIndex]"
+              width="500"
+            >
+              <template v-slot:activator="{ on, attrs }">
+                <div class="mt-4">
+                  <v-icon
+                    :color="rule.actionData.color"
+                    v-bind="attrs"
+                    v-on="on">
+                    mdi-format-color-fill
+                  </v-icon>
+                </div>
+              </template>
+
+              <v-card>
+                <v-card-title class="text-h5 grey lighten-2">
+                  Select Color
+                </v-card-title>
+
+                <v-card-text>
+                  <v-color-picker
+                    v-model="rule.actionData.color"
+                    class="ma-2"
+                    dot-size="31"
+                    hide-inputs
+                    show-swatches
+                    swatches-max-height="200"
+                  ></v-color-picker>
+                </v-card-text>
+
+                <v-divider></v-divider>
+
+                <v-card-actions>
+                  <v-spacer></v-spacer>
+                  <v-btn
+                    color="primary"
+                    text
+                    @click="colorDialogs[ruleIndex] = false"
+                  >
+                    Save
+                  </v-btn>
+                </v-card-actions>
+              </v-card>
+            </v-dialog>
           </v-col>
           <v-col>
+            <v-text-field label="Mouse-over note for indicator" v-model="rule.actionData.note"></v-text-field>
           </v-col>
         </v-row>
       </v-card-text>
@@ -86,6 +151,7 @@ export default {
   },
   data() {
     return {
+      colorDialogs: {},
       conditionalLogic: {
         rules: [],
         ...this.dashboard.conditionalLogic
@@ -102,9 +168,17 @@ export default {
     }
   },
   computed: {
+    iconList() {
+      return [
+        'mdi-circle',
+        'mdi-message-text',
+        'mdi-email',
+        'mdi-arrow-up-bold-box-outline'
+      ];
+    },
     actions() {
       return [
-        'Show', 'Hide', 'Display Row Icon', 'Show Alert'
+        'Show', 'Hide', 'Add Row Indicator'
       ]
     },
     logicalTypes() {
@@ -129,7 +203,9 @@ export default {
       let operators = [
         '>', '<', '=', '!='
       ]
-      if (expressionField) {
+      if (expressionField &&
+        this.dataSource.spec.columns[expressionField] != undefined) {
+        // TODO this doesn't drill down in to sub-fields like pid.DOB
         const type = this.dataSource.spec.columns[expressionField].type
         if (type == 'date' || type == 'datetime') {
           operators.push('UNTIL NOW(minutes) <')
@@ -146,21 +222,27 @@ export default {
     addRule() {
       this.conditionalLogic.rules.push({
         action: '',
+        actionData: {
+          icon: '',
+          color: '',
+          note: ''
+        },
         logicalType: '',
         conditions: [],
       })
+      this.addCondition(this.conditionalLogic.rules.length - 1)
     },
     /**
      * Remove a condition from the array by it's index using splice()
      * @param index
      */
-    removeCondition(index) {
-      if (index > -1) {
-        this.conditionalLogic.rules[index].conditions.splice(index, 1);
+    removeCondition(ruleIndex, conditionIndex) {
+      if (ruleIndex > -1) {
+        this.conditionalLogic.rules[ruleIndex].conditions.splice(conditionIndex, 1);
       }
     },
-    addCondition(index) {
-      this.conditionalLogic.rules[index].conditions.push({
+    addCondition(ruleIndex) {
+      this.conditionalLogic.rules[ruleIndex].conditions.push({
         field: '',
         operator: '',
         value: ''

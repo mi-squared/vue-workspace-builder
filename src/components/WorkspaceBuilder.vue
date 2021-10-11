@@ -13,14 +13,28 @@
 
       <v-container fluid>
         <v-row dense>
-            <v-col cols="4">
+            <v-col cols="6">
               <v-card-text>
                 <v-form>
                   <v-text-field label="Title" v-model="activeWorkspace.title"></v-text-field>
 
-                  <v-select label="Default Dashboard" v-model="activeWorkspace.defaultDashboard" :items="dashboardOptions"></v-select>
+                  <v-select
+                    label="Default Dashboard"
+                    v-model="activeWorkspace.defaultDashboard"
+                    :items="dashboardOptions"
+                    hint="The dashboard that entities are sent to when invoking the 'Send To Workspace' action."
+                    persistent-hint
+                  ></v-select>
 
-                  <v-select label="Administrator" v-model="activeWorkspace.administrator" :items="administrators" item-text="displayName" item-value="userId" hint="The administrator of this workspace" persistent-hint></v-select>
+                  <v-select
+                    label="Administrator"
+                    v-model="activeWorkspace.administrator"
+                    :items="administrators"
+                    item-text="displayName"
+                    item-value="userId"
+                    hint="The administrator of this workspace"
+                    persistent-hint
+                  ></v-select>
 
                   <v-switch
                     v-model="activeWorkspace.displayOnPatientMenu"
@@ -37,28 +51,6 @@
       <v-toolbar flat>
         <v-toolbar-title>Menu Items</v-toolbar-title>
         <v-spacer></v-spacer>
-        <v-menu>
-          <template v-slot:activator="{ on, attrs }">
-            <v-btn
-                text
-                class="align-self-center mr-4"
-                v-bind="attrs"
-                v-on="on"
-            >
-              <v-icon>
-                mdi-plus
-              </v-icon>
-              New
-            </v-btn>
-          </template>
-
-          <v-list class="grey lighten-3">
-
-            <v-list-item :key="`table`">Table</v-list-item>
-            <v-list-item :key="`form`">Form</v-list-item>
-
-          </v-list>
-        </v-menu>
       </v-toolbar>
 
       <v-card-text>
@@ -71,20 +63,16 @@
                 Title
               </th>
               <th class="text-left">
-                Type
-              </th>
-              <th class="text-left">
                 Enabled
               </th>
             </tr>
             </thead>
             <tbody>
             <tr
-                v-for="item in views"
-                :key="item.title"
+                v-for="item in dashboardOptions"
+                :key="item.id"
             >
-              <td class="text-left">{{ item.title }}</td>
-              <td class="text-left">{{ item.type }}</td>
+              <td class="text-left">{{ item.text }}</td>
               <td class="text-left">{{ item.enabled }}</td>
             </tr>
             </tbody>
@@ -228,20 +216,24 @@ export default {
     title () {
       return this.activeWorkspace.title
     },
+    dashboards() {
+      return Object.values(this.activeWorkspace.dashboards)
+    },
     dashboardOptions() {
       // return options for dashboard when entity is created outside, but we
       // don't want to fetch from API, just use getter
       let options = []
-      // Object.values(this.activeWorkspace.dashboards).forEach(dashboardId => {
-      //   const dashboard = this.getDashboard(dashboardId)
-      //   // If the dashboards haven't loaded from API yet, they will be undefined
-      //   if (dashboard != undefined) {
-      //     options.push({
-      //       text: dashboard.title,
-      //       value: dashboard.id
-      //     })
-      //   }
-      // })
+      Object.values(this.dashboards).forEach(dashboardId => {
+        const dashboard = this.getDashboard(dashboardId)
+        // If the dashboards haven't loaded from API yet, they will be undefined
+        if (dashboard != undefined) {
+          options.push({
+            text: dashboard.title,
+            value: dashboard.id,
+            enabled: dashboard.enabled || true
+          })
+        }
+      })
       return options
     },
     administrators () {

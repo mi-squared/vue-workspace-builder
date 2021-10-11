@@ -186,6 +186,29 @@ export function createEntity(workspaceId, dashboardId, entity, userMeta)
   })
 }
 
+export function updateEntity(workspaceId, dashboardId, entityId, entity, userMeta)
+{
+  return new Promise((resolve) => {
+    axios.put(baseUrl + '/apis/api/entity', {
+        params: {
+          workspaceId: workspaceId,
+          dashboardId: dashboardId,
+          entityId: entityId,
+          entity: entity
+        }
+      },
+      {
+        headers: {
+          'apicsrftoken': userMeta.csrfToken,
+          'Content-Type': 'application/json;charset=utf-8'
+        }
+      }).then(function (response) {
+      const entity = response.data
+      resolve(entity)
+    }).catch(handleApiError)
+  })
+}
+
 export function createDataSourceColumn(userId, workspaceId, column, userMeta) {
   const dataSourceColumn = newDataSourceColumn(userId, column)
   return new Promise((resolve) => {
@@ -345,6 +368,25 @@ export function updateForm(form, userMeta) {
       }).then(function (response) {
       const form = response.data
       resolve(form)
+    }).catch(handleApiError)
+  })
+}
+
+export function fetchPatients(patient, userMeta)
+{
+  return new Promise((resolve) => {
+    axios.post(baseUrl + '/apis/api/patients', {
+      params: {
+        patient: patient
+      },
+    },
+      {
+      headers: {
+        'apicsrftoken': userMeta.csrfToken
+      }
+    }).then(function (response) {
+      const matches = response.data
+      resolve(matches)
     }).catch(handleApiError)
   })
 }

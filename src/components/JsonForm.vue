@@ -15,7 +15,7 @@
   >
     <!-- Templates for custom elements -->
     <template slot="custom-patient" slot-scope="context">
-      <PatientPicker :pid="pid" v-bind="context"></PatientPicker>
+      <PatientPicker :pid="pid" v-bind="context" @changed="onPatientChanged"></PatientPicker>
 <!--      <v-date-picker v-bind="context"></v-date-picker>-->
 
 
@@ -86,6 +86,13 @@ export default {
       this.$emit('changed', this.activeModel)
       this.optionsForForm = this.calculateOptions()
       console.log(param)
+    },
+    onPatientChanged(data) {
+      const patient = data.patient
+      if (this.activeModel.pid != undefined) {
+        this.activeModel.pid = patient.pid
+        this.onFormChange(this.activeModel.pid)
+      }
     },
     calculateOptions() {
       let that = this

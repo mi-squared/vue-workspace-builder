@@ -81,7 +81,7 @@ export const workspace = {
 
           fetchAllWorkspaces(userMeta).then(workspaces => {
               // Set all the workspaces that we get in the response
-              workspaces.forEach(workspace => {
+              Object.values(workspaces).forEach(workspace => {
 
                 commit(SET_WORKSPACE, { workspaceId: workspace.id, workspace: workspace })
 

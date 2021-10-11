@@ -24,13 +24,13 @@
             Forms
           </v-tab>
 
-          <v-tab :to="`/builder/workspace/${activeWorkspace.id}/filters`">
-            Filters
-          </v-tab>
+<!--          <v-tab :to="`/builder/workspace/${activeWorkspace.id}/filters`">-->
+<!--            Filters-->
+<!--          </v-tab>-->
 
-          <v-tab :to="`/builder/workspace/${activeWorkspace.id}/actions`">
-            Actions
-          </v-tab>
+<!--          <v-tab :to="`/builder/workspace/${activeWorkspace.id}/actions`">-->
+<!--            Actions-->
+<!--          </v-tab>-->
 
           <!-- Revisions are not implemented -->
           <!--        <v-tab href="#revisions">-->

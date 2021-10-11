@@ -40,7 +40,7 @@ new Vue({
     }
   },
   created () {
-    this.initUser
+    //this.initUser
   },
   render: (h) => h(App),
 }).$mount("#app");

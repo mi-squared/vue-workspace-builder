@@ -90,22 +90,22 @@
 
         <v-row>
           <v-col>
-        <v-textarea
-          :value="JSON.stringify(activeForm.grid, undefined, 4)"
-          auto-grow
-          readonly
-          label="Grid"
-        >
-        </v-textarea>
+            <v-textarea
+              :value="JSON.stringify(activeForm.grid, undefined, 4)"
+              auto-grow
+              readonly
+              label="Grid"
+            >
+            </v-textarea>
           </v-col>
           <v-col>
-        <v-textarea
-          :value="JSON.stringify(activeForm.schema, undefined, 4)"
-          auto-grow
-          readonly
-          label="Schema"
-        >
-        </v-textarea>
+            <v-textarea
+              :value="JSON.stringify(activeForm.schema, undefined, 4)"
+              auto-grow
+              readonly
+              label="Schema"
+            >
+            </v-textarea>
           </v-col>
         </v-row>
       </v-tab-item>

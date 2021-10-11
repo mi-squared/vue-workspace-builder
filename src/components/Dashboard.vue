@@ -14,7 +14,7 @@
         <!-- This is the toolbar at the top of the table -->
         <template v-slot:top>
           <v-toolbar flat>
-            <v-toolbar-title>{{ dashboard.title }}</v-toolbar-title>
+            <v-toolbar-title>{{ dashboard.title }} <span class="text--lighten-1">(#{{ dashboard.id }})</span></v-toolbar-title>
             <v-spacer></v-spacer>
 
             <v-btn
@@ -87,6 +87,14 @@
 <!--          </tr>-->
 <!--        </template>-->
 
+        <!-- Display indicators -->
+        <template v-slot:item.data-indicators="{ item }">
+          <v-icon v-if="item.something == 'dsafdsfad'" class="d-inline" color="green">mdi-circle</v-icon>
+          <v-icon class="d-inline">mdi-circle</v-icon>
+          <v-icon class="d-inline">mdi-airplane</v-icon>
+          <v-icon class="d-inline">mdi-table</v-icon>
+        </template>
+
         <!-- Display the created_datetime within a chip that indicates how old (attrition) the row is -->
         <template v-slot:item.moved_to_dashboard_date="{ item }">
           <v-chip
@@ -133,7 +141,7 @@
         </template>
 
         <!-- this renders the vertical elipsis, which triggers the action menu -->
-        <template v-slot:item.data-menu>
+        <template v-slot:item.data-menu="{ item }">
           <v-menu
             bottom
             left
@@ -162,6 +170,7 @@
                 v-for="(title, id) in dashboards"
                 :key="id"
                 link
+                @click="moveToDashboard(item, id)"
               >
                 <v-list-item-title>{{ title }}</v-list-item-title>
               </v-list-item>
@@ -258,7 +267,7 @@ import {
   FETCH_DASHBOARD,
   FETCH_DASHBOARD_ROWS,
   GET_DASHBOARD,
-  GET_DASHBOARD_ROWS
+  GET_DASHBOARD_ROWS, PUSH_ENTITY
 } from '../store/types-dashboard'
 
 const { mapGetters: mapDashboardGetters, mapActions: mapDashboardActions } = createNamespacedHelpers('dashboard')
@@ -323,6 +332,12 @@ export default {
           component: 'Text'
         }
       ],
+      indicatorsHeader: {
+        "text": "",
+        "value": "data-indicators",
+        "groupable": false,
+        "sortable": false
+      },
       expandHeader: {
         "text": "",
         "value": "data-table-expand",
@@ -365,7 +380,7 @@ export default {
     },
     headers () {
       // We use spread operator to clone headers, otherwise we'd keep appending expand and action headers!
-      let headers = [...this.dashboard.headers]
+      let headers = [this.indicatorsHeader, ...this.dashboard.headers]
       headers.push(this.expandHeader)
       headers.push(this.actionHeader)
       return headers
@@ -387,8 +402,13 @@ export default {
       return workspaces
     },
     dashboards () {
-      // Dashboard model has workspaces = { { id: title }, { id: title } } format for dashboards
-      const dashboards = this.dashboard.dashboardsInWorkspace
+      // Dashboard model has workspaces = { { id: title }, { id: title } } format for dashboards with ids as keys
+      let dashboards = {}
+      Object.keys(this.dashboard.dashboardsInWorkspace).forEach(id => {
+        if (Number(id) != Number(this.dashboard.id)) {
+          dashboards[id] = this.dashboard.dashboardsInWorkspace[id]
+        }
+      })
       return dashboards
     },
     slots () {
@@ -423,7 +443,8 @@ export default {
     ...mapDashboardActions({
       fetchDashboard: FETCH_DASHBOARD,
       fetchDashboardRows: FETCH_DASHBOARD_ROWS,
-      createEntity: CREATE_ENTITY
+      createEntity: CREATE_ENTITY,
+      pushEntity: PUSH_ENTITY
     }),
     save () {
       this.snack = true
@@ -447,6 +468,22 @@ export default {
     },
     newEntityChanged(model) {
       this.newEntityModel = model
+    },
+    // sendToWorkspace(entity) {
+    //
+    // },
+    moveToDashboard(entity, dashboardId) {
+      console.log("Moving Entity to dashboard: " + dashboardId)
+      console.log(entity)
+      // We need to update the source field with our data, then send it to API for persist
+      let source = { dashboardId: this.dashboard.id }
+      entity.source = source
+      this.pushEntity({
+        workspaceId: this.dashboard.workspaceId,
+        dashboardId: dashboardId,
+        entityId: entity.id,
+        entity
+      })
     },
     open () {
       this.snack = true
@@ -538,6 +575,8 @@ export default {
 }
 </script>
 
-<style>
-
+<style scoped>
+.v-icon::before {
+  display: inline;
+}
 </style>

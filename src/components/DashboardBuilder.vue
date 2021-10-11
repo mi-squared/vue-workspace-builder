@@ -80,6 +80,16 @@
               @change="onConditionalLogicChanged"
             ></DashboardConditionBuilder>
 
+            <br><br>
+            <v-divider></v-divider>
+            <v-textarea
+              :value="JSON.stringify(activeDashboard, undefined, 4)"
+              auto-grow
+              readonly
+              label="Dashboard JSON"
+            >
+            </v-textarea>
+
           </v-container>
         </v-tab-item>
 
@@ -123,7 +133,7 @@
 
           <!-- JSON schema preview -->
           <v-textarea
-            :value="JSON.stringify(activeDashboard.headers, undefined, 4)"
+            :value="JSON.stringify(activeDashboard, undefined, 4)"
             auto-grow
             readonly
             label="Header Schema"
