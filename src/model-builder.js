@@ -56,6 +56,17 @@ export function newDashboard(workspaceId, dashboard) {
   }
 }
 
+export function newNote(workspaceId, dashboardId, entityId, pid, text)
+{
+    return {
+      id: null,
+      dashboardId: dashboardId,
+      entityId: entityId,
+      pid: pid,
+      text: text
+    }
+}
+
 export function newDashboardSourceDashboard(dashboardId)
 {
   return newDashboardSource('dashboard', {

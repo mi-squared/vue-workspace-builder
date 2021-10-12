@@ -6,7 +6,6 @@
         :single-expand="singleExpand"
         :expanded.sync="expanded"
         item-key="id"
-        show-expand
         show-group-by
         :custom-group="customGroup"
         :sort-by.sync="sortBy"
@@ -94,48 +93,191 @@
 <!--            </td>-->
 <!--          </tr>-->
 <!--        </template>-->
-        <template v-slot:item.id="{ item }">
-          <span style="font-size: 16px" class="mt-4 font-weight-light">#{{ item.id }}</span>
+        <template v-slot:item="{ expand, index, item, isExpanded, isMobile, isSelected, select, headers }">
+          <tr>
+            <td v-for="(header, colIndex) in headers" :key="colIndex">
+
+              <div v-if="header.value == 'id'">
+                <a
+                  class="mt-4 text-body-2 font-weight-light"
+                  @click="loadForm(item)"
+                >
+                  #{{ item.id }}
+                </a>
+              </div>
+
+              <div v-else-if="header.value == 'pid'">
+                <a
+                  v-if="item.pid"
+                  class="mt-4"
+                  @click="loadPatient(item)"
+                >
+                  <div>{{ item.fname }} {{ item.lname }}</div>
+                  <div class="text-body-2 font-weight-light">(#{{ item.pubpid }})</div>
+
+                </a>
+                <span v-else>???</span>
+              </div>
+
+              <!-- Display the created_datetime within a chip that indicates how old (attrition) the row is -->
+              <div v-else-if="header.value == 'moved_to_dashboard_date'">
+                <v-chip
+                  :key="currentTimestamp.unix()"
+                  :color="getColor(item)"
+                  dark
+                >
+                  <AppDate :timestamp="item.moved_to_dashboard_date" :timezone="timeZone"></AppDate>
+                </v-chip>
+              </div>
+
+              <!-- Indicators -->
+              <div v-else-if="header.value == 'data-indicators'">
+                <!-- This should check the last source, and display an icon if it exists, ie: the last dashboard -->
+                <v-tooltip bottom>
+                  <template v-slot:activator="{ on, attrs }">
+                    <v-icon
+                      v-if="isSourceDashboard(item)"
+                      v-bind="attrs"
+                      v-on="on"
+                      class="d-inline"
+                    >mdi-table</v-icon>
+                  </template>
+                  <span>{{ dashboardSource(item) }}</span>
+                </v-tooltip>
+
+                <!-- now we check conditions to add indicators -->
+                <!--          <v-icon v-if="item.something == 'dsafdsfad'" class="d-inline" color="green">mdi-circle</v-icon>-->
+                <!--          <v-icon class="d-inline">mdi-circle</v-icon>-->
+                <!--          <v-icon class="d-inline">mdi-airplane</v-icon>-->
+              </div>
+
+              <!-- The source column on it's own displays the source data -->
+              <div v-else-if="header.value == 'source'">
+                <v-tooltip bottom>
+                  <template v-slot:activator="{ on, attrs }">
+                    <v-icon
+                      v-if="isSourceDashboard(item)"
+                      v-bind="attrs"
+                      v-on="on"
+                      class="d-inline"
+                    >mdi-table</v-icon>
+                  </template>
+                  <span>{{ dashboardSource(item) }}</span>
+                </v-tooltip>
+              </div>
+
+
+              <div v-else-if="header.value == 'data-notes'">
+                <table>
+                  <tr>
+                      <td colspan="2" class="py-0 px-1 text-caption">
+                        {{ lastNoteText(item) }}
+                      </td>
+                  </tr>
+                </table>
+                <table>
+                  <tr>
+                      <td class="py-0 px-1">
+                        <DashboardNoteButton
+                          :entity="item" @save="onNoteSaved"
+                        >
+                        </DashboardNoteButton>
+                      </td>
+                      <td class="py-0 px-1">
+
+                        <v-btn icon @click="expand(!isExpanded)">
+                          <v-badge
+                            :content="getNotesByEntityId(item.id).length"
+                            :value="getNotesByEntityId(item.id).length"
+                            color="green"
+                            overlap
+                          >
+                          <v-icon>
+                            {{ isExpanded ? 'mdi-email-multiple-outline' : 'mdi-email-multiple' }}
+                          </v-icon>
+                          </v-badge>
+                        </v-btn>
+                      </td>
+                  </tr>
+                </table>
+              </div>
+
+              <!-- this renders the vertical elipsis, which triggers the action menu -->
+              <div v-else-if="header.value == 'data-menu'">
+                <v-menu
+                  bottom
+                  left
+                >
+                  <template v-slot:activator="{ on, attrs }">
+                    <v-btn
+                      icon
+                      v-bind="attrs"
+                      v-on="on"
+
+                    >
+                      <v-icon>mdi-dots-vertical</v-icon>
+                    </v-btn>
+                  </template>
+
+                  <v-list>
+                    <v-list-item>
+                      <v-list-item-icon>
+                        <v-icon>mdi-table</v-icon>
+                      </v-list-item-icon>
+                      <v-list-item-content>
+                        <v-list-item-title class="text-h6">Move To Dashboard</v-list-item-title>
+                      </v-list-item-content>
+                    </v-list-item>
+                    <v-divider></v-divider>
+                    <v-list-item
+                      v-for="(title, id) in dashboards"
+                      :key="id"
+                      link
+                      @click="moveToDashboard(item, id)"
+                    >
+                      <v-list-item-title>{{ title }}</v-list-item-title>
+                    </v-list-item>
+                    <v-list-item>
+                      <v-list-item-icon>
+                        <v-icon>mdi-domain</v-icon>
+                      </v-list-item-icon>
+                      <v-list-item-content>
+                        <v-list-item-title class="text-h6">Send To Workspace</v-list-item-title>
+                      </v-list-item-content>
+                    </v-list-item>
+                    <v-divider></v-divider>
+                    <v-list-item
+                      v-for="(title, id) in workspaces"
+                      :key="id"
+                      link
+                    >
+                      <v-list-item-title>{{ title }}</v-list-item-title>
+                    </v-list-item>
+                  </v-list>
+                </v-menu>
+              </div>
+
+              <!-- As a fallback, just display the value -->
+              <div v-else>
+                {{ item[header.value] }}
+              </div>
+
+            </td>
+          </tr>
+
+
         </template>
 
-        <!-- Display indicators -->
-        <template v-slot:item.data-indicators="{ item }">
-
-          <!-- This should check the last source, and display an icon if it exists, ie: the last dashboard -->
-          <v-tooltip bottom>
-            <template v-slot:activator="{ on, attrs }">
-              <v-icon
-                v-if="isSourceDashboard(item)"
-                v-bind="attrs"
-                v-on="on"
-                class="d-inline"
-              >mdi-table</v-icon>
-            </template>
-            <span>{{ dashboardSource(item) }}</span>
-          </v-tooltip>
-
-          <!-- now we check conditions to add indicators -->
-<!--          <v-icon v-if="item.something == 'dsafdsfad'" class="d-inline" color="green">mdi-circle</v-icon>-->
-<!--          <v-icon class="d-inline">mdi-circle</v-icon>-->
-<!--          <v-icon class="d-inline">mdi-airplane</v-icon>-->
-        </template>
-
-        <!-- Display the created_datetime within a chip that indicates how old (attrition) the row is -->
-        <template v-slot:item.moved_to_dashboard_date="{ item }">
-          <v-chip
-            :key="currentTimestamp.unix()"
-            :color="getColor(item)"
-            dark
-          >
-            <AppDate :timestamp="item.moved_to_dashboard_date" :timezone="timeZone"></AppDate>
-          </v-chip>
-        </template>
 
         <!-- This is what gets displayed when the "expand" icon is clicked -->
         <template v-slot:expanded-item="{ headers, item }">
-          <td :colspan="headers.length">
-            More info about {{ item }}
-          </td>
+          <tr>
+            <td :colspan="headers.length">
+              <NoteHistory :notes="getNotesByEntityId(item.id)"></NoteHistory>
+
+<!--              More info about {{ item }}-->
+            </td>
+          </tr>
         </template>
 
         <!--        <template v-for="slot in slots" v-slot:item.[slot.name]="props">-->
@@ -143,81 +285,28 @@
         <!--        </template>-->
 
         <!-- EditableTextField This renders our editable text elements -->
-        <template v-for="slot in slots" v-slot:[slot.slotName]="props">
-          <v-edit-dialog
-            :key="slot.key"
-            :return-value.sync="props.item[slot['fieldName']]"
-            @save="save"
-            @cancel="cancel"
-            @open="open"
-            @close="close"
-          >
-            {{ props.item[slot['fieldName']] }}
-            <template v-slot:input>
-              <v-text-field
-                v-model="props.item[slot['fieldName']]"
-                :rules="[max25chars]"
-                label="Edit"
-                single-line
-                counter
-              ></v-text-field>
-            </template>
-          </v-edit-dialog>
-        </template>
+<!--        <template v-for="slot in slots" v-slot:[slot.slotName]="props">-->
+<!--          <v-edit-dialog-->
+<!--            :key="slot.key"-->
+<!--            :return-value.sync="props.item[slot['fieldName']]"-->
+<!--            @save="save"-->
+<!--            @cancel="cancel"-->
+<!--            @open="open"-->
+<!--            @close="close"-->
+<!--          >-->
+<!--            {{ props.item[slot['fieldName']] }}-->
+<!--            <template v-slot:input>-->
+<!--              <v-text-field-->
+<!--                v-model="props.item[slot['fieldName']]"-->
+<!--                :rules="[max25chars]"-->
+<!--                label="Edit"-->
+<!--                single-line-->
+<!--                counter-->
+<!--              ></v-text-field>-->
+<!--            </template>-->
+<!--          </v-edit-dialog>-->
+<!--        </template>-->
 
-        <!-- this renders the vertical elipsis, which triggers the action menu -->
-        <template v-slot:item.data-menu="{ item }">
-          <v-menu
-            bottom
-            left
-          >
-            <template v-slot:activator="{ on, attrs }">
-              <v-btn
-                icon
-                v-bind="attrs"
-                v-on="on"
-              >
-                <v-icon>mdi-dots-vertical</v-icon>
-              </v-btn>
-            </template>
-
-            <v-list>
-              <v-list-item>
-                <v-list-item-icon>
-                  <v-icon>mdi-table</v-icon>
-                </v-list-item-icon>
-                <v-list-item-content>
-                  <v-list-item-title class="text-h6">Move To Dashboard</v-list-item-title>
-                </v-list-item-content>
-              </v-list-item>
-              <v-divider></v-divider>
-              <v-list-item
-                v-for="(title, id) in dashboards"
-                :key="id"
-                link
-                @click="moveToDashboard(item, id)"
-              >
-                <v-list-item-title>{{ title }}</v-list-item-title>
-              </v-list-item>
-              <v-list-item>
-                <v-list-item-icon>
-                  <v-icon>mdi-domain</v-icon>
-                </v-list-item-icon>
-                <v-list-item-content>
-                  <v-list-item-title class="text-h6">Send To Workspace</v-list-item-title>
-                </v-list-item-content>
-              </v-list-item>
-              <v-divider></v-divider>
-              <v-list-item
-                v-for="(title, id) in workspaces"
-                :key="id"
-                link
-              >
-                <v-list-item-title>{{ title }}</v-list-item-title>
-              </v-list-item>
-            </v-list>
-          </v-menu>
-        </template>
 
       </v-data-table>
 
@@ -290,11 +379,12 @@ import { GET_LIST } from '../store/types-list'
 const { mapGetters: mapListGetters } = createNamespacedHelpers('list')
 
 import {
+  ADD_NOTE,
   CREATE_ENTITY,
   FETCH_DASHBOARD,
   FETCH_DASHBOARD_ROWS,
   GET_DASHBOARD,
-  GET_DASHBOARD_ROWS, PUSH_ENTITY
+  GET_DASHBOARD_ROWS, GET_NOTES_BY_ENTITY_ID, PUSH_ENTITY
 } from '../store/types-dashboard'
 
 const { mapGetters: mapDashboardGetters, mapActions: mapDashboardActions } = createNamespacedHelpers('dashboard')
@@ -303,6 +393,8 @@ import { GET_USER_META } from '../store/types-user'
 const { mapGetters: mapUserGetters } = createNamespacedHelpers('user')
 
 import { GET_FORM } from '../store/types-form'
+import DashboardNoteButton from './DashboardNoteButton'
+import NoteHistory from './NoteHistory'
 const { mapGetters: mapFormGetters } = createNamespacedHelpers('form')
 
 export default {
@@ -318,6 +410,8 @@ export default {
     }
   },
   components: {
+    NoteHistory,
+    DashboardNoteButton,
     JsonForm,
     AppDate
   },
@@ -374,10 +468,11 @@ export default {
         "groupable": false,
         "sortable": false
       },
-      expandHeader: {
+      noteHeader: {
         "text": "",
-        "value": "data-table-expand",
-        "groupable": false
+        "value": "data-notes",
+        "groupable": false,
+        "sortable": false
       },
       actionHeader: {
         "text": "",
@@ -391,6 +486,7 @@ export default {
     ...mapDashboardGetters({
       getDashboard: GET_DASHBOARD,
       getDashboardRows: GET_DASHBOARD_ROWS,
+      getNotesByEntityId: GET_NOTES_BY_ENTITY_ID
     }),
     ...mapUserGetters({
       getUserMeta: GET_USER_META
@@ -416,8 +512,13 @@ export default {
     },
     headers () {
       // We use spread operator to clone headers, otherwise we'd keep appending expand and action headers!
-      let headers = [this.idHeader, this.indicatorsHeader, ...this.dashboard.headers]
-      headers.push(this.expandHeader)
+      let headers = [
+        this.idHeader,
+        this.indicatorsHeader,
+        ...this.dashboard.headers
+      ]
+      headers.push(this.noteHeader)
+      // headers.push(this.expandHeader) we removed the header definition for expand, and removed show-expand from data table definition
       headers.push(this.actionHeader)
       return headers
     },
@@ -484,7 +585,8 @@ export default {
       fetchDashboard: FETCH_DASHBOARD,
       fetchDashboardRows: FETCH_DASHBOARD_ROWS,
       createEntity: CREATE_ENTITY,
-      pushEntity: PUSH_ENTITY
+      pushEntity: PUSH_ENTITY,
+      addNote: ADD_NOTE
     }),
     save () {
       this.snack = true
@@ -495,6 +597,14 @@ export default {
       this.snack = true
       this.snackColor = 'error'
       this.snackText = 'Canceled'
+    },
+    loadForm(entity)
+    {
+      alert('TODO this should open the form for entity: ' + entity.id)
+    },
+    loadPatient(entity)
+    {
+      alert('TODO this should open the patient for patient: ' + entity.pid)
     },
     reloadEntities () {
       let that = this
@@ -530,6 +640,24 @@ export default {
     // sendToWorkspace(entity) {
     //
     // },
+    onNoteSaved(payload) {
+      alert("note saved with text:" + payload.text)
+      this.addNote({
+        workspaceId: this.dashboard.workspaceId,
+        dashboardId: this.dashboard.id,
+        entityId: payload.entity.id,
+        pid: payload.entity.pid,
+        text: payload.text
+      })
+    },
+    lastNoteText(entity) {
+      const notes = this.getNotesByEntityId(entity.id)
+      if (notes.length > 0) {
+        return notes[notes.length - 1].text
+      } else {
+        return ''
+      }
+    },
     isSourceDashboard(entity) {
       if (entity.source != undefined) {
         if (entity.source.type == 'dashboard') {

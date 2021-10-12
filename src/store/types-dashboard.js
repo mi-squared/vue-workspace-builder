@@ -9,6 +9,11 @@ export const FETCH_DASHBOARD = "FETCH_DASHBOARD"
 export const FETCH_DASHBOARD_ROWS = "FETCH_DASHBOARD_ROWS"
 export const PUSH_ENTITY = "PUSH_ENTITY"
 
+export const ADD_NOTE = "ADD_NOTE"
+export const DELETE_NOTE = "DELETE_NOTE"
+export const SET_NOTE = "SET_NOTE"
+export const GET_NOTES_BY_ENTITY_ID = "GET_NOTES_BY_ENTITY_ID"
+
 export const CREATE_ENTITY = "CREATE_ENTITY"
 export const DELETE_ENTITY = "DELETE_ENTITY"
 export const SET_ENTITY = "SET_ENTITY"

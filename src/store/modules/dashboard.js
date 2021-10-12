@@ -1,10 +1,11 @@
 import {
+  ADD_NOTE,
   ALL_DASHBOARDS,
   CREATE_DASHBOARD, CREATE_ENTITY,
   FETCH_DASHBOARD, FETCH_DASHBOARD_ROWS,
   GET_DASHBOARD,
-  GET_DASHBOARD_ROWS, PUSH_ENTITY,
-  SET_DASHBOARD, SET_DASHBOARD_ROWS, SET_ENTITY
+  GET_DASHBOARD_ROWS, GET_NOTES_BY_ENTITY_ID, PUSH_ENTITY,
+  SET_DASHBOARD, SET_DASHBOARD_ROWS, SET_ENTITY, SET_NOTE
 } from '../types-dashboard'
 import Vue from 'vue'
 import {
@@ -15,18 +16,28 @@ import {
   updateDashboard,
   updateEntity
 } from '../../api'
+import { newNote } from '../../model-builder'
 
 export const dashboard = {
   namespaced: true,
   state: {
     dashboards: {},
-    entities: {}
+    entities: {},
+    notes: {}
   },
   getters: {
     [ALL_DASHBOARDS]: state => state.dashboards,
 
     [GET_DASHBOARD]: state => id => {
       return state.dashboards[id]
+    },
+
+    [GET_NOTES_BY_ENTITY_ID]: state => entityId => {
+      return Object.values(state.notes).filter(note => {
+        if (note.entityId == entityId) {
+          return note
+        }
+      })
     },
 
     [GET_DASHBOARD_ROWS]: state => dashboardId => {
@@ -135,6 +146,16 @@ export const dashboard = {
       }
     },
 
+    [ADD_NOTE]: ({ commit, rootGetters }, { workspaceId, dashboardId, entityId, pid, text }) => {
+      const userMeta = rootGetters['user/GET_USER_META']
+
+      // If we have a token, make the API call
+      if (userMeta.csrfToken) {
+        const note = newNote(workspaceId, dashboardId, entityId, pid, text)
+        commit(SET_NOTE, { noteId: note.id, note })
+      }
+    },
+
     // [SET_ENTITY]: ({ commit }, { dashboardId, entityId, entity }) => {
     //
     // }
@@ -155,6 +176,10 @@ export const dashboard = {
         }
         Vue.set(state.entities, entityId, toSave)
       }
+    },
+
+    [SET_NOTE] (state, { noteId, note }) {
+      Vue.set(state.notes, noteId, note)
     },
 
     // Dashboard Builder Mutations
