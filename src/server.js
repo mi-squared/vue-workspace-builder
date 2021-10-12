@@ -1,8 +1,34 @@
-import { belongsTo, createServer, hasMany, Model, Serializer } from "miragejs";
+import {
+  belongsTo,
+  createServer,
+  hasMany,
+  Model,
+  RestSerializer
+} from "miragejs";
 
 import { dataTypes as dataTypesResponse } from "./data/response.datatypes";
 import { fetchlists as fetchListResponse } from "./data/response.fetchlists";
 import { init as initResponse } from "./data/response.init";
+
+const ApplicationSerializer = RestSerializer.extend({
+  serialize() {
+    const json = RestSerializer.prototype.serialize.apply(this, arguments);
+
+    // pivot arrays in the default RestSerializer into object notation for
+    // all of the included models
+    this.include.forEach(e => {
+      if (json instanceof Array) {
+        json.forEach(row => {
+          row[e] = row[e].reduce((a, v) => ({ ...a, [v.id]: v }), {});
+        });
+      } else if (json instanceof Object) {
+        json[e] = json[e].reduce((a, v) => ({ ...a, [v.id]: v }), {});
+      }
+    });
+
+    return json;
+  }
+});
 
 export function makeServer({ environment = "development" } = {}) {
   let server = createServer({
@@ -10,7 +36,7 @@ export function makeServer({ environment = "development" } = {}) {
 
     models: {
       workspace: Model.extend({
-        form: hasMany()
+        forms: hasMany()
       }),
       form: Model.extend({
         workspace: belongsTo()
@@ -18,11 +44,12 @@ export function makeServer({ environment = "development" } = {}) {
     },
 
     serializers: {
-      workspace: Serializer.extend({
+      workspace: ApplicationSerializer.extend({
         embed: true,
-        root: false
+        root: false,
+        include: ["forms"]
       }),
-      form: Serializer.extend({
+      form: ApplicationSerializer.extend({
         embed: true,
         root: false
       })
@@ -31,7 +58,6 @@ export function makeServer({ environment = "development" } = {}) {
     seeds(server) {
       server.create("workspace", {
         id: 6,
-        forms: [],
         title: "Test 333",
         actions: [],
         filters: [],
@@ -166,6 +192,26 @@ export function makeServer({ environment = "development" } = {}) {
 
       this.get("/apis/api/datatypes", () => {
         return dataTypesResponse;
+      });
+
+      this.post("/apis/api/form", (schema, request) => {
+        let attrs = JSON.parse(request.requestBody);
+
+        let form = schema.forms.create({
+          workspaceId: attrs.params.workspaceId,
+          ...attrs.params.form
+        });
+
+        //let workspace = schema.workspaces.find(attrs.params.workspaceId);
+        return form;
+      });
+
+      this.put("/apis/api/workspace", (schema, request) => {
+        let attrs = JSON.parse(request.requestBody);
+        let workspace = schema.workspaces.find(attrs.params.id);
+        // TODO
+        // workspace.update({...attrs.params.workspace})
+        return workspace;
       });
     }
   });
