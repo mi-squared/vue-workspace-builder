@@ -208,6 +208,15 @@ export function makeServer({ environment = "development" } = {}) {
         return form;
       });
 
+      this.put("/apis/api/form", (schema, request) => {
+        let attrs = JSON.parse(request.requestBody);
+
+        let form = schema.forms.find(attrs.params.form.id);
+        form.update({...attrs.params.form})
+
+        return form;
+      });
+
       this.put("/apis/api/workspace", (schema, request) => {
         let attrs = JSON.parse(request.requestBody);
         let workspace = schema.workspaces.find(attrs.params.id);
