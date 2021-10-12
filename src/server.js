@@ -8,6 +8,8 @@ import {
 
 import { dataTypes as dataTypesResponse } from "./data/response.datatypes";
 import { fetchlists as fetchListResponse } from "./data/response.fetchlists";
+import { fetchlistdata as fetchListDataResponse } from "./data/response.fetchlistdata";
+
 import { init as initResponse } from "./data/response.init";
 
 const ApplicationSerializer = RestSerializer.extend({
@@ -212,6 +214,10 @@ export function makeServer({ environment = "development" } = {}) {
         // TODO
         // workspace.update({...attrs.params.workspace})
         return workspace;
+      });
+
+      this.post("/apis/api/fetchlistdata", () => {
+        return fetchListDataResponse;
       });
     }
   });

@@ -74,8 +74,8 @@ export const fetchlistdata = {
       'text': 'Unicare',
       'value': 'Unicare'
     }, { 'text': 'UMR', 'value': 'UMR' }, {
-      'text': 'Uhccp\/Childrens Rehab',
-      'value': 'Uhccp\/Childrens Rehab'
+      'text': 'Uhccp/Childrens Rehab',
+      'value': 'Uhccp/Childrens Rehab'
     }, { 'text': 'UCARE', 'value': 'UCARE' }, {
       'text': 'Tufts Health Plan',
       'value': 'Tufts Health Plan'
@@ -188,8 +188,8 @@ export const fetchlistdata = {
       'text': 'Phoenix Advantage',
       'value': 'Phoenix Advantage'
     }, { 'text': 'PHCS', 'value': 'PHCS' }, {
-      'text': 'PGBA LLC\/Tricare West',
-      'value': 'PGBA LLC\/Tricare West'
+      'text': 'PGBA LLC/Tricare West',
+      'value': 'PGBA LLC/Tricare West'
     }, {
       'text': 'Petersen International Underwriters',
       'value': 'Petersen International Underwriters'
@@ -284,8 +284,8 @@ export const fetchlistdata = {
       'text': 'Mercy Care Plan RBHA (FES)',
       'value': 'Mercy Care Plan RBHA (FES)'
     }, {
-      'text': 'Mercy Care Plan RBHA (DCS\/CMDP)',
-      'value': 'Mercy Care Plan RBHA (DCS\/CMDP)'
+      'text': 'Mercy Care Plan RBHA (DCS/CMDP)',
+      'value': 'Mercy Care Plan RBHA (DCS/CMDP)'
     }, { 'text': 'Mercy Care Plan ACC (T19)', 'value': 'Mercy Care Plan ACC (T19)' }, {
       'text': 'Mercy Care Plan - LTC',
       'value': 'Mercy Care Plan - LTC'
@@ -305,11 +305,11 @@ export const fetchlistdata = {
       'text': 'Medica Health Plan Solutions',
       'value': 'Medica Health Plan Solutions'
     }, {
-      'text': 'Medica Group\/Policy IFB El Paso',
-      'value': 'Medica Group\/Policy IFB El Paso'
+      'text': 'Medica Group/Policy IFB El Paso',
+      'value': 'Medica Group/Policy IFB El Paso'
     }, { 'text': 'Medica Claims', 'value': 'Medica Claims' }, {
-      'text': 'Medcost Solutions\/LHS',
-      'value': 'Medcost Solutions\/LHS'
+      'text': 'Medcost Solutions/LHS',
+      'value': 'Medcost Solutions/LHS'
     }, { 'text': 'MCA Advantage Team', 'value': 'MCA Advantage Team' }, {
       'text': 'May Clinic Health Solutions',
       'value': 'May Clinic Health Solutions'
@@ -392,8 +392,8 @@ export const fetchlistdata = {
       'text': 'ILWU PMA Coastwide Insurance',
       'value': 'ILWU PMA Coastwide Insurance'
     }, {
-      'text': 'HIS\/PRC Fiscal Intermediary',
-      'value': 'HIS\/PRC Fiscal Intermediary'
+      'text': 'HIS/PRC Fiscal Intermediary',
+      'value': 'HIS/PRC Fiscal Intermediary'
     }, { 'text': 'IHC Health Solutions', 'value': 'IHC Health Solutions' }, {
       'text': 'ICE Health Service Corps',
       'value': 'ICE Health Service Corps'
@@ -689,8 +689,8 @@ export const fetchlistdata = {
       'text': 'American Indian Hlth Pogram',
       'value': 'American Indian Hlth Pogram'
     }, { 'text': 'American Behavioral', 'value': 'American Behavioral' }, {
-      'text': 'Ameriben\/IEC Group',
-      'value': 'Ameriben\/IEC Group'
+      'text': 'Ameriben/IEC Group',
+      'value': 'Ameriben/IEC Group'
     }, { 'text': 'Ambetter', 'value': 'Ambetter' }, {
       'text': 'Altrua Healthshare',
       'value': 'Altrua Healthshare'
