@@ -35,6 +35,12 @@
                 required
             ></v-text-field>
 
+            <v-select
+              v-model="activeDashboard.mainFormId"
+              label="Main Form"
+              :items="this.formOptions"
+            ></v-select>
+
             <v-switch
               v-model="activeDashboard.displayNewButton"
               label="Display '+ New' Button"
@@ -45,9 +51,7 @@
               v-model="activeDashboard.newEntityFormId"
               label="New Entity Form"
               :items="this.formOptions"
-            >
-
-            </v-select>
+            ></v-select>
 
             <v-switch
                 v-model="activeDashboard.displayDuration"

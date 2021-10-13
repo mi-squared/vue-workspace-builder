@@ -46,7 +46,9 @@ export function newDashboard(workspaceId, dashboard) {
       units: "",
       outOfRangeColor: ""
     },
+    mainFormId: "",
     displayNewButton: false,
+    newEntityFormId: "",
     hasConditionalLogic: false,
     conditionalLogic: {},
     filters: [],
@@ -60,6 +62,7 @@ export function newNote(workspaceId, dashboardId, entityId, pid, text)
 {
     return {
       id: null,
+      workspaceId: workspaceId,
       dashboardId: dashboardId,
       entityId: entityId,
       pid: pid,

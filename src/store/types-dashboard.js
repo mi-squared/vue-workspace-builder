@@ -13,6 +13,7 @@ export const ADD_NOTE = "ADD_NOTE"
 export const DELETE_NOTE = "DELETE_NOTE"
 export const SET_NOTE = "SET_NOTE"
 export const GET_NOTES_BY_ENTITY_ID = "GET_NOTES_BY_ENTITY_ID"
+export const FETCH_NOTES_BY_ENTITY_ID = "FETCH_NOTES_BY_ENTITY_ID"
 
 export const CREATE_ENTITY = "CREATE_ENTITY"
 export const DELETE_ENTITY = "DELETE_ENTITY"

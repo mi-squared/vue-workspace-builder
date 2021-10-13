@@ -88,6 +88,10 @@ export default {
         text: this.noteText
       })
 
+      // Reset the note text
+      this.noteText = ''
+
+      // Close the modal
       this.menu = false
     }
   },

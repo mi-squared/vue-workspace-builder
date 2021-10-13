@@ -1,27 +1,30 @@
 <template>
-<v-form v-model="valid">
-  <!-- TODO Does this need:
+  <div class="json-form">
+    <v-form v-if="loaded" v-model="valid">
+      <!-- TODO Does this need:
 
-    -->
-  <v-jsf
-    v-model="activeModel"
-    :key="form.id"
-    :schema="schema"
-    :options="optionsForForm"
-    @input="onFormChange"
-    @input-child="onFormChange"
-    @change="onFormChange"
-    @change-child="onFormChange"
-  >
-    <!-- Templates for custom elements -->
-    <template slot="custom-patient" slot-scope="context">
-      <PatientPicker :pid="pid" v-bind="context" @changed="onPatientChanged"></PatientPicker>
-<!--      <v-date-picker v-bind="context"></v-date-picker>-->
+        -->
+      <v-jsf
+        v-model="activeModel"
+        :key="form.id"
+        :schema="schema"
+        :options="optionsForForm"
+        @input="onFormChange"
+        @input-child="onFormChange"
+        @change="onFormChange"
+        @change-child="onFormChange"
+      >
+        <!-- Templates for custom elements -->
+        <template slot="custom-patient" slot-scope="context">
+          <PatientPicker :pid="pid" :patient="patient" v-bind="context" @changed="onPatientChanged"></PatientPicker>
+    <!--      <v-date-picker v-bind="context"></v-date-picker>-->
 
 
-    </template>
-  </v-jsf>
-</v-form>
+        </template>
+      </v-jsf>
+    </v-form>
+    <v-skeleton-loader v-else type="article, actions "></v-skeleton-loader>
+  </div>
 </template>
 
 <script>
@@ -57,6 +60,10 @@ export default {
     },
     pid: {
       type: Number,
+      required: false
+    },
+    patient: {
+      type: Object,
       required: false
     }
   },
@@ -167,9 +174,13 @@ export default {
           listItemsContextKey = listItemsContextKey.replace("context.", "")
           const listId = properties['listId']
           const listOptions = that.listOptions[listId]
-          // Get the array of text/value pairs
-          const listOptionsData = listOptions.data
-          options.context[listItemsContextKey] = listOptionsData
+          if (listOptions != undefined) {
+            // Get the array of text/value pairs
+            const listOptionsData = listOptions.data
+            options.context[listItemsContextKey] = listOptionsData
+          } else {
+            console.log("No list for listId = " + listId)
+          }
         }
       })
 

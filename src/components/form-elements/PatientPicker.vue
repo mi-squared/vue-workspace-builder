@@ -26,19 +26,19 @@
         <v-row>
           <v-col>
             <v-text-field
-              v-model="patient.fname"
+              v-model="activePatient.fname"
               label="First name"
               required
-              @keyup="uppercase(patient.fname)"
+              @keyup="uppercase(activePatient.fname)"
               @keydown="fetchMatches"
             ></v-text-field>
           </v-col>
           <v-col>
             <v-text-field
-              v-model="patient.lname"
+              v-model="activePatient.lname"
               label="Last name"
               required
-              @keyup="uppercase(patient.lname)"
+              @keyup="uppercase(activePatient.lname)"
               @keydown="fetchMatches"
             ></v-text-field>
           </v-col>
@@ -48,24 +48,24 @@
             <v-dialog
               ref="dialog"
               v-model="modal"
-              :return-value.sync="patient.DOB"
+              :return-value.sync="activePatient.DOB"
               persistent
               width="290px"
               @change="fetchMatches"
             >
               <template v-slot:activator="{ on, attrs }">
                 <v-text-field
-                  v-model="patient.DOB"
+                  v-model="activePatient.DOB"
                   label="DOB"
                   prepend-icon="mdi-calendar"
                   readonly
                   v-bind="attrs"
                   v-on="on"
-                  @blur="formatDOB(patient.DOB)"
+                  @blur="formatDOB(activePatient.DOB)"
                 ></v-text-field>
               </template>
               <v-date-picker
-                v-model="patient.DOB"
+                v-model="activePatient.DOB"
                 scrollable
               >
                 <v-spacer></v-spacer>
@@ -79,7 +79,7 @@
                 <v-btn
                   text
                   color="primary"
-                  @click="$refs.dialog.save(patient.DOB)"
+                  @click="$refs.dialog.save(activePatient.DOB)"
                 >
                   OK
                 </v-btn>
@@ -90,7 +90,7 @@
             <v-select
               label="sex"
               :items="listOptions.sex.data"
-              v-model="patient.sex"
+              v-model="activePatient.sex"
             ></v-select>
           </v-col>
         </v-row>
@@ -101,7 +101,7 @@
               readonly
               disabled
               label="OpenEMR PID"
-              v-model="patient.pid"
+              v-model="activePatient.pid"
             ></v-text-field>
           </v-col>
           <v-col>
@@ -109,7 +109,7 @@
               readonly
               disabled
               label="Next Step ID"
-              v-model="patient.NextStepID"
+              v-model="activePatient.NextStepID"
             ></v-text-field>
           </v-col>
         </v-row>
@@ -125,8 +125,8 @@
         <template v-slot:prepend>
           <v-list-item two-line class="pink--text">
             <v-list-item-content>
-              <v-list-item-title>{{ patient.fname }} {{ patient.lname }}</v-list-item-title>
-              <v-list-item-subtitle>DOB: {{ patient.DOB }}</v-list-item-subtitle>
+              <v-list-item-title>{{ activePatient.fname }} {{ activePatient.lname }}</v-list-item-title>
+              <v-list-item-subtitle>DOB: {{ activePatient.DOB }}</v-list-item-subtitle>
             </v-list-item-content>
           </v-list-item>
         </template>
@@ -177,18 +177,24 @@ export default {
     pid: {
       type: Number,
       required: false
+    },
+    patient: {
+      type: Object,
+      required: false
     }
   },
   data() {
     return {
       loadingMatches: false,
-      patient: {
+      activePatient: {
         fname: "",
         lname: "",
         DOB: "",
         sex: "",
         pid: "",
-        NextStepID: ""
+        NextStepID: "",
+
+        ...this.patient // Merge the patient prop with our model
       },
       matches: [],
       loaded: false,
@@ -215,20 +221,20 @@ export default {
      return data
     },
     applyMatch(match) {
-      this.patient = { ...match }
-      this.$emit('changed', { patient: this.patient })
+      this.activePatient = { ...match }
+      this.$emit('changed', { patient: this.activePatient })
       this.drawer = false
     },
     /**
      * When fname or lname boxes are typed in (@keydown), or DOB is changed
      */
     fetchMatches() {
-      if (this.patient.fname.length > 2 ||
-        this.patient.lname.length > 2 ||
-      this.patient.DOB.length > 2) {
+      if (this.activePatient.fname.length > 2 ||
+        this.activePatient.lname.length > 2 ||
+      this.activePatient.DOB.length > 2) {
         this.loadingMatches = true
         const userMeta = this.getUserMeta
-        const patientRequest = { ...this.patient }
+        const patientRequest = { ...this.activePatient }
         fetchPatients(patientRequest, userMeta).then(matches => {
           this.matches = matches
           console.log(matches)
@@ -242,6 +248,10 @@ export default {
     this.fetchListsBulk({ arrayOfListIds: listIdsForFetch }).then(listOptions => {
       // We are basically copying all the lists to local state here (TODO we really only need the ones with IDs we identified)
       this.listOptions = listOptions
+
+      // If we were passed a pid, load that patient model
+
+
       this.loaded = true
     })
   }

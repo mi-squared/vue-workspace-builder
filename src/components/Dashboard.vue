@@ -98,12 +98,51 @@
             <td v-for="(header, colIndex) in headers" :key="colIndex">
 
               <div v-if="header.value == 'id'">
-                <a
-                  class="mt-4 text-body-2 font-weight-light"
-                  @click="loadForm(item)"
+
+                <!-- display the "main" form as full screen -->
+                <v-dialog
+                  v-model="mainFormDialogs[item.id]"
+                  fullscreen
+                  hide-overlay
                 >
-                  #{{ item.id }}
-                </a>
+                  <template v-slot:activator="{ on, attrsMainForm }">
+                    <a
+                      class="mt-4 text-body-2 font-weight-light"
+                      v-bind="attrsMainForm" v-on="on"
+                    >
+                      #{{ item.id }}
+                    </a>
+                  </template>
+                  <v-card>
+                    <v-toolbar
+                      dark
+                      color="primary"
+                    >
+                      <v-toolbar-title>{{ item.fname }} {{ item.lname }}</v-toolbar-title>
+                      <v-spacer></v-spacer>
+                      <v-btn
+                        icon
+                        dark
+                        @click="mainFormDialogs[item.id] = false"
+                      >
+                        <v-icon>mdi-close</v-icon>
+                      </v-btn>
+                    </v-toolbar>
+                    <v-container>
+                      <JsonForm
+                        :key="item.id"
+                        :form="mainForm"
+                        :model="item"
+                        :schema="mainForm.schema"
+                        :options="mainForm.options"
+                        :pid="Number(item.pid)"
+                        :patient="item"
+                      ></JsonForm>
+                    </v-container>
+                  </v-card>
+                </v-dialog>
+
+
               </div>
 
               <div v-else-if="header.value == 'pid'">
@@ -219,6 +258,22 @@
                     </v-btn>
                   </template>
 
+                  <v-toolbar dense flat>
+                    <v-toolbar-items>
+
+                      <v-btn icon>
+                        <v-icon>mdi-gmail</v-icon>
+                      </v-btn>
+
+                      <v-btn icon>
+                        <v-icon>mdi-archive</v-icon>
+                      </v-btn>
+
+                    </v-toolbar-items>
+                  </v-toolbar>
+
+                  <v-divider></v-divider>
+
                   <v-list>
                     <v-list-item>
                       <v-list-item-icon>
@@ -273,7 +328,8 @@
         <template v-slot:expanded-item="{ headers, item }">
           <tr>
             <td :colspan="headers.length">
-              <NoteHistory :notes="getNotesByEntityId(item.id)"></NoteHistory>
+              <!-- pass in entity ID for key-->
+              <NoteHistory :entity="item" :key="item.id"></NoteHistory>
 
 <!--              More info about {{ item }}-->
             </td>
@@ -419,6 +475,7 @@ export default {
     return {
       timeZone: '',
       newEntityModel: {},
+      mainFormDialogs: {},
       entityCreateKey: 0,
       loaded: false,
       isPreview: this.preview || false,
@@ -428,6 +485,7 @@ export default {
         elevation: 2,
       },
       attrs: {},
+      attrsMainForm: {},
       dialog: false,
       timer: '',
       currentTimestamp: null,
@@ -472,7 +530,8 @@ export default {
         "text": "",
         "value": "data-notes",
         "groupable": false,
-        "sortable": false
+        "sortable": false,
+        "width": "160px"
       },
       actionHeader: {
         "text": "",
@@ -505,6 +564,15 @@ export default {
       let form = null
       if (this.dashboard.newEntityFormId) {
         const formId = this.dashboard.newEntityFormId
+        form =  this.getForm(formId)
+      }
+
+      return form
+    },
+    mainForm() {
+      let form = null
+      if (this.dashboard.mainFormId) {
+        const formId = this.dashboard.mainFormId
         form =  this.getForm(formId)
       }
 
@@ -641,7 +709,7 @@ export default {
     //
     // },
     onNoteSaved(payload) {
-      alert("note saved with text:" + payload.text)
+      console.log("note saved with text:" + payload.text)
       this.addNote({
         workspaceId: this.dashboard.workspaceId,
         dashboardId: this.dashboard.id,
@@ -653,7 +721,12 @@ export default {
     lastNoteText(entity) {
       const notes = this.getNotesByEntityId(entity.id)
       if (notes.length > 0) {
-        return notes[notes.length - 1].text
+        const noteText = notes[notes.length - 1].text
+        if (noteText.length > 60) {
+          return noteText.substring(0, 60) + ' ...'
+        } else {
+          return noteText
+        }
       } else {
         return ''
       }

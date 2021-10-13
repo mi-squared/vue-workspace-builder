@@ -2,7 +2,7 @@ import {
   ADD_NOTE,
   ALL_DASHBOARDS,
   CREATE_DASHBOARD, CREATE_ENTITY,
-  FETCH_DASHBOARD, FETCH_DASHBOARD_ROWS,
+  FETCH_DASHBOARD, FETCH_DASHBOARD_ROWS, FETCH_NOTES_BY_ENTITY_ID,
   GET_DASHBOARD,
   GET_DASHBOARD_ROWS, GET_NOTES_BY_ENTITY_ID, PUSH_ENTITY,
   SET_DASHBOARD, SET_DASHBOARD_ROWS, SET_ENTITY, SET_NOTE
@@ -10,9 +10,9 @@ import {
 import Vue from 'vue'
 import {
   createDashboard,
-  createEntity,
+  createEntity, createNote,
   fetchDashboardRows,
-  getDashboardById,
+  getDashboardById, getNotesByEntityId,
   updateDashboard,
   updateEntity
 } from '../../api'
@@ -123,6 +123,15 @@ export const dashboard = {
         // Return the promise created by the API
         return fetchDashboardRows(dashboardId, userMeta).then(entities => {
           commit(SET_DASHBOARD_ROWS, { entities })
+
+          Object.values(entities).forEach(entity => {
+            if (entity.notes != undefined) {
+              Object.values(entity.notes).forEach(note => {
+                commit(SET_NOTE, { noteId: note.id, note })
+              })
+            }
+          })
+
         }).catch(function () {
           alert('there was an error, you may need to log back in')
         })
@@ -151,8 +160,29 @@ export const dashboard = {
 
       // If we have a token, make the API call
       if (userMeta.csrfToken) {
+        // User the model-builder to combine our parameters into a note model
         const note = newNote(workspaceId, dashboardId, entityId, pid, text)
-        commit(SET_NOTE, { noteId: note.id, note })
+
+        // Make the API call to create the note
+        createNote(note, userMeta).then(note => {
+          commit(SET_NOTE, { noteId: note.id, note })
+        })
+      }
+    },
+
+    [FETCH_NOTES_BY_ENTITY_ID]: ({ commit, rootGetters }, { entityId }) => {
+      const userMeta = rootGetters['user/GET_USER_META']
+
+      // If we have a token, make the API call
+      if (userMeta.csrfToken) {
+        // Return the promise created by the API
+        getNotesByEntityId(entityId, userMeta).then(notes => {
+          Object.values(notes).forEach(note => {
+            commit(SET_NOTE, { noteId: note.id, note })
+          })
+        }).catch(function () {
+          alert('there was an error, you may need to log back in')
+        })
       }
     },
 

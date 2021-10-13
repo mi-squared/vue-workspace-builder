@@ -310,6 +310,44 @@ export function updateDashboard(dashboard, userMeta) {
   })
 }
 
+export function createNote(note, userMeta)
+{
+  return new Promise( (resolve) => {
+    //id: Math.floor(Math.random() * 32768),
+    axios.post(baseUrl + '/apis/api/note', {
+        params: {
+          note: note
+        }
+      },
+      {
+        headers: {
+          'apicsrftoken': userMeta.csrfToken,
+          'Content-Type': 'application/json;charset=utf-8'
+        }
+      }).then(function (response) {
+      const note = response.data
+      resolve(note)
+    }).catch(handleApiError)
+  })
+}
+
+export function getNotesByEntityId(entityId, userMeta)
+{
+  return new Promise((resolve) => {
+    axios.get(baseUrl + '/apis/api/notes', {
+      params: {
+        entityId: entityId
+      },
+      headers: {
+        'apicsrftoken': userMeta.csrfToken
+      }
+    }).then(function (response) {
+      const notes = response.data
+      resolve(notes)
+    }).catch(handleApiError)
+  })
+}
+
 export function getFormById(formId, userMeta)
 {
   return new Promise((resolve) => {
@@ -387,6 +425,23 @@ export function fetchPatients(patient, userMeta)
     }).then(function (response) {
       const matches = response.data
       resolve(matches)
+    }).catch(handleApiError)
+  })
+}
+
+export function getPatientById(pid, userMeta)
+{
+  return new Promise((resolve) => {
+    axios.get(baseUrl + '/apis/api/patient', {
+      params: {
+        pid: pid
+      },
+      headers: {
+        'apicsrftoken': userMeta.csrfToken
+      }
+    }).then(function (response) {
+      const patient = response.data
+      resolve(patient)
     }).catch(handleApiError)
   })
 }
