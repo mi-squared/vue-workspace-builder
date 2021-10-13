@@ -150,7 +150,7 @@
             <v-list-item-action>
               <v-list-item-action-text v-text="match.text"></v-list-item-action-text>
               <!-- dont show "apply match if the patient is already set -->
-              <v-btn v-if="match.pid != patient.pid" text @click="applyMatch(match)">Apply Match</v-btn>
+              <v-btn v-if="match.pid != activePatient.pid" text @click="applyMatch(match)">Apply Match</v-btn>
             </v-list-item-action>
           </v-list-item>
         </v-list>
