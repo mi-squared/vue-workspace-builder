@@ -3,14 +3,46 @@ import {
   createServer,
   hasMany,
   Model,
+  // Serializer,
   RestSerializer
 } from "miragejs";
 
 import { dataTypes as dataTypesResponse } from "./data/response.datatypes";
 import { fetchlists as fetchListResponse } from "./data/response.fetchlists";
 import { fetchlistdata as fetchListDataResponse } from "./data/response.fetchlistdata";
+// import dataSourceTemplate from "./data/_data_source_template.json";
 
 import { init as initResponse } from "./data/response.init";
+
+const RelatedIdSerializer = RestSerializer.extend({
+  serialize() {
+    const json = RestSerializer.prototype.serialize.apply(this, arguments);
+
+    // pivot arrays in the default RestSerializer into object index notation
+    // for the embedded responses
+    // eg: forms: {'1':1, '7':7}
+    this.include.forEach(e => {
+      if (json instanceof Array) {
+        json.forEach(row => {
+          row[e] = row[e].reduce((a, v) => ({ ...a, [v.id]: v.id }), {});
+        });
+      } else if (json instanceof Object) {
+        json[e] = json[e].reduce((a, v) => ({ ...a, [v.id]: v.id }), {});
+      }
+    });
+
+    return json;
+  }
+});
+
+// TODO add the dataSource to all workspace responses and use this serializer for workspace responses
+// const WorkspaceSerializer = Serializer.extend({
+//   serialize() {
+//     const json = RelatedIdSerializer.prototype.serialize.apply(this, arguments);
+//     json.dataSource = dataSourceTemplate
+//     return json;
+//   }
+// });
 
 const ApplicationSerializer = RestSerializer.extend({
   serialize() {
@@ -38,20 +70,28 @@ export function makeServer({ environment = "development" } = {}) {
 
     models: {
       workspace: Model.extend({
-        forms: hasMany()
+        forms: hasMany(),
+        dashboards: hasMany()
       }),
       form: Model.extend({
+        workspace: belongsTo()
+      }),
+      dashboard: Model.extend({
         workspace: belongsTo()
       })
     },
 
     serializers: {
-      workspace: ApplicationSerializer.extend({
+      workspace: RelatedIdSerializer.extend({
         embed: true,
         root: false,
-        include: ["forms"]
+        include: ["forms", "dashboards"]
       }),
       form: ApplicationSerializer.extend({
+        embed: true,
+        root: false
+      }),
+      dashboard: ApplicationSerializer.extend({
         embed: true,
         root: false
       })
@@ -212,7 +252,13 @@ export function makeServer({ environment = "development" } = {}) {
         let attrs = JSON.parse(request.requestBody);
 
         let form = schema.forms.find(attrs.params.form.id);
-        form.update({...attrs.params.form})
+        form.update({ ...attrs.params.form });
+
+        return form;
+      });
+
+      this.get("/apis/api/form", (schema, request) => {
+        let form = schema.forms.find(request.queryParams.id);
 
         return form;
       });
@@ -227,6 +273,23 @@ export function makeServer({ environment = "development" } = {}) {
 
       this.post("/apis/api/fetchlistdata", () => {
         return fetchListDataResponse;
+      });
+
+      this.post("/apis/api/dashboard", (schema, request) => {
+        let attrs = JSON.parse(request.requestBody);
+
+        let dashboard = schema.dashboards.create({
+          workspaceId: attrs.params.workspaceId,
+          ...attrs.params.dashboard
+        });
+
+        return dashboard;
+      });
+
+      this.get("/apis/api/dashboard", (schema, request) => {
+        let dashboard = schema.dashboards.find(request.queryParams.id);
+
+        return dashboard;
       });
     }
   });
