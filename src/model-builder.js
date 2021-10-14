@@ -25,6 +25,7 @@ export function newDataSourceColumn(userId, column) {
     name: "",
     type: "",
     comment: "",
+    databaseTable: "",
     extra: {
       createdBy: userId,
       createdDate: Date.now(),
@@ -40,6 +41,7 @@ export function newDashboard(workspaceId, dashboard) {
     id: null,
     workspaceId: workspaceId,
     title: "[New Dashboard]",
+    disableDashboardFilter: false,
     displayDuration: false,
     durationModel: {
       ranges: [],

@@ -138,7 +138,7 @@ export const workspace = {
 
       // If we have a token, make the API call
       if (userMeta.csrfToken) {
-        createWorkspace({ title, administrator }).then(workspace => {
+        createWorkspace({ title, administrator }, userMeta).then(workspace => {
           commit(SET_WORKSPACE, { workspaceId: workspace.id, workspace: workspace })
 
           // Tell VUEX to create a new navigation item for this workspace to store navigation state

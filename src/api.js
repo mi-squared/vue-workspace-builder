@@ -264,6 +264,27 @@ export function fetchDashboardRows(dashboardId, userMeta)
   })
 }
 
+export function fetchEntities(dashboardId, dashboardFilterEnabled, archivedFilterEnabled, search, paginationOptions, userMeta)
+{
+  return new Promise((resolve) => {
+    axios.get(baseUrl + '/apis/api/entities', {
+      params: {
+        dashboardId: dashboardId,
+        dashboardFilterEnabled: dashboardFilterEnabled,
+        archivedFilterEnabled: archivedFilterEnabled,
+        search: search,
+        paginationOptions: paginationOptions
+      },
+      headers: {
+        'apicsrftoken': userMeta.csrfToken
+      }
+    }).then(function (response) {
+      const fetchEntitiesResponse = response.data
+      resolve(fetchEntitiesResponse)
+    }).catch(handleApiError)
+  })
+}
+
 export function createDashboard(formData, userMeta) {
 
   // Use the model-builder to create a new dashboard using the submitted data

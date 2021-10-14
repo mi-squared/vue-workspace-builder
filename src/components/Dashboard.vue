@@ -5,6 +5,9 @@
         :items="rows"
         :single-expand="singleExpand"
         :expanded.sync="expanded"
+        :options.sync="paginationOptions"
+        :server-items-length="totalEntities"
+        :loading="loading"
         item-key="id"
         show-group-by
         :custom-group="customGroup"
@@ -17,7 +20,7 @@
           <v-toolbar flat>
             <v-toolbar-title>{{ dashboard.title }} <span class="text--lighten-1">(#{{ dashboard.id }})</span></v-toolbar-title>
 
-            <v-btn icon @click="reloadEntities">
+            <v-btn icon @click="loadEntitiesApi">
               <v-icon>mdi-refresh</v-icon>
             </v-btn>
 
@@ -36,17 +39,25 @@
               New
             </v-btn>
 
+
+
             <v-text-field
               placeholder="Search"
               dense
               prepend-inner-icon="mdi-magnify"
               class="mt-6 expanding-search"
+              v-model="globalSearch"
             ></v-text-field>
+
+            <v-switch
+              class="mt-4"
+              v-model="showArchives"
+              label="Show Archives"
+            >
+            </v-switch>
+
             <v-chip>{{ clocktime }}</v-chip>
 
-            <v-btn icon>
-              <v-icon>mdi-dots-vertical</v-icon>
-            </v-btn>
           </v-toolbar>
 
         </template>
@@ -171,6 +182,13 @@
 
               <!-- Indicators -->
               <div v-else-if="header.value == 'data-indicators'">
+
+                <!-- if this is an archived entity, show an indicator -->
+                <v-icon
+                  v-if="item.archived == 1"
+                  class="d-inline"
+                >mdi-archive</v-icon>
+
                 <!-- This should check the last source, and display an icon if it exists, ie: the last dashboard -->
                 <v-tooltip bottom>
                   <template v-slot:activator="{ on, attrs }">
@@ -259,13 +277,17 @@
                   </template>
 
                   <v-toolbar dense flat>
+                    <v-toolbar-title>#{{ item.id }}</v-toolbar-title>
                     <v-toolbar-items>
 
                       <v-btn icon>
                         <v-icon>mdi-gmail</v-icon>
                       </v-btn>
 
-                      <v-btn icon>
+                      <v-btn
+                        icon
+                        @click="archiveEntity(item)"
+                      >
                         <v-icon>mdi-archive</v-icon>
                       </v-btn>
 
@@ -305,11 +327,16 @@
                       v-for="(title, id) in workspaces"
                       :key="id"
                       link
+                      @click="sendToWorkspace(item, id)"
                     >
                       <v-list-item-title>{{ title }}</v-list-item-title>
                     </v-list-item>
                   </v-list>
                 </v-menu>
+              </div>
+
+              <div v-else-if="header.type == 'date'">
+                {{ formatDate(item[header.value]) }}
               </div>
 
               <!-- As a fallback, just display the value -->
@@ -415,6 +442,23 @@
           </v-dialog>
         </v-row>
       </template>
+      <v-snackbar
+        v-model="snackbar"
+      >
+        {{ snackbarText }}
+
+        <template v-slot:action="{ attrs }">
+          <v-btn
+            color="pink"
+            text
+            v-bind="attrs"
+            @click="snackbar = false"
+          >
+            Close
+          </v-btn>
+        </template>
+      </v-snackbar>
+
   </div>
 </template>
 
@@ -423,10 +467,10 @@
 import moment from 'moment-timezone'
 import AppDate from '@/components/AppDate'
 import JsonForm from '@/components/JsonForm'
-import { newDashboardSourceDashboard } from '../model-builder'
+import { newDashboardSourceDashboard, newDashboardSourceWorkspace } from '../model-builder'
 import { createNamespacedHelpers } from 'vuex'
 
-import { ALL_WORKSPACES, GET_DASHBOARDS } from '../store/types-workspace'
+import { ALL_WORKSPACES, GET_DASHBOARDS, GET_WORKSPACE } from '../store/types-workspace'
 
 const { mapGetters: mapWorkspaceGetters } = createNamespacedHelpers('workspace')
 
@@ -438,9 +482,9 @@ import {
   ADD_NOTE,
   CREATE_ENTITY,
   FETCH_DASHBOARD,
-  FETCH_DASHBOARD_ROWS,
+  FETCH_DASHBOARD_ROWS, FETCH_ENTITIES,
   GET_DASHBOARD,
-  GET_DASHBOARD_ROWS, GET_NOTES_BY_ENTITY_ID, PUSH_ENTITY
+  GET_DASHBOARD_ROWS, GET_ENTITY_BY_ID, GET_NOTES_BY_ENTITY_ID, PUSH_ENTITY
 } from '../store/types-dashboard'
 
 const { mapGetters: mapDashboardGetters, mapActions: mapDashboardActions } = createNamespacedHelpers('dashboard')
@@ -452,6 +496,7 @@ import { GET_FORM } from '../store/types-form'
 import DashboardNoteButton from './DashboardNoteButton'
 import NoteHistory from './NoteHistory'
 const { mapGetters: mapFormGetters } = createNamespacedHelpers('form')
+import { formatDate } from '../display-helpers'
 
 export default {
   name: 'Dashboard',
@@ -474,10 +519,18 @@ export default {
   data () {
     return {
       timeZone: '',
+      paginationOptions: {},
+      globalSearch: '',
+      totalEntities: 0,
+      entities: {},
+      orderedEntities: [],
       newEntityModel: {},
       mainFormDialogs: {},
       entityCreateKey: 0,
       loaded: false,
+      snackbar: false,
+      snackbarText: '',
+      showArchives: false,
       isPreview: this.preview || false,
       skeletonLoaderAttrs: {
         class: 'mb-6',
@@ -541,10 +594,31 @@ export default {
       }
     }
   },
+  watch: {
+    paginationOptions: {
+      handler () {
+        this.loadEntitiesApi()
+      },
+      deep: true,
+    },
+    showArchives: {
+      handler () {
+        this.loadEntitiesApi()
+      },
+      deep: true,
+    },
+    globalSearch: {
+      handler () {
+        this.loadEntitiesApi()
+      },
+      deep: true,
+    },
+  },
   computed: {
     ...mapDashboardGetters({
       getDashboard: GET_DASHBOARD,
       getDashboardRows: GET_DASHBOARD_ROWS,
+      getEntityById: GET_ENTITY_BY_ID,
       getNotesByEntityId: GET_NOTES_BY_ENTITY_ID
     }),
     ...mapUserGetters({
@@ -552,7 +626,8 @@ export default {
     }),
     ...mapWorkspaceGetters({
       allWorkspaces: ALL_WORKSPACES,
-      getDashboards: GET_DASHBOARDS
+      getDashboards: GET_DASHBOARDS,
+      getWorkspaceById: GET_WORKSPACE
     }),
     ...mapListGetters({
       getList: GET_LIST
@@ -591,7 +666,12 @@ export default {
       return headers
     },
     rows () {
-      return this.getDashboardRows(this.dashboard.id)
+      return this.orderedEntities.map(entityId => {
+        return this.getEntityById(entityId)
+      })
+    },
+    loading () {
+      return !this.loaded
     },
     /**
      * Get an array of text/value objects representing facilities
@@ -603,7 +683,12 @@ export default {
     },
     workspaces () {
       // Dashboard model has workspaces = { { id: title }, { id: title } } format for workspaces
-      const workspaces = this.dashboard.workspaces
+      let workspaces = {}
+      Object.keys(this.dashboard.workspaces).forEach(id => {
+        if (Number(id) != Number(this.dashboard.workspaceId)) {
+          workspaces[id] = this.dashboard.workspaces[id]
+        }
+      })
       return workspaces
     },
     dashboards () {
@@ -652,6 +737,7 @@ export default {
     ...mapDashboardActions({
       fetchDashboard: FETCH_DASHBOARD,
       fetchDashboardRows: FETCH_DASHBOARD_ROWS,
+      fetchEntities: FETCH_ENTITIES,
       createEntity: CREATE_ENTITY,
       pushEntity: PUSH_ENTITY,
       addNote: ADD_NOTE
@@ -666,6 +752,10 @@ export default {
       this.snackColor = 'error'
       this.snackText = 'Canceled'
     },
+    formatDate (date) {
+      // Use the format date display helper to format dates
+      return formatDate(date)
+    },
     loadForm(entity)
     {
       alert('TODO this should open the form for entity: ' + entity.id)
@@ -673,14 +763,6 @@ export default {
     loadPatient(entity)
     {
       alert('TODO this should open the patient for patient: ' + entity.pid)
-    },
-    reloadEntities () {
-      let that = this
-      this.fetchDashboardRows({ dashboardId: this.dashboard.id }).then(() => {
-        that.loaded = true
-        // start the counter that uses the current time to determine attrition
-        // that.refreshAttrition()
-      })
     },
     saveNewEntity () {
       // Save the entity
@@ -693,7 +775,7 @@ export default {
       }).then(() => {
 
         // TODO we shouldn't have to do this if the API returned the correctly formatted entity on the create endpoint
-        that.reloadEntities()
+        that.loadEntitiesApi()
         // Reset the model
         that.newEntityModel = {}
         that.entityCreateKey++
@@ -705,9 +787,6 @@ export default {
     newEntityChanged(model) {
       this.newEntityModel = model
     },
-    // sendToWorkspace(entity) {
-    //
-    // },
     onNoteSaved(payload) {
       console.log("note saved with text:" + payload.text)
       this.addNote({
@@ -747,19 +826,93 @@ export default {
 
       return ""
     },
+    removeEntityFromDashboard(entity) {
+      // We want to remove the entity row from the table before VUEX mutates it, so let's remove it first
+      let movedEntityIndex = this.orderedEntities.findIndex(entityId => {
+        if (entity.id == entityId) {
+          return true
+        } else {
+          return false
+        }
+      })
+      this.orderedEntities.splice(movedEntityIndex, 1)
+    },
+    archiveEntity(entity) {
+      // Let the user know we're doing something
+      this.loaded = false
+
+      // We want to remove the entity row from the table before VUEX mutates it, so let's remove it first
+      this.removeEntityFromDashboard(entity)
+
+      entity.archived = 1
+
+      // Now use our vuex action to push the entity via API, when we callback, reload the entities
+      this.pushEntity({
+        workspaceId: this.dashboard.workspaceId,
+        dashboardId: this.dashboard.id,
+        entityId: entity.id,
+        entity
+      }).then(() => {
+        this.loadEntitiesApi()
+      })
+    },
     moveToDashboard(entity, dashboardId) {
       console.log("Moving Entity to dashboard: " + dashboardId)
       console.log(entity)
+
+      // Let the user know we're doing something
+      this.loaded = false
+
+      // We want to remove the entity row from the table before VUEX mutates it, so let's remove it first
+      this.removeEntityFromDashboard(entity)
+
       // We need to update the source field with our data, then send it to API for persist
       let source = newDashboardSourceDashboard(this.dashboard.id)
-
       entity.source = source
+
+      // Now use our vuex action to create the push the update via API, when callback load data
       this.pushEntity({
         workspaceId: this.dashboard.workspaceId,
         dashboardId: dashboardId,
         entityId: entity.id,
         entity
+      }).then(() => {
+        this.loadEntitiesApi()
       })
+    },
+    sendToWorkspace(entity, workspaceId) {
+      console.log("Sending Entity to workspace: " + workspaceId)
+
+      const targetWorkspace = this.getWorkspaceById(workspaceId)
+
+      if (targetWorkspace.defaultDashboard != undefined &&
+        targetWorkspace.defaultDashboard > 0) {
+        const defaultDashboardId = targetWorkspace.defaultDashboard
+
+        // We're going to clone this entity and modify the clone so we don't mess this one up.
+        let newEntity = { ...entity }
+
+        // We need to update the source field with our data, then send it to API for persist
+        let source = newDashboardSourceWorkspace(this.dashboard.workspaceId, this.dashboard.id)
+        newEntity.source = source
+
+        // Here's a trick, since this entity is already created, and we need to create it on a new
+        // workspace, we need to unset the id property
+        delete newEntity.id
+
+        // Now use our vuex action to create the entity via API, when callback show our snack
+        this.createEntity({
+          workspaceId: workspaceId,
+          dashboardId: defaultDashboardId,
+          newEntity
+        }).then(() => {
+          this.snackbarText = "Successfully Moved to Workspace " + this.workspaces[workspaceId]
+          this.snackbar = true
+        })
+      } else {
+        this.snackbarText = "ERROR: Workspace " + this.workspaces[workspaceId] + " doesn't have a default dashboard."
+        this.snackbar = true
+      }
     },
     open () {
       this.snack = true
@@ -826,17 +979,29 @@ export default {
       }
 
       return groups
-    }
+    },
+    loadEntitiesApi () {
+      let that = this
+      this.loaded = false;
+      this.fetchEntities({
+        dashboardId: this.dashboard.id,
+        dashboardFilterEnabled: true,
+        archivedFilterEnabled: this.showArchives,
+        search: this.globalSearch,
+        paginationOptions: this.paginationOptions
+      }).then((response) => {
+        this.totalEntities = Number(response.total)
+        this.entities = response.entities
+        this.orderedEntities = response.orderedEntities
+        that.loaded = true
+        // start the counter that uses the current time to determine attrition
+        that.refreshAttrition()
+      })
+    },
   },
   mounted () {
-
     console.log("Dashboard Mounted")
-    let that = this
-    this.fetchDashboardRows({ dashboardId: this.dashboard.id }).then(() => {
-      that.loaded = true
-      // start the counter that uses the current time to determine attrition
-      that.refreshAttrition()
-    })
+    //this.loadEntitiesApi();
   },
   created () {
     // Init and Set up our timeZone in created hook so it doesn't trigger reactivity in computed properties like getColo()

@@ -54,6 +54,13 @@
             ></v-select>
 
             <v-switch
+              v-model="activeDashboard.disableDashboardFilter"
+              label="Disable Dashboard Filter"
+              persistent-hint
+              hint="Turn this on if you want this dashboard to display entities from all dashboards in the workspace rather than entities currently on this dashboard."
+            ></v-switch>
+
+            <v-switch
                 v-model="activeDashboard.displayDuration"
                 label="Color-code the 'Date Added' Column"
                 hint="Displays the date and time that an entity was added to this dashboard"
@@ -212,7 +219,7 @@
 <script>
 import { createNamespacedHelpers } from 'vuex'
 
-import {} from '../store/types-workspace'
+import { GET_FORMS } from '../store/types-workspace'
 const { mapActions: mapWorkspaceActions, mapGetters: mapWorkspaceGetters } = createNamespacedHelpers('workspace')
 
 import { GET_DASHBOARD, SET_DASHBOARD } from '../store/types-dashboard'
@@ -269,12 +276,14 @@ export default {
     }
   },
   computed: {
-    ...mapWorkspaceGetters,
+    ...mapWorkspaceGetters({
+      getFormsByWorkspaceId: GET_FORMS
+    }),
     ...mapDashboardGetters({
       getDashboard: GET_DASHBOARD
     }),
     ...mapFormGetters({
-      allForms: ALL_FORMS
+      allForms: ALL_FORMS,
     }),
     dataSource() {
       return this.workspace.dataSource
@@ -284,7 +293,7 @@ export default {
     },
     formOptions() {
       // This gathers up all the lists in { text: '', value: '' } format for the select box
-      const forms = Object.values(this.allForms)
+      const forms = Object.values(this.getFormsByWorkspaceId(this.workspace.id))
       let formOptions = []
       forms.forEach(form => {
         const option = { text: form.title, value: form.id }

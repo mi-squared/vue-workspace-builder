@@ -2,16 +2,16 @@ import {
   ADD_NOTE,
   ALL_DASHBOARDS,
   CREATE_DASHBOARD, CREATE_ENTITY,
-  FETCH_DASHBOARD, FETCH_DASHBOARD_ROWS, FETCH_NOTES_BY_ENTITY_ID,
+  FETCH_DASHBOARD, FETCH_DASHBOARD_ROWS, FETCH_ENTITIES, FETCH_NOTES_BY_ENTITY_ID,
   GET_DASHBOARD,
-  GET_DASHBOARD_ROWS, GET_NOTES_BY_ENTITY_ID, PUSH_ENTITY,
+  GET_DASHBOARD_ROWS, GET_ENTITY_BY_ID, GET_NOTES_BY_ENTITY_ID, PUSH_ENTITY,
   SET_DASHBOARD, SET_DASHBOARD_ROWS, SET_ENTITY, SET_NOTE
 } from '../types-dashboard'
 import Vue from 'vue'
 import {
   createDashboard,
   createEntity, createNote,
-  fetchDashboardRows,
+  fetchDashboardRows, fetchEntities,
   getDashboardById, getNotesByEntityId,
   updateDashboard,
   updateEntity
@@ -46,6 +46,10 @@ export const dashboard = {
           return entity
         }
       })
+    },
+
+    [GET_ENTITY_BY_ID]: state => entityId => {
+      return state.entities[entityId]
     },
 
   },
@@ -138,6 +142,33 @@ export const dashboard = {
       }
     },
 
+    [FETCH_ENTITIES] ({ commit, rootGetters }, { dashboardId, dashboardFilterEnabled, archivedFilterEnabled, search, paginationOptions }) {
+      const userMeta = rootGetters['user/GET_USER_META']
+
+      // If we have a token, make the API call
+      if (userMeta.csrfToken) {
+        return new Promise(resolve => {
+          fetchEntities(dashboardId, dashboardFilterEnabled, archivedFilterEnabled, search, paginationOptions, userMeta).then(response => {
+            commit(SET_DASHBOARD_ROWS, { entities: response.entities })
+
+            Object.values(response.entities).forEach(entity => {
+              if (entity.notes != undefined) {
+                Object.values(entity.notes).forEach(note => {
+                  commit(SET_NOTE, { noteId: note.id, note })
+                })
+              }
+            })
+
+            // Resolve the outer promise by returning the fetched entities
+            resolve(response)
+
+          }).catch(function () {
+            alert('there was an error, you may need to log back in')
+          })
+        })
+      }
+    },
+
     /**
      * Push an entity to the server using API
      */
@@ -148,9 +179,14 @@ export const dashboard = {
       if (userMeta.csrfToken) {
         // Make sure to update the dashboardId on the entity itself in case it changed
         entity.dashboard_id = dashboardId
-        updateEntity(workspaceId, dashboardId, entityId, entity, userMeta).then(entity => {
-          // If we have an entity on this dashboard, then find it and set it
-          commit(SET_ENTITY, { entityId, entity })
+        return new Promise(resolve => {
+          updateEntity(workspaceId, dashboardId, entityId, entity, userMeta).then(entity => {
+            // If we have an entity on this dashboard, then find it and set it
+            commit(SET_ENTITY, { entityId, entity })
+
+            // Let the caller know this AP call is complete
+            resolve(entity)
+          })
         })
       }
     },

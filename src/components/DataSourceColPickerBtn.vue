@@ -102,6 +102,10 @@ export default {
       getDataTypes: GET_DATA_TYPES
       }
     ),
+    /**
+     * Get data source columns that don't have any database columns
+     * @returns {unknown[]}
+     */
     dataSourceColumns () {
       let dataTypes = this.getDataTypes
       return Object.values(this.workspace.dataSource.spec.columns).filter(column => {

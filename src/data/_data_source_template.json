@@ -4,7 +4,7 @@
       "id": {
         "name": "id",
         "type": "integer",
-        "default": "",
+        "default": null,
         "comment": "Unique identifier for this entity.",
         "extra": {
           "createdBy": "system",
@@ -14,7 +14,7 @@
       "created_datetime": {
         "name": "created_datetime",
         "type": "datetime",
-        "default": "",
+        "default": null,
         "comment": "Date and time that this entity was created.",
         "extra": {
           "createdBy": "system",
@@ -24,7 +24,7 @@
       "created_by": {
         "name": "created_by",
         "type": "user",
-        "default": "",
+        "default": null,
         "comment": "User that created this entity. Refers to users.id",
         "extra": {
           "createdBy": "system",
@@ -34,7 +34,7 @@
       "updated_datetime": {
         "name": "updated_datetime",
         "type": "datetime",
-        "default": "",
+        "default": null,
         "comment": "Date and time that this entity was last updated.",
         "extra": {
           "createdBy": "system",
@@ -44,7 +44,7 @@
       "updated_by": {
         "name": "updated_by",
         "type": "user",
-        "default": "",
+        "default": null,
         "comment": "User that last updated any field on this entity. Refers to users.id.",
         "extra": {
           "createdBy": "system",
@@ -54,7 +54,7 @@
       "dashboard_id": {
         "name": "dashboard_id",
         "type": "integer",
-        "default": "",
+        "default": null,
         "comment": "Refers to the dashboard that the entity is currently on, OR NULL if not on a dashboard.",
         "extra": {
           "createdBy": "system",
@@ -64,7 +64,7 @@
       "moved_to_dashboard_date": {
         "name": "moved_to_dashboard_date",
         "type": "datetime",
-        "default": "",
+        "default": null,
         "comment": "Datetime that an entity was moved to the dashboard that it is currently on.",
         "extra": {
           "createdBy": "system",
@@ -74,8 +74,38 @@
       "moved_to_dashboard_by": {
         "name": "moved_to_dashboard_by",
         "type": "user",
-        "default": "",
+        "default": null,
         "comment": "User that moved the entity to the dashboard that it is currently on. Refers to users.id.",
+        "extra": {
+          "createdBy": "system",
+          "category": "system"
+        }
+      },
+      "archived": {
+        "name": "archived",
+        "type": "boolean",
+        "default": "0",
+        "comment": "Set to true when this entity is archived.",
+        "extra": {
+          "createdBy": "system",
+          "category": "system"
+        }
+      },
+      "archived_date": {
+        "name": "archived_date",
+        "type": "datetime",
+        "default": null,
+        "comment": "Date that the entity ws archived.",
+        "extra": {
+          "createdBy": "system",
+          "category": "system"
+        }
+      },
+      "archived_by": {
+        "name": "archived_by",
+        "type": "user",
+        "default": null,
+        "comment": "User that archived the entity. Refers to users.id.",
         "extra": {
           "createdBy": "system",
           "category": "system"
@@ -84,7 +114,7 @@
       "pid": {
         "name": "pid",
         "type": "patient",
-        "default": "",
+        "default": null,
         "comment": "The patient that this data source entity is related to.",
         "extra": {
           "createdBy": "system",
@@ -94,7 +124,7 @@
       "source": {
         "name": "source",
         "type": "json",
-        "default": "",
+        "default": null,
         "comment": "JSON representation of source of the entity, whether form, api or some other entry-point.",
         "extra": {
           "createdBy": "system",
