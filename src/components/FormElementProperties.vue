@@ -60,20 +60,35 @@
 
       <v-checkbox label="Show on Read-Only View"></v-checkbox>
 
-      <v-btn
-        color="success"
-        class="mr-4"
-        @click="onSaveClicked"
-      >
-        Save
-      </v-btn>
-      <v-btn
-        color="secondary"
-        class="mr-4"
-        @click="onCancelClicked"
-      >
-        Cancel
-      </v-btn>
+      <v-row>
+        <v-col cols="6">
+          <v-btn
+            color="success"
+            class="mr-4"
+            @click="onSaveClicked"
+          >
+            Save
+          </v-btn>
+          <v-btn
+            color="secondary"
+            class="mr-4"
+            @click="onCancelClicked"
+          >
+            Cancel
+          </v-btn>
+        </v-col>
+        <v-col class="text-right">
+          <v-btn
+            plain
+            color="error"
+            class="mr-4"
+            @click="onDeleteClicked"
+          >
+            <font-awesome-icon icon="trash" />
+            Delete
+          </v-btn>
+        </v-col>
+      </v-row>
     </v-container>
   </v-form>
 </v-list>
@@ -113,6 +128,9 @@ export default {
     },
     onConditionalLogicChanged(conditionalLogic) {
       this.activeElement.conditionalLogic = conditionalLogic
+    },
+    onDeleteClicked() {
+      this.$emit('delete', { key: this.activeElement.dataSourceColumn, element: this.activeElement })
     }
 
   },
