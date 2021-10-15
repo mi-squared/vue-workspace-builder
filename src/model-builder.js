@@ -9,6 +9,7 @@ export function newWorkspace(formData) {
     administrator: 1,
     dataSource: defaultDataSource,
     displayOnPatientMenu: false,
+    color: '',
     dashboards: {},
     forms: {},
     filters: {},

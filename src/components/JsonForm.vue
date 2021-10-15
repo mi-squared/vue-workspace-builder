@@ -33,10 +33,12 @@ import "@koumoul/vjsf/dist/main.css";
 import PatientPicker from './form-elements/PatientPicker'
 import { createNamespacedHelpers } from 'vuex'
 import { FETCH_LISTS_WITH_DATA_BULK, GET_LIST } from '../store/types-list'
+import { MixinLogicEvaluator } from '../mixin-logic-evaluator'
 const { mapGetters: mapListGetters, mapActions: mapListActions } = createNamespacedHelpers('list')
 
 export default {
   name: "JsonForm",
+  mixins: [MixinLogicEvaluator],
   components: {
     PatientPicker,
     VJsf
@@ -116,44 +118,21 @@ export default {
         // Always set option to show by default
         options.context[contextKey] = true
         if (properties.hasConditionalLogic) {
-          // Check to see if conditions are met to display this field
 
           // First, if the action is to show, set show to true, otherwise set show to false
           let show = properties.conditionalLogic.action == 'Show'
 
-          // We are going to count the number of conditions that pass
-          let passCount = 0
-          properties.conditionalLogic.conditions.forEach(condition => {
-            const fieldValue = that.activeModel[condition.field]
-            let pass = false
-            if (condition.operator === '>') {
-              pass = (fieldValue > condition.value)
-            } else if (condition.operator === '<') {
-              pass = (fieldValue < condition.value)
-            } else if (condition.operator === '=') {
-              pass = (fieldValue == condition.value)
-            } else if (condition.operator === '!=') {
-              pass = (fieldValue != condition.value)
-            } else {
-              alert('invalid operator')
-            }
+          // Check to see if conditions are met to display this field
+          // The form fields only have one rule, so use evaluateRule rather than evaluateCondition
+          const performAction = that.evaluateRule(
+            properties.conditionalLogic,
+            that.activeModel,
+            { timeZone: ''}
+          )
 
-            if (pass) {
-              passCount++
-            }
-
-            console.log('Condition Passes? ' + pass + ' ' + condition)
-          })
-
-          console.log(passCount + ' out of ' + properties.conditionalLogic.conditions.length + ' conditions passed.')
-
-          // If the logical type is set to all, and not all conditions pass, then
-          // we invert the show property
-          if (properties.conditionalLogic.logicalType == 'All' &&
-            passCount < properties.conditionalLogic.conditions.length) {
-            show = !show
-          } else if (properties.conditionalLogic.logicalType == 'Any' &&
-            passCount == 0) {
+          // If our condition failed, then we want to do the opposite of our action. If it was show, we want to hide.
+          // If it was hide, we want to show :)
+          if (performAction !== true) {
             show = !show
           }
 

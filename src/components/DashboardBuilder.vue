@@ -338,7 +338,11 @@ export default {
       this.showDashboardElementProperties(element)
     },
     onConditionalLogicChanged(conditionalLogic) {
-      this.activeDashboard.conditionalLogic = conditionalLogic
+      // We use $set api here because the dashboard model may not have
+      // a conditionalLogic key. This adds the key and makes it reactive,
+      // so we trigger the 'dirty' watcher when it changes
+      this.$set(this.activeDashboard, 'conditionalLogic', conditionalLogic);
+      //this.activeDashboard.conditionalLogic = conditionalLogic
     },
 
     showDashboardElementProperties(element)

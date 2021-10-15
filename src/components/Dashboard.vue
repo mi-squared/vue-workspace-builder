@@ -202,6 +202,19 @@
                   <span>{{ dashboardSource(item) }}</span>
                 </v-tooltip>
 
+                <v-tooltip bottom>
+                  <template v-slot:activator="{ on, attrs }">
+                    <v-icon
+                      v-if="isSourceWorkspace(item)"
+                      v-bind="attrs"
+                      v-on="on"
+                      :color="workspaceColor(item)"
+                      class="d-inline"
+                    >mdi-domain</v-icon>
+                  </template>
+                  <span>{{ workspaceSource(item) }}</span>
+                </v-tooltip>
+
                 <!-- now we check conditions to add indicators -->
                 <!--          <v-icon v-if="item.something == 'dsafdsfad'" class="d-inline" color="green">mdi-circle</v-icon>-->
                 <!--          <v-icon class="d-inline">mdi-circle</v-icon>-->
@@ -826,6 +839,29 @@ export default {
 
       return ""
     },
+    isSourceWorkspace(entity) {
+      if (entity.source != undefined) {
+        if (entity.source.type == 'workspace') {
+          return true
+        }
+      }
+    },
+    workspaceSource(entity) {
+      if (entity.source != undefined &&
+        entity.source.type != undefined &&
+        entity.source.extra != undefined) {
+        return "Moved from " + entity.source.type + " " + this.workspaces[entity.source.extra.workspaceId]
+      }
+
+      return ""
+    },
+    workspaceColor(entity)
+    {
+      const workspace = this.getWorkspaceById(entity.source.extra.workspaceId)
+      if (workspace.color != undefined) {
+        return workspace.color
+      }
+    },
     removeEntityFromDashboard(entity) {
       // We want to remove the entity row from the table before VUEX mutates it, so let's remove it first
       let movedEntityIndex = this.orderedEntities.findIndex(entityId => {
@@ -904,7 +940,7 @@ export default {
         this.createEntity({
           workspaceId: workspaceId,
           dashboardId: defaultDashboardId,
-          newEntity
+          entity: newEntity
         }).then(() => {
           this.snackbarText = "Successfully Moved to Workspace " + this.workspaces[workspaceId]
           this.snackbar = true

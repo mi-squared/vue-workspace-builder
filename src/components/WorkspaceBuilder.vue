@@ -26,6 +26,53 @@
                     persistent-hint
                   ></v-select>
 
+                  <v-dialog
+                    v-model="colorDialog"
+                    width="500"
+                  >
+                    <template v-slot:activator="{ on, attrs }">
+                      <div class="mt-4">
+                        <div class="text-label text--lighten-1">Workspace Color</div>
+                        <v-icon
+                          :color="activeWorkspace.color"
+                          v-bind="attrs"
+                          v-on="on">
+                          mdi-format-color-fill
+                        </v-icon>
+                      </div>
+                    </template>
+
+                    <v-card>
+                      <v-card-title class="text-h5 grey lighten-2">
+                        Select Color
+                      </v-card-title>
+
+                      <v-card-text>
+                        <v-color-picker
+                          v-model="activeWorkspace.color"
+                          class="ma-2"
+                          dot-size="31"
+                          hide-inputs
+                          show-swatches
+                          swatches-max-height="200"
+                        ></v-color-picker>
+                      </v-card-text>
+
+                      <v-divider></v-divider>
+
+                      <v-card-actions>
+                        <v-spacer></v-spacer>
+                        <v-btn
+                          color="primary"
+                          text
+                          @click="colorDialog = false"
+                        >
+                          Save
+                        </v-btn>
+                      </v-card-actions>
+                    </v-card>
+                  </v-dialog>
+
                   <v-select
                     label="Administrator"
                     v-model="activeWorkspace.administrator"
@@ -191,7 +238,8 @@ export default {
     return {
       isDirty: false,
       showInput: false,
-      activeWorkspace: { ...this.workspace }
+      activeWorkspace: { ...this.workspace },
+      colorDialog: false
     }
   },
   watch: {

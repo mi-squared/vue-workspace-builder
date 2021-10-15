@@ -28,8 +28,7 @@
           </v-col>
 
           <v-col>
-            <v-toolbar dense>
-              <v-spacer></v-spacer>
+            <v-btn-toggle dense>
               <v-btn
                 icon
                 @click="removeCondition(ruleIndex, conditionIndex)"
@@ -43,25 +42,26 @@
               >
                 <v-icon>mdi-plus</v-icon>
               </v-btn>
-            </v-toolbar>
+            </v-btn-toggle>
           </v-col>
         </v-row>
 
+        <!-- Row for the action -->
         <v-row>
           <v-col>
             <v-select
-              v-model="rule.action"
+              v-model="rule.action.name"
               :items="actions"
             ></v-select>
           </v-col>
           <v-col>
             <v-select
-              v-if="rule.action == 'Add Row Indicator'"
-              v-model="rule.actionData.icon"
+              v-if="rule.action.name == 'Add Row Indicator'"
+              v-model="rule.action.actionData.icon"
               :items="iconList"
             >
               <template v-slot:selection="{ item }">
-                <v-icon  :color="rule.actionData.color">{{ item }}</v-icon>&nbsp; {{ item }}
+                <v-icon  :color="rule.action.actionData.color">{{ item }}</v-icon>&nbsp; {{ item }}
               </template>
 
               <template v-slot:item="{ item }">
@@ -72,14 +72,14 @@
           </v-col>
           <v-col>
             <v-dialog
-              v-if="rule.action == 'Add Row Indicator'"
+              v-if="rule.action.name == 'Add Row Indicator'"
               v-model="colorDialogs[ruleIndex]"
               width="500"
             >
               <template v-slot:activator="{ on, attrs }">
                 <div class="mt-4">
                   <v-icon
-                    :color="rule.actionData.color"
+                    :color="rule.action.actionData.color"
                     v-bind="attrs"
                     v-on="on">
                     mdi-format-color-fill
@@ -94,7 +94,7 @@
 
                 <v-card-text>
                   <v-color-picker
-                    v-model="rule.actionData.color"
+                    v-model="rule.action.actionData.color"
                     class="ma-2"
                     dot-size="31"
                     hide-inputs
@@ -119,7 +119,11 @@
             </v-dialog>
           </v-col>
           <v-col>
-            <v-text-field label="Mouse-over note for indicator" v-model="rule.actionData.note"></v-text-field>
+            <v-text-field
+              v-if="rule.action.name == 'Add Row Indicator'"
+              label="Mouse-over note for indicator"
+              v-model="rule.action.actionData.note"
+            ></v-text-field>
           </v-col>
         </v-row>
       </v-card-text>
@@ -178,7 +182,7 @@ export default {
     },
     actions() {
       return [
-        'Show', 'Hide', 'Add Row Indicator'
+        'Archive', 'Add Row Indicator'
       ]
     },
     logicalTypes() {
@@ -221,11 +225,13 @@ export default {
     },
     addRule() {
       this.conditionalLogic.rules.push({
-        action: '',
-        actionData: {
-          icon: '',
-          color: '',
-          note: ''
+        action: {
+          name: '',
+          actionData: {
+            icon: '',
+            color: '',
+            note: ''
+          }
         },
         logicalType: '',
         conditions: [],
