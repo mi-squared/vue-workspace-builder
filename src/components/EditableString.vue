@@ -8,13 +8,17 @@
     min-width="auto"
   >
     <template v-slot:activator="{ on, attrs }">
-                      <span
-                        class="text-decoration-underline"
-                        v-bind="attrs"
-                        v-on="on"
-                      >
-                        {{ entity[index] }}
-                      </span>
+      <span
+        class="text-decoration-underline"
+        v-bind="attrs"
+        v-on="on"
+      >
+        <span v-if="entity[index]">
+          {{ entity[index] }}
+        </span>
+        <v-icon v-else>mdi-note-plus-outline</v-icon>
+      </span>
+
     </template>
 
     <v-card>
