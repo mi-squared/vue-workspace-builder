@@ -26,6 +26,14 @@
                     persistent-hint
                   ></v-select>
 
+                  <v-select
+                    label="Timeline View Form"
+                    v-model="activeWorkspace.timelineViewFormId"
+                    :items="formOptions"
+                    hint="The form that is displayed when an entity is clicked on in the timeline view."
+                    persistent-hint
+                  ></v-select>
+
                   <v-dialog
                     v-model="colorDialog"
                     width="500"
@@ -221,7 +229,7 @@
 
 <script>
 import { createNamespacedHelpers } from 'vuex'
-import { GET_WORKSPACE, SET_WORKSPACE } from '../store/types-workspace'
+import { GET_FORMS, GET_WORKSPACE, SET_WORKSPACE } from '../store/types-workspace'
 import { GET_DASHBOARD } from '../store/types-dashboard'
 const { mapActions: mapWorkspaceActions, mapGetters: mapWorkspaceGetters } = createNamespacedHelpers('workspace')
 const { mapGetters: mapDashboardGetters } = createNamespacedHelpers('dashboard')
@@ -238,7 +246,10 @@ export default {
     return {
       isDirty: false,
       showInput: false,
-      activeWorkspace: { ...this.workspace },
+      activeWorkspace: {
+        color: 'grey',
+        ...this.workspace
+      },
       colorDialog: false
     }
   },
@@ -255,7 +266,8 @@ export default {
   },
   computed: {
     ...mapWorkspaceGetters({
-      getWorkspace: GET_WORKSPACE
+      getWorkspace: GET_WORKSPACE,
+      getFormsByWorkspaceId: GET_FORMS
     }),
     ...mapDashboardGetters({
       getDashboard: GET_DASHBOARD
@@ -266,6 +278,16 @@ export default {
     },
     dashboards() {
       return Object.values(this.activeWorkspace.dashboards)
+    },
+    formOptions() {
+      // This gathers up all the lists in { text: '', value: '' } format for the select box
+      const forms = Object.values(this.getFormsByWorkspaceId(this.activeWorkspace.id))
+      let formOptions = []
+      forms.forEach(form => {
+        const option = { text: form.title, value: form.id }
+        formOptions.push(option)
+      })
+      return formOptions
     },
     dashboardOptions() {
       // return options for dashboard when entity is created outside, but we

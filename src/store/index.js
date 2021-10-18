@@ -7,7 +7,7 @@ import { user } from './modules/user'
 import { workspace } from './modules/workspace'
 import { dashboard } from './modules/dashboard'
 import { form } from './modules/form'
-import { filter } from './modules/filter'
+import { timeline } from './modules/timeline'
 import { list } from './modules/list'
 
 Vue.use(Vuex);
@@ -21,7 +21,7 @@ export default new Vuex.Store({
     workspace,
     dashboard,
     form,
-    filter,
+    timeline,
     list,
   },
   actions: {},

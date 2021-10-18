@@ -111,6 +111,7 @@ export function newForm(workspaceId, formData) {
     id: null,
     workspaceId: workspaceId,
     title: "[New Form]",
+
     grid: [],
     options: {},
     schema: {},

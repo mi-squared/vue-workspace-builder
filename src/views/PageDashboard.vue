@@ -22,7 +22,7 @@ import { GET_LIST } from '../store/types-list'
 
 const { mapGetters: mapListGetters } = createNamespacedHelpers('list')
 
-import { FETCH_DASHBOARD, FETCH_DASHBOARD_ROWS, GET_DASHBOARD, GET_DASHBOARD_ROWS } from '../store/types-dashboard'
+import { FETCH_DASHBOARD, GET_DASHBOARD, GET_DASHBOARD_ROWS } from '../store/types-dashboard'
 
 const { mapGetters: mapDashboardGetters, mapActions: mapDashboardActions } = createNamespacedHelpers('dashboard')
 
@@ -87,7 +87,6 @@ export default {
   methods: {
     ...mapDashboardActions({
       fetchDashboard: FETCH_DASHBOARD,
-      fetchDashboardRows: FETCH_DASHBOARD_ROWS
     }),
     ...mapUserActions({
       initUser: INIT
@@ -96,7 +95,6 @@ export default {
   mounted () {
     console.log("PageDashboard Mounted")
 
-    //document.title = "Dashboard"
     let that = this
     // First we have to init our user and token so we can make API calls
     this.initUser().then(() => {
@@ -105,10 +103,7 @@ export default {
         .then(() => {
           // For some reason, the dashboard object that is returned from the vuex action FETCH_DASHBOARD is undefined,
           // but this still works because it sets the dashboard object in vuex and becomes reactive
-          //document.title = that.dashboard.title
-          that.fetchDashboardRows({ dashboardId: that.dashboardId }).then(() => {
-            that.loaded = true
-          })
+          that.loaded = true
         })
     })
   }

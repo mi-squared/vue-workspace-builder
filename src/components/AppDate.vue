@@ -18,17 +18,19 @@ export default {
   filters: {
     humanFriendlyDate (ts, timezone) {
       let formatted = ''
-      const rightNow = moment().tz(timezone).toISOString()
-      const timestamp = moment(ts).toISOString()
-      if (moment(timestamp).isSame(rightNow, 'hour')) {
+      const rightHereRightNow = moment();
+      let rightNow = rightHereRightNow.clone().tz(timezone).format();
+      let rightNowISO = moment(rightNow).toISOString()
+      const timestamp = moment.tz(ts, timezone).toISOString()
+      if (moment(timestamp).isSame(rightNowISO, 'hour')) {
         formatted = moment(timestamp).fromNow()
-      } else if (moment(timestamp).isSame(rightNow, 'day')) {
+      } else if (moment(timestamp).isSame(rightNowISO, 'day')) {
         formatted = moment(timestamp).format('[Today at] h:mmA')
-      } else if (moment(timestamp).isSame(rightNow, 'week')) {
+      } else if (moment(timestamp).isSame(rightNowISO, 'week')) {
         formatted = moment(timestamp).format('ddd h:mmA')
-      } else if (moment(timestamp).isSame(rightNow, 'month')) {
+      } else if (moment(timestamp).isSame(rightNowISO, 'month')) {
         formatted = moment(timestamp).format('MMM D')
-      } else if (moment(timestamp).isSame(rightNow, 'year')) {
+      } else if (moment(timestamp).isSame(rightNowISO, 'year')) {
         formatted = moment(timestamp).format('MMM D')
       } else {
         formatted = moment(timestamp).format('MMM D, YYYY')

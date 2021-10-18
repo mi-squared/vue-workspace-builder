@@ -13,6 +13,7 @@ import PageDashboard from '@/views/PageDashboard'
 import PageDashboardEdit from '../views/builder/PageDashboardEdit'
 import PageFormEdit from '../views/builder/PageFormEdit'
 import PageForm from '../views/PageForm'
+import PageTimeline from '../views/PageTimeline'
 
 Vue.use(VueRouter);
 
@@ -133,6 +134,14 @@ const routes = [{
     component: PageForm,
     props: ({ params }) => ({
       formId: Number(params.formId),
+    }),
+  },
+  {
+    path: "/timeline/:pid",
+    name: 'PageTimeline',
+    component: PageTimeline,
+    props: ({ params }) => ({
+      pid: Number(params.pid),
     }),
   },
 ];

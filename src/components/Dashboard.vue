@@ -178,10 +178,27 @@
                 >
                   <AppDate :timestamp="item.moved_to_dashboard_date" :timezone="timeZone"></AppDate>
                 </v-chip>
+
               </div>
 
               <!-- Indicators -->
               <div v-else-if="header.value == 'data-indicators'">
+
+                <v-tooltip
+                  v-for="(indicator, index) in conditionalLogicIndicators(item)"
+                  :key="index"
+                  bottom
+                >
+                  <template v-slot:activator="{ on, attrs }">
+                    <v-icon
+                      v-bind="attrs"
+                      v-on="on"
+                      :color="indicator.color"
+                      class="d-inline"
+                    >{{ indicator.icon }}</v-icon>
+                  </template>
+                  <span>{{ indicator.note }}</span>
+                </v-tooltip>
 
                 <!-- if this is an archived entity, show an indicator -->
                 <v-icon
@@ -293,9 +310,9 @@
                     <v-toolbar-title>#{{ item.id }}</v-toolbar-title>
                     <v-toolbar-items>
 
-                      <v-btn icon>
-                        <v-icon>mdi-gmail</v-icon>
-                      </v-btn>
+<!--   TODO gmail indicator goes here                   <v-btn icon>-->
+<!--                        <v-icon>mdi-gmail</v-icon>-->
+<!--                      </v-btn>-->
 
                       <v-btn
                         icon
@@ -346,6 +363,64 @@
                     </v-list-item>
                   </v-list>
                 </v-menu>
+              </div>
+
+              <!-- Render form inputs for our editable elements -->
+              <div v-else-if="header.editable == true">
+
+                <div v-if="header.type == 'string'">
+                  <EditableString :key="item.id" :entity="item" :index="header.value" @save="onEntityChanged"></EditableString>
+                </div>
+
+                <div v-if="header.type == 'datetime'">
+
+                  <DatetimePicker
+                    v-model="item[header.value]"
+                    timeFormat="HH:mm"
+                    dateFormat="MM/dd/yyyy"
+                    @input="onEntityChanged(item)"
+                  >
+                    <v-icon slot="dateIcon">mdi-calendar</v-icon>
+                    <v-icon slot="timeIcon">mdi-clock</v-icon>
+                  </DatetimePicker>
+                </div>
+
+                <div v-if="header.type == 'date'">
+
+                  <v-menu
+                    :ref="header.value"
+                    v-model="menus[header.value + item.id]"
+                    transition="scale-transition"
+                    offset-y
+                    max-width="290px"
+                    min-width="auto"
+                  >
+                    <template v-slot:activator="{ on, attrs }">
+                      <v-text-field
+                        dense
+                        :value="item[header.value]"
+                        v-bind="attrs"
+                        @blur="item[header.value] = parseDatetime(item[header.value])"
+                        v-on="on"
+                        class="mt-4"
+                        style="font-size: smaller; min-width: 100px;"
+                      >
+                        <v-icon slot="prepend-inner" small>mdi-calendar</v-icon>
+                      </v-text-field>
+                    </template>
+                    <v-datetime-picker
+                      v-model="item[header.value]"
+                      no-title
+                      @input="onEntityChanged(item)"
+                    >
+                    </v-datetime-picker>
+                  </v-menu>
+
+                  {{ formatDate(item[header.value]) }}
+
+                </div>
+
+
               </div>
 
               <div v-else-if="header.type == 'date'">
@@ -509,10 +584,15 @@ import { GET_FORM } from '../store/types-form'
 import DashboardNoteButton from './DashboardNoteButton'
 import NoteHistory from './NoteHistory'
 const { mapGetters: mapFormGetters } = createNamespacedHelpers('form')
-import { formatDate } from '../display-helpers'
+import { formatDate, formatDatetime } from '../display-helpers'
+import { MixinLogicEvaluator } from '../mixin-logic-evaluator'
+import { setOpenEmrPatient } from '../api'
+import DatetimePicker from './DatetimePicker'
+import EditableString from './EditableString'
 
 export default {
   name: 'Dashboard',
+  mixins: [MixinLogicEvaluator],
   props: {
     dashboard: {
       type: Object,
@@ -524,10 +604,12 @@ export default {
     }
   },
   components: {
+    EditableString,
+    DatetimePicker,
     NoteHistory,
     DashboardNoteButton,
     JsonForm,
-    AppDate
+    AppDate,
   },
   data () {
     return {
@@ -539,6 +621,8 @@ export default {
       orderedEntities: [],
       newEntityModel: {},
       mainFormDialogs: {},
+      menus: {}, // v-models for the date picker dialogs, etc indexed by header.value
+      formattedEntityValues: {}, // v-models for our formatted values like dates
       entityCreateKey: 0,
       loaded: false,
       snackbar: false,
@@ -554,6 +638,7 @@ export default {
       attrsMainForm: {},
       dialog: false,
       timer: '',
+      updateTimer: '',
       currentTimestamp: null,
       expanded: [],
       singleExpand: false,
@@ -769,13 +854,22 @@ export default {
       // Use the format date display helper to format dates
       return formatDate(date)
     },
-    loadForm(entity)
-    {
-      alert('TODO this should open the form for entity: ' + entity.id)
+    parseDate (date) {
+      // parse date back to mysql
+      return moment(date).format('YYYY-MM-DD')
+    },
+    formatDatetime (datetime) {
+      // Use the format date display helper to format dates
+      return formatDatetime(datetime)
+    },
+    parseDatetime (datetime) {
+      // parse date back to mysql
+      return moment(datetime).format('YYYY-MM-DD HH:mm')
     },
     loadPatient(entity)
     {
-      alert('TODO this should open the patient for patient: ' + entity.pid)
+      // Load the OpenEMR patient in a new OpenEMR tab
+      setOpenEmrPatient(entity.pid)
     },
     saveNewEntity () {
       // Save the entity
@@ -822,6 +916,22 @@ export default {
       } else {
         return ''
       }
+    },
+    conditionalLogicIndicators(entity) {
+      // Evaluate conditional logic and get indicators
+      let indicators = []
+      if (this.dashboard.hasConditionalLogic) {
+        this.dashboard.conditionalLogic.rules.forEach(rule => {
+          if (rule.action.name == 'Add Row Indicator') {
+            // console.log("Evaluating indicator for entity: " + entity.id)
+            const performAction = this.evaluateRule(rule, entity, {});
+            if (performAction) {
+              indicators.push(rule.action.actionData)
+            }
+          }
+        })
+      }
+      return indicators
     },
     isSourceDashboard(entity) {
       if (entity.source != undefined) {
@@ -872,6 +982,20 @@ export default {
         }
       })
       this.orderedEntities.splice(movedEntityIndex, 1)
+    },
+    onEntityChanged(entity) {
+      // Let the user know we're doing something
+      //this.loaded = false
+
+      // send the udpated entity to the server
+      this.pushEntity({
+        workspaceId: this.dashboard.workspaceId,
+        dashboardId: this.dashboard.id,
+        entityId: entity.id,
+        entity
+      }).then(() => {
+        //this.loadEntitiesApi()
+      })
     },
     archiveEntity(entity) {
       // Let the user know we're doing something
@@ -963,11 +1087,17 @@ export default {
       return moment()
     },
     refreshAttrition: function () {
-      setInterval(() => {
+      this.timer = setInterval(() => {
         this.currentTimestamp = this.getCurrentTimestamp()
+        //this.loadEntitiesApi()
       }, 1000)
+
+      this.updateTimer = setInterval(() => {
+        this.loadEntitiesApi(false)
+      }, 5000)
     },
     cancelAutoUpdate () {
+      clearInterval(this.updateTimer)
       clearInterval(this.timer)
     },
     getColor (entity) {
@@ -975,15 +1105,15 @@ export default {
       let moved_to_dashboard_date = entity.moved_to_dashboard_date
       let a = moment().tz(this.timeZone)
       let b = moment.tz(moved_to_dashboard_date, this.timeZone)
-      let seconds = a.diff(b, 'seconds')
+      let minutes = a.diff(b, 'minutes')
       for (let i = 0; i < this.dashboard.durationModel.ranges.length; ++i) {
         const range = this.dashboard.durationModel.ranges[i]
         // Convert our ranges to seconds
-        const minSeconds = moment.duration(range.range[0], this.dashboard.durationModel.units).asSeconds()
+        const minMinutes = moment.duration(range.range[0], this.dashboard.durationModel.units).asMinutes()
         // We add one to the max range before we convert so we make sure to cover the in-between
         // because the ranges are like 0-1, 2-5, 6-10 where the next min is one more than the previous max
-        const maxSeconds = moment.duration(range.range[1] + 1, this.dashboard.durationModel.units).asSeconds()
-        if (seconds >= minSeconds && seconds < maxSeconds) {
+        const maxMinutes = moment.duration(range.range[1] + 1, this.dashboard.durationModel.units).asMinutes()
+        if (minutes >= minMinutes && minutes < maxMinutes) {
           return range.color
         }
       }
@@ -1016,9 +1146,11 @@ export default {
 
       return groups
     },
-    loadEntitiesApi () {
+    loadEntitiesApi (showLoader = true) {
       let that = this
-      this.loaded = false;
+      if (showLoader) {
+        this.loaded = false;
+      }
       this.fetchEntities({
         dashboardId: this.dashboard.id,
         dashboardFilterEnabled: true,
@@ -1030,14 +1162,16 @@ export default {
         this.entities = response.entities
         this.orderedEntities = response.orderedEntities
         that.loaded = true
-        // start the counter that uses the current time to determine attrition
-        that.refreshAttrition()
+        // // start the counter that uses the current time to determine attrition
+        // that.refreshAttrition()
       })
     },
   },
   mounted () {
     console.log("Dashboard Mounted")
     //this.loadEntitiesApi();
+    // start the counter that uses the current time to determine attrition
+    this.refreshAttrition()
   },
   created () {
     // Init and Set up our timeZone in created hook so it doesn't trigger reactivity in computed properties like getColo()

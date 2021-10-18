@@ -38,6 +38,12 @@ export function ws_init() {
   return axios.get(baseUrl + "/interface/modules/custom_modules/oe-workspace-server/init.php")
 }
 
+export function setOpenEmrPatient(pid)
+{
+  top.restoreSession();
+  top.RTop.location = baseUrl +  "/interface/patient_file/summary/demographics.php?set_pid=" + encodeURIComponent(pid);
+}
+
 export function createWorkspace({title, administrator}, userMeta) {
   let workspace = newWorkspace({title, administrator})
 
@@ -463,6 +469,23 @@ export function getPatientById(pid, userMeta)
     }).then(function (response) {
       const patient = response.data
       resolve(patient)
+    }).catch(handleApiError)
+  })
+}
+
+export function fetchTimelineByPid(pid, userMeta)
+{
+  return new Promise((resolve) => {
+    axios.get(baseUrl + '/apis/api/timeline', {
+      params: {
+        pid: pid
+      },
+      headers: {
+        'apicsrftoken': userMeta.csrfToken
+      }
+    }).then(function (response) {
+      const timeline = response.data
+      resolve(timeline)
     }).catch(handleApiError)
   })
 }

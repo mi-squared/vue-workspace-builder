@@ -1,0 +1,81 @@
+<template>
+  <v-menu
+    v-model="menu"
+    :close-on-content-click="false"
+    transition="scale-transition"
+    offset-y
+    max-width="400px"
+    min-width="auto"
+  >
+    <template v-slot:activator="{ on, attrs }">
+                      <span
+                        class="text-decoration-underline"
+                        v-bind="attrs"
+                        v-on="on"
+                      >
+                        {{ entity[index] }}
+                      </span>
+    </template>
+
+    <v-card>
+      <v-card-text>
+        <v-text-field
+          dense
+          v-model="myString"
+          class="mt-4"
+          autofocus
+        >
+          <v-icon slot="prepend-inner" small>mdi-notepad</v-icon>
+        </v-text-field>
+      </v-card-text>
+      <v-card-actions>
+        <v-btn color="grey lighten-1" text @click="menu = false">Clear</v-btn>
+        <v-btn color="green darken-1" text @click="onSave">Save</v-btn>
+      </v-card-actions>
+    </v-card>
+
+  </v-menu>
+</template>
+
+<script>
+export default {
+  name: 'EditableString',
+  props: {
+    entity: {
+      required: true
+    },
+    index: {
+      required: true
+    }
+  },
+  data() {
+    return {
+      myEntity: { ...this.entity },
+      menu: false
+    }
+  },
+  computed: {
+    myString: {
+      get: function () {
+        return this.myEntity[this.index]
+      },
+      // setter
+      set: function (newValue) {
+        this.myEntity[this.index] = newValue
+      }
+    }
+  },
+  methods: {
+    onSave() {
+      this.$emit('save', this.myEntity)
+      this.menu = false
+    }
+  },
+  mounted () {
+  }
+}
+</script>
+
+<style scoped>
+
+</style>

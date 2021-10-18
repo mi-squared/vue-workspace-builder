@@ -335,7 +335,9 @@ export default {
     },
     dashboardElementClicked(element) {
       this.$emit('dashboard-element-clicked', element)
-      this.showDashboardElementProperties(element)
+      this.activeDashboardElement = element
+      console.log(element)
+      this.drawer = true
     },
     onConditionalLogicChanged(conditionalLogic) {
       // We use $set api here because the dashboard model may not have
@@ -345,19 +347,11 @@ export default {
       //this.activeDashboard.conditionalLogic = conditionalLogic
     },
 
-    showDashboardElementProperties(element)
-    {
-      this.activeDashboardElement = element
-      console.log(element)
-      this.drawer = true
-    },
-
     /**
      * Save the active element locally to data
      */
     storeActiveDashboardElement()
     {
-      this.activeDashboard.headers.push(this.activeDashboardElement)
       console.log('save clicked')
       this.drawer = false
     }

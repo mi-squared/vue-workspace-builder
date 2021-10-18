@@ -1,3 +1,5 @@
+import * as moment from 'moment-timezone'
+
 export function humanizeDataSourceString(str) {
   let i, frags = str.split('_');
   for (i=0; i<frags.length; i++) {
@@ -12,3 +14,10 @@ export function formatDate(date) {
   const [year, month, day] = date.split('-')
   return `${month.padStart(2, '0')}/${day.padStart(2, '0')}/${year}`
 }
+
+
+export function formatDatetime(datetime) {
+  if (!datetime) return null
+  return moment(datetime).format('MM/DD/YYYY HH:mm')
+}
+

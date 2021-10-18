@@ -39,6 +39,7 @@
         label="Description"
       ></v-text-field>
       <!--          TODO need read-onlly to come from the data-source vuex module getter -->
+
       <v-checkbox
         v-model="activeElement.readOnly"
         :readonly="false"
@@ -58,7 +59,15 @@
         @change="onConditionalLogicChanged"
         ></ConditionBuilder>
 
-      <v-checkbox label="Show on Read-Only View"></v-checkbox>
+      <v-checkbox
+        label="Show on Form View (visible)"
+        v-model="activeElement.visible"
+      ></v-checkbox>
+
+      <v-checkbox
+        label="Show on Timeline View"
+        v-model="activeElement.visibleOnTimeline"
+      ></v-checkbox>
 
       <v-row>
         <v-col cols="6">
@@ -116,7 +125,12 @@ export default {
   data() {
     return {
       validElement: true, // true if the properties of a new or modified element are valid
-      activeElement: { ...this.element } // Copy the element prop into our local data for modification
+      activeElement: {
+        visible: true,
+        visibleOnTimeline: true,
+
+        ...this.element
+      } // Copy the element prop into our local data for modification
     }
   },
   methods: {

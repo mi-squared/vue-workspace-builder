@@ -29,27 +29,40 @@ export const MixinLogicEvaluator = {
         const fieldValue = model[condition.field]
         let pass = false
         if (condition.operator === '>') {
-          pass = (fieldValue > condition.value)
+          pass = (Number(fieldValue) > Number(condition.value) ||
+            fieldValue > condition.value)
         } else if (condition.operator === '<') {
-          pass = (fieldValue < condition.value)
+          pass = (Number(fieldValue) < Number(condition.value) ||
+            fieldValue < condition.value)
         } else if (condition.operator === '=') {
-          pass = (fieldValue == condition.value)
+          // If the field value is null, and our condition is for an empty string,
+          // we should pass it
+          if (fieldValue == null && condition.value =="") {
+            pass = true
+          } else {
+            pass = (fieldValue == condition.value)
+          }
         } else if (condition.operator === '!=') {
           pass = (fieldValue != condition.value)
         } else if (condition.operator === 'UNTIL NOW(minutes) <') {
           // This passes if the difference between now and then is less than the condition value
-          const rightNow = moment().tz(timeZone).toISOString()
-          const then = moment(fieldValue).toISOString()
+          const rightHereRightNow = moment();
+          let rightNow = rightHereRightNow.clone().tz(timeZone).format();
+          let rightNowISO = moment(rightNow).toISOString()
+          const thenISO = moment.tz(fieldValue, timeZone).toISOString()
           pass = false
-          if (moment(rightNow).diff(then, 'minute') < condition.value) {
+          const diff = moment(rightNowISO).diff(thenISO, 'minute')
+          if (diff < Number(condition.value)) {
             pass = true
           }
         } else if (condition.operator === 'UNTIL NOW(minutes) >') {
           // This passes if the difference between now and then is greater than the condition value
-          const rightNow = moment().tz(timeZone).toISOString()
-          const then = moment(fieldValue).toISOString()
+          const rightHereRightNow = moment();
+          let rightNow = rightHereRightNow.clone().tz(timeZone).format();
+          let rightNowISO = moment(rightNow).toISOString()
+          const thenISO = moment.tz(fieldValue, timeZone).toISOString()
           pass = false
-          if (moment(rightNow).diff(then, 'minute') > condition.value) {
+          if (moment(rightNowISO).diff(thenISO, 'minute') > Number(condition.value)) {
             pass = true
           }
         } else {
@@ -60,7 +73,7 @@ export const MixinLogicEvaluator = {
           passCount++
         }
 
-        console.log('Condition Passes? ' + pass + ' ' + condition)
+        // console.log('Condition Passes? ' + pass + ' ' + condition)
       })
 
       // If the logical type is set to all, and not all conditions pass, then
