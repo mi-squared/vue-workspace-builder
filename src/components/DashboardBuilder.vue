@@ -352,6 +352,16 @@ export default {
      */
     storeActiveDashboardElement()
     {
+      // if this is a newly added element, push it
+      const found = this.activeDashboard.headers.find(header => {
+        if (header.value == this.activeDashboardElement.value) {
+          return true
+        }
+        return false
+      })
+      if(!found) {
+        this.activeDashboard.headers.push(this.activeDashboardElement)
+      }
       console.log('save clicked')
       this.drawer = false
     }
