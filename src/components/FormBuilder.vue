@@ -34,7 +34,7 @@
 
       <v-tab-item :key="'tab-layout'">
         <!-- <v-btn @click="addItem">Add Form Element</v-btn> -->
-        <DataSourceColPickerBtn :workspace="workspace" @selected="addItem"></DataSourceColPickerBtn>
+        <FormElementPickerBtn :workspace="workspace" @selected="addItem"></FormElementPickerBtn>
 
         <v-divider class="mt-2" ></v-divider>
 
@@ -164,13 +164,13 @@ const { mapActions: mapWorkspaceActions, mapGetters: mapWorkspaceGetters } = cre
 import { GET_FORM, SET_FORM, SET_FORM_GRID, SET_FORM_SCHEMA } from '../store/types-form'
 import FormPreviewButton from './FormPreviewButton'
 import FormElementProperties from './FormElementProperties'
-import DataSourceColPickerBtn from './DataSourceColPickerBtn'
+import FormElementPickerBtn from './FormElementPickerBtn'
 const { mapActions: mapFormActions, mapGetters: mapFormGetters } = createNamespacedHelpers('form')
 
 export default {
   name: 'FormBuilder',
   components: {
-    DataSourceColPickerBtn,
+    FormElementPickerBtn,
     FormElementProperties,
     FormPreviewButton,
     FormProperties,
