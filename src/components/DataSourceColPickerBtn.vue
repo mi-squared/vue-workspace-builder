@@ -43,6 +43,8 @@
             </v-list-item>
           </v-list-group>
 
+          <v-divider></v-divider>
+
           <v-list-item
             two-line
             v-for="(column, i) in dataSourceColumns"
@@ -107,12 +109,7 @@ export default {
      * @returns {unknown[]}
      */
     dataSourceColumns () {
-      let dataTypes = this.getDataTypes
-      return Object.values(this.workspace.dataSource.spec.columns).filter(column => {
-        if (dataTypes[column.type].databaseColumns == undefined) {
-          return column
-        }
-      })
+      return Object.values(this.workspace.dataSource.spec.columns)
     },
     columnsWithSubcolumns () {
       let dataTypes = this.getDataTypes
