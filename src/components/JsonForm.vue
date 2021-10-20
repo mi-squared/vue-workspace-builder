@@ -181,6 +181,8 @@ export default {
     this.fetchListsBulk({ arrayOfListIds: listIdsForFetch }).then(listOptions => {
       // We are basically copying all the lists to local state here (TODO we really only need the ones with IDs we identified)
       that.listOptions = listOptions
+
+      // These are the options passed to JSON Form
       that.optionsForForm = that.calculateOptions()
       that.loaded = true
     })

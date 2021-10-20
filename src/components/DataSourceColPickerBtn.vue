@@ -54,11 +54,17 @@
           >
             <v-list-item-content>
               <v-list-item-title>{{ column.name }}</v-list-item-title>
-              <v-list-item-subtitle>{{
-                  column.comment
-                }}</v-list-item-subtitle>
+              <v-list-item-subtitle>
+                {{ column.type }}
+                <span v-if="column.type == 'list'">
+                  List ID: {{ column.extra.listId }}
+                </span>
+              </v-list-item-subtitle>
+              <v-list-item-content>{{ column.comment }}</v-list-item-content>
+              <v-divider></v-divider>
             </v-list-item-content>
           </v-list-item>
+
         </v-list>
       </v-card-text>
 
@@ -117,9 +123,12 @@ export default {
       // database columns that it gets through a join, ie: patient.
       // First we filter based on type, then we map so the result contains both cols and subcols
       let colsWithSubcols = Object.values(this.workspace.dataSource.spec.columns).filter(column => {
-
-        if (dataTypes[column.type].databaseColumns != undefined) {
-          return column
+        if (dataTypes[column.type] != undefined) {
+          if (dataTypes[column.type].databaseColumns != undefined) {
+            return column
+          }
+        } else {
+          console.log("ERROR: No dataType specified for type: " + column.type)
         }
       }).map(column => {
           const subColumns = dataTypes[column.type].databaseColumns

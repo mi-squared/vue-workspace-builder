@@ -140,20 +140,41 @@
                       </v-btn>
                     </v-toolbar>
                     <v-container>
-                      <JsonForm
-                        :key="item.id"
-                        :form="mainForm"
-                        :model="item"
-                        :schema="mainForm.schema"
-                        :options="mainForm.options"
-                        :pid="Number(item.pid)"
-                        :patient="item"
-                      ></JsonForm>
+                      <v-card flat width="100%">
+                        <v-card-text>
+                          <JsonForm
+                            :key="item.id"
+                            :form="mainForm"
+                            :model="item"
+                            :schema="mainForm.schema"
+                            :options="mainForm.options"
+                            :pid="Number(item.pid)"
+                            :patient="item"
+                            @changed="newEntityChanged"
+                          ></JsonForm>
+                        </v-card-text>
+
+                        <v-card-actions>
+                          <v-spacer></v-spacer>
+                          <v-btn
+                            color="blue darken-1"
+                            text
+                            @click="mainFormDialogs[item.id] = false"
+                          >
+                            Close
+                          </v-btn>
+                          <v-btn
+                            color="blue darken-1"
+                            text
+                            @click=onMainFormEntitySaved(item)
+                          >
+                            Save
+                          </v-btn>
+                        </v-card-actions>
+                      </v-card>
                     </v-container>
                   </v-card>
                 </v-dialog>
-
-
               </div>
 
               <div v-else-if="header.value == 'pid'">
@@ -227,7 +248,7 @@
                       v-on="on"
                       :color="workspaceColor(item)"
                       class="d-inline"
-                    >mdi-domain</v-icon>
+                    >mdi-bank-transfer-in</v-icon>
                   </template>
                   <span>{{ workspaceSource(item) }}</span>
                 </v-tooltip>
@@ -367,6 +388,25 @@
 
               <!-- Render form inputs for our editable elements -->
               <div v-else-if="header.editable == true">
+
+                <div v-if="header.type == 'list'">
+                  <v-tooltip bottom>
+                    <template v-slot:activator="{ on, attrs }">
+                      <v-autocomplete
+                        v-bind="attrs"
+                        v-on="on"
+                        dense
+                        :key="item.id"
+                        v-model="item[header.value]"
+                        :items="listOptionsForItem(header)"
+                        @input="onEntityChanged(item)"
+                      >
+                    </v-autocomplete>
+
+                    </template>
+                    <span>{{ item[header.value] }}</span>
+                  </v-tooltip>
+                </div>
 
                 <div v-if="header.type == 'string'">
                   <EditableString :key="item.id" :entity="item" :index="header.value" @save="onEntityChanged"></EditableString>
@@ -562,9 +602,9 @@ import { ALL_WORKSPACES, GET_DASHBOARDS, GET_WORKSPACE } from '../store/types-wo
 
 const { mapGetters: mapWorkspaceGetters } = createNamespacedHelpers('workspace')
 
-import { GET_LIST } from '../store/types-list'
+import { FETCH_LISTS_WITH_DATA_BULK, GET_LIST } from '../store/types-list'
 
-const { mapGetters: mapListGetters } = createNamespacedHelpers('list')
+const { mapGetters: mapListGetters, mapActions: mapListActions } = createNamespacedHelpers('list')
 
 import {
   ADD_NOTE,
@@ -615,6 +655,7 @@ export default {
     return {
       timeZone: '',
       paginationOptions: {},
+      listOptions: {}, // Stores the options for select lists fetched from API
       globalSearch: '',
       totalEntities: 0,
       entities: {},
@@ -840,6 +881,9 @@ export default {
       pushEntity: PUSH_ENTITY,
       addNote: ADD_NOTE
     }),
+    ...mapListActions({
+      fetchListsBulk: FETCH_LISTS_WITH_DATA_BULK
+    }),
     save () {
       this.snack = true
       this.snackColor = 'success'
@@ -866,10 +910,18 @@ export default {
       // parse date back to mysql
       return moment(datetime).format('YYYY-MM-DD HH:mm')
     },
-    loadPatient(entity)
-    {
+    loadPatient (entity) {
       // Load the OpenEMR patient in a new OpenEMR tab
       setOpenEmrPatient(entity.pid)
+    },
+    listOptionsForItem (header) {
+      // Using the list ID for this header, return the options
+      if (header.extra.listId != undefined) {
+        return this.listOptions[header.extra.listId].data
+      } else {
+        console.log("ERROR no list Id for header: " + header.value)
+        return []
+      }
     },
     saveNewEntity () {
       // Save the entity
@@ -893,6 +945,15 @@ export default {
     },
     newEntityChanged(model) {
       this.newEntityModel = model
+    },
+    onMainFormEntitySaved(entity) {
+      // When save button is clicked on main form, we call this, grab the entity model we were using to store data,
+      // and then call the onEntityChanged to persist data
+      const updatedEntity = {
+        ...entity,
+        ...this.newEntityModel
+      }
+      this.onEntityChanged(updatedEntity)
     },
     onNoteSaved(payload) {
       console.log("note saved with text:" + payload.text)
@@ -960,7 +1021,7 @@ export default {
       if (entity.source != undefined &&
         entity.source.type != undefined &&
         entity.source.extra != undefined) {
-        return "Moved from " + entity.source.type + " " + this.workspaces[entity.source.extra.workspaceId]
+        return "Sent from " + entity.source.type + " " + this.workspaces[entity.source.extra.workspaceId]
       }
 
       return ""
@@ -1049,6 +1110,9 @@ export default {
         targetWorkspace.defaultDashboard > 0) {
         const defaultDashboardId = targetWorkspace.defaultDashboard
 
+        // TODO we need to set the destination on this entity so we know that it was sent to another workspace
+        //
+
         // We're going to clone this entity and modify the clone so we don't mess this one up.
         let newEntity = { ...entity }
 
@@ -1066,7 +1130,7 @@ export default {
           dashboardId: defaultDashboardId,
           entity: newEntity
         }).then(() => {
-          this.snackbarText = "Successfully Moved to Workspace " + this.workspaces[workspaceId]
+          this.snackbarText = "Successfully Sent to Workspace " + this.workspaces[workspaceId]
           this.snackbar = true
         })
       } else {
@@ -1172,6 +1236,22 @@ export default {
     //this.loadEntitiesApi();
     // start the counter that uses the current time to determine attrition
     this.refreshAttrition()
+
+    // Push all of the listIds of lists required for this form into an array, and fetch them all
+    let listIdsForFetch = []
+    this.dashboard.headers.forEach(function(header) {
+      if (header.extra != undefined && header.extra.listId != undefined) {
+        listIdsForFetch.push(header.extra.listId)
+      }
+    })
+    const that = this
+    this.fetchListsBulk({ arrayOfListIds: listIdsForFetch }).then(listOptions => {
+      // We are basically copying all the lists to local state here (TODO we really only need the ones with IDs we identified)
+      that.listOptions = listOptions
+    })
+  },
+  unmounted () {
+    this.cancelAutoUpdate()
   },
   created () {
     // Init and Set up our timeZone in created hook so it doesn't trigger reactivity in computed properties like getColo()
@@ -1187,7 +1267,8 @@ export default {
   },
   destroyed () {
     this.cancelAutoUpdate()
-  }
+  },
+
 }
 </script>
 

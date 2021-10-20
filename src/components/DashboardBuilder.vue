@@ -309,12 +309,18 @@ export default {
     }),
     addColumn: function(column) {
 
+      let extra = {}
+      if (column.type == 'list') {
+        extra['listId'] = column.extra.listId
+      }
+
       // Map the data source column's properties on to the dashboard element
       this.activeDashboardElement = {
         text: humanizeDataSourceString(column.name),
         value: column.name,
         type: column.type,
-        description: column.comment
+        description: column.comment,
+        extra: extra
       }
 
       this.dashboardElementClicked(this.activeDashboardElement)
