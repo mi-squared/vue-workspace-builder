@@ -79,7 +79,8 @@ export default {
        * capabilities like conditional rendering.
        */
       optionsForForm: { ...this.options },
-      activeModel: { ...this.model }
+      activeModel: { ...this.model },
+      activePatient: { ...this.patient }
     }
   },
   computed: {
@@ -92,13 +93,17 @@ export default {
       fetchListsBulk: FETCH_LISTS_WITH_DATA_BULK
     }),
     onFormChange(param) {
-      this.$emit('changed', this.activeModel)
+      this.$emit('changed', {
+        model: this.activeModel,
+        patient: this.activePatient
+      })
       this.optionsForForm = this.calculateOptions()
       console.log(param)
     },
     onPatientChanged(data) {
       const patient = data.patient
       this.activeModel.pid = patient.pid
+      this.activePatient = patient
       this.onFormChange(this.activeModel.pid)
     },
     calculateOptions() {

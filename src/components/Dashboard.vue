@@ -246,9 +246,22 @@
                       v-if="isSourceWorkspace(item)"
                       v-bind="attrs"
                       v-on="on"
-                      :color="workspaceColor(item)"
+                      :color="workspaceColor(item.source.extra.workspaceId)"
                       class="d-inline"
                     >mdi-bank-transfer-in</v-icon>
+                  </template>
+                  <span>{{ workspaceSource(item) }}</span>
+                </v-tooltip>
+
+                <v-tooltip bottom>
+                  <template v-slot:activator="{ on, attrs }">
+                    <v-icon
+                      v-if="item.source != null && item.source.type == 'sentToWorkspace'"
+                      v-bind="attrs"
+                      v-on="on"
+                      :color="workspaceColor(item.source.extra.workspaceId)"
+                      class="d-inline"
+                    >mdi-bank-transfer-out</v-icon>
                   </template>
                   <span>{{ workspaceSource(item) }}</span>
                 </v-tooltip>
@@ -390,7 +403,7 @@
               <div v-else-if="header.editable == true">
 
                 <div v-if="header.type == 'list'">
-                  <v-tooltip bottom>
+                  <v-tooltip :key="item.id + '-insurance-tooltip'" bottom>
                     <template v-slot:activator="{ on, attrs }">
                       <v-autocomplete
                         v-bind="attrs"
@@ -401,8 +414,7 @@
                         :items="listOptionsForItem(header)"
                         @input="onEntityChanged(item)"
                       >
-                    </v-autocomplete>
-
+                      </v-autocomplete>
                     </template>
                     <span>{{ item[header.value] }}</span>
                   </v-tooltip>
@@ -459,9 +471,9 @@
                   {{ formatDate(item[header.value]) }}
 
                 </div>
-
-
               </div>
+
+              <!-- NOT EDITABLE, JUST FORMAT -->
 
               <div v-else-if="header.type == 'date'">
                 {{ formatDate(item[header.value]) }}
@@ -661,6 +673,7 @@ export default {
       entities: {},
       orderedEntities: [],
       newEntityModel: {},
+      newPatientModel: {},
       mainFormDialogs: {},
       menus: {}, // v-models for the date picker dialogs, etc indexed by header.value
       formattedEntityValues: {}, // v-models for our formatted values like dates
@@ -926,25 +939,29 @@ export default {
     saveNewEntity () {
       // Save the entity
       console.log("Saving New Entity: " + this.newEntityModel)
+
       let that = this
       this.createEntity({
         workspaceId: this.dashboard.workspaceId,
         dashboardId: this.dashboard.id,
-        entity: this.newEntityModel
+        entity: this.newEntityModel,
+        patient: this.newPatientModel
       }).then(() => {
 
         // TODO we shouldn't have to do this if the API returned the correctly formatted entity on the create endpoint
         that.loadEntitiesApi()
         // Reset the model
         that.newEntityModel = {}
+        that.newPatientModel = {}
         that.entityCreateKey++
 
         that.dialog = false
       })
 
     },
-    newEntityChanged(model) {
+    newEntityChanged({ model, patient }) {
       this.newEntityModel = model
+      this.newPatientModel = patient
     },
     onMainFormEntitySaved(entity) {
       // When save button is clicked on main form, we call this, grab the entity model we were using to store data,
@@ -983,10 +1000,11 @@ export default {
       let indicators = []
       if (this.dashboard.hasConditionalLogic) {
         this.dashboard.conditionalLogic.rules.forEach(rule => {
-          if (rule.action.name == 'Add Row Indicator') {
-            // console.log("Evaluating indicator for entity: " + entity.id)
-            const performAction = this.evaluateRule(rule, entity, {});
-            if (performAction) {
+
+          const performAction = this.evaluateRule(rule, entity, {});
+          if (performAction) {
+            if (rule.action.name == 'Add Row Indicator') {
+              // console.log("Evaluating indicator for entity: " + entity.id)
               indicators.push(rule.action.actionData)
             }
           }
@@ -1021,17 +1039,27 @@ export default {
       if (entity.source != undefined &&
         entity.source.type != undefined &&
         entity.source.extra != undefined) {
-        return "Sent from " + entity.source.type + " " + this.workspaces[entity.source.extra.workspaceId]
+        let text = ""
+        if (entity.source.type == 'sentToWorkspace') {
+          text = text + "Sent to workspace "
+        } else {
+          text = text + "Sent from workspace "
+        }
+        return text + this.workspaces[entity.source.extra.workspaceId]
       }
 
       return ""
     },
-    workspaceColor(entity)
+    workspaceColor(workspaceId)
     {
-      const workspace = this.getWorkspaceById(entity.source.extra.workspaceId)
-      if (workspace.color != undefined) {
-        return workspace.color
+      if (workspaceId) {
+        const workspace = this.getWorkspaceById(workspaceId)
+        if (workspace != undefined && workspace.color != undefined) {
+          return workspace.color
+        }
       }
+
+      return ''
     },
     removeEntityFromDashboard(entity) {
       // We want to remove the entity row from the table before VUEX mutates it, so let's remove it first
@@ -1046,7 +1074,22 @@ export default {
     },
     onEntityChanged(entity) {
       // Let the user know we're doing something
-      //this.loaded = false
+      this.loaded = false
+
+      if (this.dashboard.hasConditionalLogic) {
+        this.dashboard.conditionalLogic.rules.forEach(rule => {
+
+          const performAction = this.evaluateRule(rule, entity, {});
+          if (performAction) {
+            if (rule.action.name == 'Archive') {
+              this.removeEntityFromDashboard(entity)
+              entity.archived = 1
+              this.snackbarText = "Entity #" + entity.id + " Was archived [Conditional Logic Action]"
+              this.snackbar = true
+            }
+          }
+        })
+      }
 
       // send the udpated entity to the server
       this.pushEntity({
@@ -1055,7 +1098,8 @@ export default {
         entityId: entity.id,
         entity
       }).then(() => {
-        //this.loadEntitiesApi()
+        this.loaded = true
+        this.loadEntitiesApi()
       })
     },
     archiveEntity(entity) {
@@ -1074,7 +1118,8 @@ export default {
         entityId: entity.id,
         entity
       }).then(() => {
-        this.loadEntitiesApi()
+        this.loaded = true
+        //this.loadEntitiesApi()
       })
     },
     moveToDashboard(entity, dashboardId) {
@@ -1098,7 +1143,8 @@ export default {
         entityId: entity.id,
         entity
       }).then(() => {
-        this.loadEntitiesApi()
+        this.loaded = true
+        //this.loadEntitiesApi()
       })
     },
     sendToWorkspace(entity, workspaceId) {
@@ -1110,8 +1156,18 @@ export default {
         targetWorkspace.defaultDashboard > 0) {
         const defaultDashboardId = targetWorkspace.defaultDashboard
 
-        // TODO we need to set the destination on this entity so we know that it was sent to another workspace
-        //
+        // TODO this should be refactored into a more generic event/meta system where we track events that
+        // occur in the meta table, or in a giant JSON
+        entity.source = {
+          ...entity.source,
+          type: 'sentToWorkspace',
+          workspaceId: workspaceId,
+          extra: {
+            workspaceId: workspaceId,
+          }
+        }
+
+        this.onEntityChanged(entity)
 
         // We're going to clone this entity and modify the clone so we don't mess this one up.
         let newEntity = { ...entity }
@@ -1125,10 +1181,12 @@ export default {
         delete newEntity.id
 
         // Now use our vuex action to create the entity via API, when callback show our snack
+        // The service on the API side is smart enough to toss the fields that don't apply to the new workspace
         this.createEntity({
           workspaceId: workspaceId,
           dashboardId: defaultDashboardId,
-          entity: newEntity
+          entity: newEntity,
+          patient: null // We don't send the patient, because there should already be an existing PID in the entity
         }).then(() => {
           this.snackbarText = "Successfully Sent to Workspace " + this.workspaces[workspaceId]
           this.snackbar = true

@@ -26,65 +26,45 @@
         <v-row>
           <v-col>
             <v-text-field
+              class="uppercase"
               v-model="activePatient.fname"
               label="First name"
               required
-              @keyup="uppercase(activePatient.fname)"
-              @keydown="fetchMatches"
+              @keyup="activePatient.fname = uppercase(activePatient.fname)"
+              @input="onPatientChanged"
             ></v-text-field>
           </v-col>
           <v-col>
             <v-text-field
+              class="uppercase"
               v-model="activePatient.lname"
               label="Last name"
               required
-              @keyup="uppercase(activePatient.lname)"
-              @keydown="fetchMatches"
+              @keyup="activePatient.lname = uppercase(activePatient.lname)"
+              @input="onPatientChanged"
             ></v-text-field>
           </v-col>
         </v-row>
         <v-row>
           <v-col>
-            <v-dialog
-              ref="dialog"
-              v-model="modal"
-              :return-value.sync="activePatient.DOB"
-              persistent
-              width="290px"
-              @change="fetchMatches"
+
+            <v-text-field
+              v-mask="'##/##/####'"
+              hint="mm/dd/yyyy"
+              persistent-hint
+              v-model="formattedDOB"
+              label="DOB"
+              @blur="activePatient.DOB = formatDOBMysql(formattedDOB)"
+              @input="onPatientChanged"
             >
-              <template v-slot:activator="{ on, attrs }">
-                <v-text-field
-                  v-model="activePatient.DOB"
-                  label="DOB"
-                  prepend-icon="mdi-calendar"
-                  readonly
-                  v-bind="attrs"
-                  v-on="on"
-                  @blur="formatDOB(activePatient.DOB)"
-                ></v-text-field>
-              </template>
-              <v-date-picker
-                v-model="activePatient.DOB"
-                scrollable
-              >
-                <v-spacer></v-spacer>
-                <v-btn
-                  text
-                  color="primary"
-                  @click="modal = false"
+              <span slot="prepend">
+                <v-icon
                 >
-                  Cancel
-                </v-btn>
-                <v-btn
-                  text
-                  color="primary"
-                  @click="$refs.dialog.save(activePatient.DOB)"
-                >
-                  OK
-                </v-btn>
-              </v-date-picker>
-            </v-dialog>
+                  mdi-calendar
+                </v-icon>
+              </span>
+            </v-text-field>
+
           </v-col>
           <v-col>
             <v-select
@@ -155,6 +135,21 @@
           </v-list-item>
         </v-list>
       </v-navigation-drawer>
+
+
+      <v-card-actions>
+        <v-btn
+        >
+          Clear Patient
+          <v-icon
+            right
+            dark
+          >
+            mdi-cancel
+          </v-icon>
+        </v-btn>
+      </v-card-actions>
+
     </v-card>
     <v-card v-else>
       <v-skeleton-loader type="table-heading, table-thead, table-tfoot"></v-skeleton-loader>
@@ -196,6 +191,8 @@ export default {
 
         ...this.patient // Merge the patient prop with our model
       },
+      DOB: "",
+      formattedDOB: "",
       matches: [],
       loaded: false,
       drawer: false, // Matching patients nav drawer
@@ -212,18 +209,25 @@ export default {
     ...mapListActions({
       fetchListsBulk: FETCH_LISTS_WITH_DATA_BULK
     }),
-    formatDOB(date) {
+    formatDOBMysql(date) {
       // TODO date formatting should follow OpenEMR date format
       console.log(formatDate(date))
+      if (!date) return null
+
+      const [month, day, year] = date.split('/')
+      return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`
     },
     uppercase(data) {
       data = data.toUpperCase()
-     return data
+      return data
     },
     applyMatch(match) {
       this.activePatient = { ...match }
       this.$emit('changed', { patient: this.activePatient })
       this.drawer = false
+    },
+    onPatientChanged () {
+      this.$emit('changed', { patient: this.activePatient })
     },
     /**
      * When fname or lname boxes are typed in (@keydown), or DOB is changed
@@ -231,7 +235,7 @@ export default {
     fetchMatches() {
       if (this.activePatient.fname.length > 2 ||
         this.activePatient.lname.length > 2 ||
-      this.activePatient.DOB.length > 2) {
+        this.activePatient.DOB.length > 2) {
         this.loadingMatches = true
         const userMeta = this.getUserMeta
         const patientRequest = { ...this.activePatient }
@@ -241,7 +245,15 @@ export default {
           this.loadingMatches = false
         })
       }
+    },
+    debounce(callback, wait) {
+      let timeout;
+      return (...args) => {
+        clearTimeout(timeout);
+        timeout = setTimeout(function () { callback.apply(this, args); }, wait);
+      };
     }
+
   },
   mounted () {
     const listIdsForFetch = ['sex']
@@ -254,10 +266,18 @@ export default {
 
       this.loaded = true
     })
+
+    window.addEventListener('keyup', this.debounce( () => {
+      // code you would like to run 1000ms after the keyup event has stopped firing
+      // further keyup events reset the timer, as expected
+      this.fetchMatches()
+    }, 1000))
   }
 }
 </script>
 
 <style scoped>
-
+input .uppercase {
+  text-transform: uppercase;
+}
 </style>

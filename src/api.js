@@ -170,14 +170,15 @@ export function fetchListsWithDataBulk(arrayOfListId, userMeta)
   })
 }
 
-export function createEntity(workspaceId, dashboardId, entity, userMeta)
+export function createEntity(workspaceId, dashboardId, entity, patient, userMeta)
 {
   return new Promise((resolve) => {
     axios.post(baseUrl + '/apis/api/entity', {
         params: {
           workspaceId: workspaceId,
           dashboardId: dashboardId,
-          entity: entity
+          entity: entity,
+          patient: patient
         }
       },
       {

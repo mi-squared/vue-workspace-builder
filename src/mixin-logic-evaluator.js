@@ -62,7 +62,8 @@ export const MixinLogicEvaluator = {
           let rightNowISO = moment(rightNow).toISOString()
           const thenISO = moment.tz(fieldValue, timeZone).toISOString()
           pass = false
-          if (moment(rightNowISO).diff(thenISO, 'minute') > Number(condition.value)) {
+          const diff = moment(rightNowISO).diff(thenISO, 'minute')
+          if (diff > Number(condition.value)) {
             pass = true
           }
         } else {

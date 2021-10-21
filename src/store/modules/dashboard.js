@@ -55,12 +55,12 @@ export const dashboard = {
   },
   actions: {
 
-    [CREATE_ENTITY] ({ commit, rootGetters }, { workspaceId, dashboardId, entity }) {
+    [CREATE_ENTITY] ({ commit, rootGetters }, { workspaceId, dashboardId, entity, patient }) {
       // Push a new entity and then update the dashboard entities
       // Get meta data from the user module
       const userMeta = rootGetters['user/GET_USER_META']
       return new Promise(resolve => {
-        createEntity(workspaceId, dashboardId, entity, userMeta).then(newEntity => {
+        createEntity(workspaceId, dashboardId, entity, patient, userMeta).then(newEntity => {
           commit(SET_ENTITY, { entityId: newEntity.id, entity: newEntity })
           resolve(newEntity)
         })
