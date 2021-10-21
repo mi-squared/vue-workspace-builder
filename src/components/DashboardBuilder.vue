@@ -195,20 +195,36 @@
               label="Is Editable?"
               ></v-switch>
 
-            <v-btn
-                color="success"
-                class="mr-4"
-                @click="storeActiveDashboardElement"
-            >
-              Save
-            </v-btn>
-            <v-btn
-                color="secondary"
-                class="mr-4"
-                @click="drawer = false"
-            >
-              Cancel
-            </v-btn>
+            <v-row>
+              <v-col cols="7">
+                <v-btn
+                    color="success"
+                    class="mr-4"
+                    @click="storeActiveDashboardElement"
+                >
+                  Save
+                </v-btn>
+                <v-btn
+                    color="secondary"
+                    class="mr-4"
+                    @click="drawer = false"
+                >
+                  Cancel
+                </v-btn>
+              </v-col>
+              <v-col class="text-right">
+                <v-btn
+                  plain
+                  color="error"
+                  class="mr-4"
+                  @click="deleteActiveDashboardElement"
+                >
+                  <v-icon>mdi-delete</v-icon>
+                  Delete
+                </v-btn>
+              </v-col>
+            </v-row>
+
           </v-container>
         </v-form>
       </v-navigation-drawer>
@@ -369,6 +385,16 @@ export default {
         this.activeDashboard.headers.push(this.activeDashboardElement)
       }
       console.log('save clicked')
+      this.drawer = false
+    },
+    deleteActiveDashboardElement() {
+      let index = this.activeDashboard.headers.findIndex((e) => e.value==this.activeDashboardElement.value)
+      
+      if (index !== -1) {
+        // remove the element from the headers
+        this.activeDashboard.headers.splice(index, 1)
+      }
+
       this.drawer = false
     }
   },
