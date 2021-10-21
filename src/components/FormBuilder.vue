@@ -297,17 +297,13 @@ export default {
       console.log('save clicked')
       this.drawer = false
     },
-    deleteSelectedElement({key, element}) {
-      console.log("deleteSelectedElement")
-      console.log(key)
-      console.log(element)
+    deleteSelectedElement({key}) {
       // find the element in the grid
       let index = this.activeForm.grid.findIndex((e) => e.meta.name==key)
       if (index !== -1) {
         // remove the element from the grid
         this.activeForm.grid.splice(index, 1)
       }
-      console.log(index)
       this.drawer = false
       this.updateFormSchema()
     },

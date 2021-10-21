@@ -93,7 +93,7 @@
             class="mr-4"
             @click="onDeleteClicked"
           >
-            <font-awesome-icon icon="trash" />
+            <v-icon>mdi-delete</v-icon>
             Delete
           </v-btn>
         </v-col>
