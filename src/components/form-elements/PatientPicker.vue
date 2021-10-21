@@ -32,6 +32,8 @@
               required
               @keyup="activePatient.fname = uppercase(activePatient.fname)"
               @input="onPatientChanged"
+              :readonly="readonly"
+              :disabled="readonly"
             ></v-text-field>
           </v-col>
           <v-col>
@@ -42,6 +44,8 @@
               required
               @keyup="activePatient.lname = uppercase(activePatient.lname)"
               @input="onPatientChanged"
+              :readonly="readonly"
+              :disabled="readonly"
             ></v-text-field>
           </v-col>
         </v-row>
@@ -56,6 +60,8 @@
               label="DOB"
               @blur="activePatient.DOB = formatDOBMysql(formattedDOB)"
               @input="onPatientChanged"
+              :readonly="readonly"
+              :disabled="readonly"
             >
               <span slot="prepend">
                 <v-icon
@@ -71,6 +77,8 @@
               label="sex"
               :items="listOptions.sex.data"
               v-model="activePatient.sex"
+              :readonly="readonly"
+              :disabled="readonly"
             ></v-select>
           </v-col>
         </v-row>
@@ -139,6 +147,7 @@
 
       <v-card-actions>
         <v-btn
+          @click="clearPatient"
         >
           Clear Patient
           <v-icon
@@ -161,6 +170,7 @@
 import { fetchPatients } from '../../api'
 import { formatDate } from '../../display-helpers'
 import { createNamespacedHelpers } from 'vuex'
+import moment from 'moment-timezone'
 import { FETCH_LISTS_WITH_DATA_BULK } from '../../store/types-list'
 import { GET_USER_META } from '../../store/types-user'
 const { mapActions: mapListActions } = createNamespacedHelpers('list')
@@ -203,15 +213,29 @@ export default {
   computed: {
     ...mapUserGetters({
       getUserMeta: GET_USER_META
-    })
+    }),
+    readonly () {
+      return this.activePatient.pid != "" && this.activePatient.pid != null
+    }
   },
   methods: {
     ...mapListActions({
       fetchListsBulk: FETCH_LISTS_WITH_DATA_BULK
     }),
+    clearPatient () {
+      this.activePatient = {
+        fname: "",
+        lname: "",
+        DOB: "",
+        sex: "",
+        pid: "",
+        NextStepID: ""
+      }
+      this.matches = []
+    },
     formatDOBMysql(date) {
       // TODO date formatting should follow OpenEMR date format
-      console.log(formatDate(date))
+      console.log(date)
       if (!date) return null
 
       const [month, day, year] = date.split('/')
@@ -222,20 +246,25 @@ export default {
       return data
     },
     applyMatch(match) {
-      this.activePatient = { ...match }
+      this.activePatient = {
+        ...match,
+        DOB: formatDate(match.DOB)
+      }
       this.$emit('changed', { patient: this.activePatient })
       this.drawer = false
     },
     onPatientChanged () {
+      this.activePatient.DOB = moment(this.formattedDOB, 'mm/dd/YYYY').format('YYYY-mm-dd')
       this.$emit('changed', { patient: this.activePatient })
     },
     /**
      * When fname or lname boxes are typed in (@keydown), or DOB is changed
      */
     fetchMatches() {
-      if (this.activePatient.fname.length > 2 ||
+      if (this.activePatient != undefined &&
+        (this.activePatient.fname.length > 2 ||
         this.activePatient.lname.length > 2 ||
-        this.activePatient.DOB.length > 2) {
+        this.activePatient.DOB.length > 2)) {
         this.loadingMatches = true
         const userMeta = this.getUserMeta
         const patientRequest = { ...this.activePatient }
@@ -262,7 +291,7 @@ export default {
       this.listOptions = listOptions
 
       // If we were passed a pid, load that patient model
-
+      this.formattedDOB = formatDate(this.activePatient.DOB)
 
       this.loaded = true
     })

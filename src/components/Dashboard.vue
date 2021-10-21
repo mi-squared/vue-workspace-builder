@@ -610,9 +610,9 @@ import JsonForm from '@/components/JsonForm'
 import { newDashboardSourceDashboard, newDashboardSourceWorkspace } from '../model-builder'
 import { createNamespacedHelpers } from 'vuex'
 
-import { ALL_WORKSPACES, GET_DASHBOARDS, GET_WORKSPACE } from '../store/types-workspace'
+import { ALL_WORKSPACES, FETCH_ALL_WORKSPACES, GET_DASHBOARDS, GET_WORKSPACE } from '../store/types-workspace'
 
-const { mapGetters: mapWorkspaceGetters } = createNamespacedHelpers('workspace')
+const { mapGetters: mapWorkspaceGetters, mapActions: mapWorkspaceActions } = createNamespacedHelpers('workspace')
 
 import { FETCH_LISTS_WITH_DATA_BULK, GET_LIST } from '../store/types-list'
 
@@ -886,6 +886,9 @@ export default {
     }
   },
   methods: {
+    ...mapWorkspaceActions({
+      fetchAllWorkspaces: FETCH_ALL_WORKSPACES
+    }),
     ...mapDashboardActions({
       fetchDashboard: FETCH_DASHBOARD,
       fetchDashboardRows: FETCH_DASHBOARD_ROWS,
@@ -1045,7 +1048,11 @@ export default {
         } else {
           text = text + "Sent from workspace "
         }
-        return text + this.workspaces[entity.source.extra.workspaceId]
+        const workspaceTitle = this.dashboard.workspaces[entity.source.extra.workspaceId]
+        if (workspaceTitle == undefined) {
+          console.log("ERROR: we don't have a title for workspace: " + entity.source.extra.workspaceId  )
+        }
+        return text + workspaceTitle
       }
 
       return ""
@@ -1294,6 +1301,9 @@ export default {
     //this.loadEntitiesApi();
     // start the counter that uses the current time to determine attrition
     this.refreshAttrition()
+
+    // fetch all workspaces
+    this.fetchAllWorkspaces()
 
     // Push all of the listIds of lists required for this form into an array, and fetch them all
     let listIdsForFetch = []
