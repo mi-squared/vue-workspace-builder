@@ -21,7 +21,7 @@
         </template>
 
         <template slot="custom-user" slot-scope="context">
-          <v-autocomplete v-bind="context" :items="context.options['users']"></v-autocomplete>
+          <v-autocomplete v-bind="context" :items="listOptions['active_users'].data"></v-autocomplete>
         </template>
       </v-jsf>
     </v-form>
@@ -178,7 +178,7 @@ export default {
 
 
     // Push all of the listIds of lists required for this form into an array, and fetch them all
-    let listIdsForFetch = ['users']
+    let listIdsForFetch = ['active_users']
     Object.values(this.schema.properties).forEach(function(properties) {
       if (properties['listId'] != undefined) {
         listIdsForFetch.push(properties['listId'])

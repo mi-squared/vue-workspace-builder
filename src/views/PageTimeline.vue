@@ -140,7 +140,73 @@
                   </JsonFormTimelineView>
                 </v-card-text>
                 <v-card-actions>
-                  <v-btn>Edit</v-btn>
+
+
+
+                  <!-- DISPLAY the Main Form when edit clicked -->
+                  <v-dialog
+                    v-model="mainFormDialogs[timelineItem.entity.id]"
+                    fullscreen
+                    hide-overlay
+                  >
+                    <template v-slot:activator="{ on, attrsMainForm }">
+                      <v-btn
+                        v-bind="attrsMainForm"
+                        v-on="on"
+                      >Edit</v-btn>
+                    </template>
+                    <v-card>
+                      <v-toolbar
+                        dark
+                        color="primary"
+                      >
+                        <v-toolbar-title>{{ timelineItem.entity.fname }} {{ timelineItem.entity.lname }}</v-toolbar-title>
+                        <v-spacer></v-spacer>
+                        <v-btn
+                          icon
+                          dark
+                          @click="mainFormDialogs[timelineItem.entity.id] = false"
+                        >
+                          <v-icon>mdi-close</v-icon>
+                        </v-btn>
+                      </v-toolbar>
+                      <v-container>
+                        <v-card flat width="100%">
+                          <v-card-text>
+                            <JsonForm
+                              :key="timelineItem.entity.id"
+                              :form="timelineItem.dashboard.mainForm"
+                              :model="timelineItem.entity"
+                              :schema="timelineItem.dashboard.mainForm.schema"
+                              :options="timelineItem.dashboard.mainForm.options"
+                              :pid="Number(timelineItem.entity.pid)"
+                              :patient="timelineItem.entity"
+                              @changed="onEntityChanged"
+                            ></JsonForm>
+                          </v-card-text>
+
+                          <v-card-actions>
+                            <v-spacer></v-spacer>
+                            <v-btn
+                              color="blue darken-1"
+                              text
+                              @click="mainFormDialogs[timelineItem.entity.id] = false"
+                            >
+                              Close
+                            </v-btn>
+                            <v-btn
+                              color="blue darken-1"
+                              text
+                              @click=onMainFormEntitySaved(timelineItem.entity)
+                            >
+                              Save
+                            </v-btn>
+                          </v-card-actions>
+                        </v-card>
+                      </v-container>
+                    </v-card>
+                  </v-dialog>
+                  <!---  - ----------------- - - - ----------->
                   <v-btn>Show Notes</v-btn>
                 </v-card-actions>
               </v-card>
@@ -180,6 +246,9 @@ export default {
   },
   data: () => ({
     loaded: false,
+    mainFormDialogs: {},
+    activeEntityModel: {},
+    activePatientModel: {},
     workspaceSelection: [],
     workspaces: [
       {
@@ -244,6 +313,13 @@ export default {
     },
     loadPatientDashboard() {
       setOpenEmrPatient(this.pid)
+    },
+    onEntityChanged ({ model, patient }) {
+      this.activeEntityModel = model
+      this.activePatientModel = patient
+    },
+    onMainFormEntitySaved() {
+
     }
   },
   mounted () {
