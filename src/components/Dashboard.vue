@@ -539,7 +539,7 @@
           <v-dialog
             v-model="dialog"
             persistent
-            max-width="600px"
+            max-width="800px"
           >
 
             <v-card>

@@ -17,132 +17,137 @@
         </div>
 
         <v-spacer></v-spacer>
-        <v-btn icon>
-          <v-icon @click.stop="drawer = !drawer">mdi-dots-vertical</v-icon>
-        </v-btn>
       </v-system-bar>
 
       <v-container>
         <v-row>
           <v-col>
-            <v-text-field
-              class="uppercase"
-              v-model="activePatient.fname"
-              label="First name"
-              required
-              @keyup="activePatient.fname = uppercase(activePatient.fname)"
-              @input="onPatientChanged"
-              :readonly="readonly"
-              :disabled="readonly"
-            ></v-text-field>
-          </v-col>
-          <v-col>
-            <v-text-field
-              class="uppercase"
-              v-model="activePatient.lname"
-              label="Last name"
-              required
-              @keyup="activePatient.lname = uppercase(activePatient.lname)"
-              @input="onPatientChanged"
-              :readonly="readonly"
-              :disabled="readonly"
-            ></v-text-field>
-          </v-col>
-        </v-row>
-        <v-row>
-          <v-col>
+            <v-row>
+              <v-col>
+                <v-text-field
+                  class="uppercase"
+                  v-model="activePatient.fname"
+                  label="First name"
+                  required
+                  @keyup="activePatient.fname = uppercase(activePatient.fname)"
+                  @input="onPatientChanged"
+                  :readonly="readonly"
+                  :disabled="readonly"
+                ></v-text-field>
+              </v-col>
+              <v-col>
+                <v-text-field
+                  class="uppercase"
+                  v-model="activePatient.lname"
+                  label="Last name"
+                  required
+                  @keyup="activePatient.lname = uppercase(activePatient.lname)"
+                  @input="onPatientChanged"
+                  :readonly="readonly"
+                  :disabled="readonly"
+                ></v-text-field>
+              </v-col>
+            </v-row>
+            <v-row>
+              <v-col>
 
-            <v-text-field
-              v-mask="'##/##/####'"
-              hint="mm/dd/yyyy"
-              persistent-hint
-              v-model="formattedDOB"
-              label="DOB"
-              @blur="activePatient.DOB = formatDOBMysql(formattedDOB)"
-              @input="onPatientChanged"
-              :readonly="readonly"
-              :disabled="readonly"
-            >
-              <span slot="prepend">
-                <v-icon
+                <v-text-field
+                  v-mask="'##/##/####'"
+                  hint="mm/dd/yyyy"
+                  persistent-hint
+                  v-model="formattedDOB"
+                  label="DOB"
+                  @blur="activePatient.DOB = formatDOBMysql(formattedDOB)"
+                  @input="onPatientChanged"
+                  :readonly="readonly"
+                  :disabled="readonly"
                 >
-                  mdi-calendar
-                </v-icon>
-              </span>
-            </v-text-field>
+                  <span slot="prepend">
+                    <v-icon
+                    >
+                      mdi-calendar
+                    </v-icon>
+                  </span>
+                </v-text-field>
 
-          </v-col>
-          <v-col>
-            <v-select
-              label="sex"
-              :items="listOptions.sex.data"
-              v-model="activePatient.sex"
-              :readonly="readonly"
-              :disabled="readonly"
-            ></v-select>
-          </v-col>
-        </v-row>
+              </v-col>
+              <v-col>
+                <v-select
+                  label="sex"
+                  :items="listOptions.sex.data"
+                  v-model="activePatient.sex"
+                  :readonly="readonly"
+                  :disabled="readonly"
+                ></v-select>
+              </v-col>
+            </v-row>
 
-        <v-row>
-          <v-col>
-            <v-text-field
-              readonly
-              disabled
-              label="OpenEMR PID"
-              v-model="activePatient.pid"
-            ></v-text-field>
+            <v-row>
+              <v-col>
+                <v-text-field
+                  readonly
+                  disabled
+                  label="OpenEMR PID"
+                  v-model="activePatient.pid"
+                ></v-text-field>
+              </v-col>
+              <v-col>
+                <v-text-field
+                  readonly
+                  disabled
+                  label="Next Step ID"
+                  v-model="activePatient.NextStepID"
+                ></v-text-field>
+              </v-col>
+            </v-row>
           </v-col>
           <v-col>
-            <v-text-field
-              readonly
-              disabled
-              label="Next Step ID"
-              v-model="activePatient.NextStepID"
-            ></v-text-field>
+
+            <v-card
+              class="overflow-y-auto"
+              max-height="400"
+              min-height="400"
+              max-width="360"
+              elevation="1"
+            >
+              <v-banner>
+                <v-list-item two-line class="pink--text">
+                  <v-list-item-content>
+                    <v-list-item-title>{{ activePatient.fname }} {{ activePatient.lname }}</v-list-item-title>
+                    <v-list-item-subtitle>DOB: {{ activePatient.DOB }}</v-list-item-subtitle>
+                  </v-list-item-content>
+                </v-list-item>
+              </v-banner>
+
+              <v-card-text>
+                <v-list dense>
+                  <v-list-item
+                    three-line
+                    v-for="match in matches"
+                    :key="match.pid"
+                    color="blue lighten-5"
+                  >
+                    <v-list-item-content>
+                      <v-list-item-title>{{ match.fname }} {{ match.lname }}</v-list-item-title>
+                      <v-list-item-subtitle>DOB: {{ match.DOB }}</v-list-item-subtitle>
+                      <v-list-item-subtitle>sex: {{ match.sex }}</v-list-item-subtitle>
+                      <v-list-item-subtitle>pid: {{ match.pid }}</v-list-item-subtitle>
+                    </v-list-item-content>
+
+                    <v-list-item-action>
+                      <v-list-item-action-text v-text="match.text"></v-list-item-action-text>
+                      <!-- dont show "apply match if the patient is already set -->
+                      <v-btn v-if="match.pid != activePatient.pid" text @click="applyMatch(match)">Apply Match</v-btn>
+                    </v-list-item-action>
+                  </v-list-item>
+                </v-list>
+              </v-card-text>
+            </v-card>
+
           </v-col>
         </v-row>
       </v-container>
 
-      <v-navigation-drawer
-        absolute
-        temporary
-        right
-        width="520px"
-        v-model="drawer"
-      >
-        <template v-slot:prepend>
-          <v-list-item two-line class="pink--text">
-            <v-list-item-content>
-              <v-list-item-title>{{ activePatient.fname }} {{ activePatient.lname }}</v-list-item-title>
-              <v-list-item-subtitle>DOB: {{ activePatient.DOB }}</v-list-item-subtitle>
-            </v-list-item-content>
-          </v-list-item>
-        </template>
-
-        <v-divider></v-divider>
-
-        <v-list dense>
-          <v-list-item
-            three-line
-            v-for="match in matches"
-            :key="match.pid"
-            color="blue lighten-5"
-          >
-            <v-list-item-content>
-              <v-list-item-title>{{ match.fname }} {{ match.lname }}</v-list-item-title>
-              <v-list-item-subtitle>DOB: {{ match.DOB }}</v-list-item-subtitle>
-              <v-list-item-subtitle>sex: {{ match.sex }}</v-list-item-subtitle>
-              <v-list-item-subtitle>pid: {{ match.pid }}</v-list-item-subtitle>
-            </v-list-item-content>
-
-            <v-list-item-action>
-              <v-list-item-action-text v-text="match.text"></v-list-item-action-text>
-              <!-- dont show "apply match if the patient is already set -->
-              <v-btn v-if="match.pid != activePatient.pid" text @click="applyMatch(match)">Apply Match</v-btn>
-            </v-list-item-action>
-          </v-list-item>
-        </v-list>
-      </v-navigation-drawer>
 
 
       <v-card-actions>
@@ -205,7 +210,6 @@ export default {
       formattedDOB: "",
       matches: [],
       loaded: false,
-      drawer: false, // Matching patients nav drawer
       modal: false, // DOB date-picker modal
       listOptions: {},
     }
@@ -246,12 +250,13 @@ export default {
       return data
     },
     applyMatch(match) {
-      this.activePatient = {
+
+      this.formattedDOB = match.DOB
+        this.activePatient = {
         ...match,
-        DOB: formatDate(match.DOB)
+        DOB: this.formatDOBMysql(match.DOB)
       }
       this.$emit('changed', { patient: this.activePatient })
-      this.drawer = false
     },
     onPatientChanged () {
       this.activePatient.DOB = moment(this.formattedDOB, 'mm/dd/YYYY').format('YYYY-mm-dd')
@@ -306,7 +311,7 @@ export default {
 </script>
 
 <style scoped>
-input .uppercase {
+.uppercase {
   text-transform: uppercase;
 }
 </style>

@@ -130,6 +130,16 @@
           "createdBy": "system",
           "category": "custom"
         }
+      },
+      "meta": {
+        "name": "meta",
+        "type": "json",
+        "default": null,
+        "comment": "JSON representation of additional meta data about this entity.",
+        "extra": {
+          "createdBy": "system",
+          "category": "custom"
+        }
       }
     },
     "indexes": [

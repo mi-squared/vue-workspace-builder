@@ -73,6 +73,28 @@ export function newNote(workspaceId, dashboardId, entityId, pid, text)
     }
 }
 
+export function appendMetaToEntity(dashboard, meta)
+{
+  if (dashboard.meta == undefined) {
+    dashboard.meta = []
+  }
+  dashboard.meta.push(meta)
+  return dashboard
+}
+
+export function newEntityMeta({ type, datetime, text, indicatorIcon, extra })
+{
+  const meta = {
+    type: type,
+    datetime: datetime,
+    text: text,
+    indicatorIcon: indicatorIcon,
+    extra : extra
+  }
+
+  return meta
+}
+
 export function newDashboardSourceDashboard(dashboardId)
 {
   return newDashboardSource('dashboard', {

@@ -18,8 +18,10 @@
         <template slot="custom-patient" slot-scope="context">
           <PatientPicker :pid="pid" :patient="patient" v-bind="context" @changed="onPatientChanged"></PatientPicker>
     <!--      <v-date-picker v-bind="context"></v-date-picker>-->
+        </template>
 
-
+        <template slot="custom-user" slot-scope="context">
+          <v-autocomplete v-bind="context" :items="context.options['users']"></v-autocomplete>
         </template>
       </v-jsf>
     </v-form>
@@ -176,7 +178,7 @@ export default {
 
 
     // Push all of the listIds of lists required for this form into an array, and fetch them all
-    let listIdsForFetch = []
+    let listIdsForFetch = ['users']
     Object.values(this.schema.properties).forEach(function(properties) {
       if (properties['listId'] != undefined) {
         listIdsForFetch.push(properties['listId'])
