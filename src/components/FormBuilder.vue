@@ -197,7 +197,7 @@ export default {
       drawer: null,
       showFormElementSelector: false,
       selectedElement: {},
-      index: this.form.grid.length,
+      index: 0,
       activeForm: { ...this.form },
       snackbar: {
         text: '',
@@ -251,24 +251,31 @@ export default {
         })
     },
     addItem: function(column) {
+
       console.log(column);
 
-      // Add a new item. It must have a unique key!
-      this.activeForm.grid.push({
-        x: (this.activeForm.grid.length * 2) % (this.colNum || 12),
-        y: this.activeForm.grid.length + (this.colNum || 12), // puts it at the bottom
-        w: 12,
-        h: 2,
-        i: this.index,
-        // Meta contains the model for the visual representation of the grid element, and
-        // also helps to map the grid element to the form element and it's type.
-        meta: {
-          type: column.type,
-          name: column.name,
-        }
-      })
-      // Increment the counter to ensure key is always unique.
-      this.index++
+      if (this.activeForm.schema.properties[column.name] != undefined) {
+        this.snackbar = true
+        this.snackbarText = "Element already added"
+      } else {
+
+        // Add a new item. It must have a unique key!
+        this.activeForm.grid.push({
+          x: (this.activeForm.grid.length * 2) % (this.colNum || 12),
+          y: this.activeForm.grid.length + (this.colNum || 12), // puts it at the bottom
+          w: 12,
+          h: 2,
+          i: this.index,
+          // Meta contains the model for the visual representation of the grid element, and
+          // also helps to map the grid element to the form element and it's type.
+          meta: {
+            type: column.type,
+            name: column.name,
+          }
+        })
+        // Increment the counter to ensure key is always unique.
+        this.index++
+      }
     },
     setSelectedElement(name) {
       console.log("Active Element: " + name)
@@ -303,6 +310,7 @@ export default {
       if (index !== -1) {
         // remove the element from the grid
         this.activeForm.grid.splice(index, 1)
+        delete this.activeForm.schema.properties[key]
       }
       this.drawer = false
       this.updateFormSchema()
@@ -397,6 +405,15 @@ export default {
       }
     },
   },
+  mounted () {
+    // Need to initialize the index for the next element using the max index plus one
+    if (this.form.grid.length > 0) {
+      this.index = Math.max.apply(Math, this.form.grid.map(element => { return element.i }))
+    } else {
+      this.index = 0
+    }
+    this.index++
+  }
 }
 </script>
 

@@ -7,7 +7,7 @@
       <v-jsf
         v-model="activeModel"
         :key="form.id"
-        :schema="schema"
+        :schema="activeSchema"
         :options="optionsForForm"
         @input="onFormChange"
         @input-child="onFormChange"
@@ -82,7 +82,8 @@ export default {
        */
       optionsForForm: { ...this.options },
       activeModel: { ...this.model },
-      activePatient: { ...this.patient }
+      activePatient: { ...this.patient },
+      activeSchema: { ...this.schema }
     }
   },
   computed: {
@@ -116,7 +117,7 @@ export default {
       // the conditional logic and set the properties on the options object. We build context here
       options.idPrefix = 'example-_x-if-'
       options.context = {}
-      Object.values(this.schema.properties).forEach(function(properties) {
+      Object.values(this.activeSchema.properties).forEach(function(properties) {
 
         // Get the string key for context object
         let contextKey = properties["x-if"]
@@ -175,6 +176,33 @@ export default {
   },
   mounted () {
     console.log("JsonForm Mounted")
+
+    // Sort the grid by Y and then by X so that the form components render
+    // in the correct order. We have to clone the grid, because if we sort
+    // the reactive property, it will trigger an infinite update loop!!!
+    let grid = [...this.form.grid]
+    grid.sort(function(a, b) {
+      if (a.y > b.y) {
+        return 1
+      } else if (a.y < b.y) {
+        return -1
+      } else {
+        if (a.x > b.x) {
+          return 1
+        } else if (a.x < b.x) {
+          return -1
+        }
+      }
+
+      return 0
+    })
+
+    // Need to rebuild the schema dynamically by index otherwise JSON elements may render out of order.
+    let properties = {}
+    for (const row of grid) {
+      properties[row.meta.name] = this.schema.properties[row.meta.name]
+    }
+    this.activeSchema.properties = properties
 
 
     // Push all of the listIds of lists required for this form into an array, and fetch them all

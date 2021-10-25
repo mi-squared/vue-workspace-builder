@@ -229,6 +229,7 @@ import { ALL_WORKSPACES } from '../store/types-workspace'
 import { GET_FORM } from '../store/types-form'
 import { GET_TIMELINE, GET_TIMELINE_FOR_PATIENT } from '../store/types-timeline'
 import JsonFormTimelineView from '../components/JsonFormTimelineView'
+import JsonForm from '../components/JsonForm'
 import { setOpenEmrPatient } from '../api'
 
 const { mapGetters: mapTimelineGetters, mapActions: mapTimelineActions } = createNamespacedHelpers('timeline')
@@ -237,7 +238,10 @@ const { mapGetters: mapFormGetters } = createNamespacedHelpers('form')
 
 export default {
   name: 'PageTimeline',
-  components: { JsonFormTimelineView },
+  components: {
+    JsonFormTimelineView,
+    JsonForm
+  },
   props: {
     pid: {
       type: Number,
