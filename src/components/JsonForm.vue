@@ -101,6 +101,7 @@ export default {
         patient: this.activePatient
       })
       this.optionsForForm = this.calculateOptions()
+      console.log("onFormChange(param)")
       console.log(param)
     },
     onPatientChanged(data) {

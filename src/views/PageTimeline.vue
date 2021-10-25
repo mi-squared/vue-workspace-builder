@@ -1,6 +1,6 @@
 <template>
   <div>
-    <v-skeleton-loader v-if="!loaded" type="article@6"></v-skeleton-loader>
+    <v-skeleton-loader v-if="!loaded" type="article@6" class="p-4"></v-skeleton-loader>
     <v-app v-else>
   <!--    <v-navigation-drawer app>-->
   <!--      &lt;!&ndash; &ndash;&gt;-->
@@ -39,8 +39,8 @@
 
           <v-col>
             <v-menu
-              ref="menu1"
-              v-model="menu1"
+              ref="fromDateMenu"
+              v-model="fromDateMenu"
               :close-on-content-click="false"
               transition="scale-transition"
               offset-y
@@ -50,27 +50,27 @@
               <template v-slot:activator="{ on, attrs }">
                 <v-text-field
                   class="mt-2"
-                  v-model="dateFormatted"
+                  v-model="fromDateFormatted"
                   label="From Date"
                   hint="MM/DD/YYYY format"
                   persistent-hint
                   prepend-icon="mdi-calendar"
                   v-bind="attrs"
-                  @blur="date = parseDate(dateFormatted)"
+                  @blur="fromDate = parseDate(fromDateFormatted)"
                   v-on="on"
                 ></v-text-field>
               </template>
               <v-date-picker
-                v-model="date"
+                v-model="fromDate"
                 no-title
-                @input="menu1 = false"
+                @input="fromDateMenu = false"
               ></v-date-picker>
             </v-menu>
           </v-col>
 
           <v-col>
             <v-menu
-              v-model="menu2"
+              v-model="toDateMenu"
               :close-on-content-click="false"
               transition="scale-transition"
               offset-y
@@ -80,7 +80,7 @@
               <template v-slot:activator="{ on, attrs }">
                 <v-text-field
                   class="mt-2"
-                  v-model="computedDateFormatted"
+                  v-model="toDateFormatted"
                   label="To Date"
                   hint="MM/DD/YYYY format"
                   persistent-hint
@@ -91,9 +91,9 @@
                 ></v-text-field>
               </template>
               <v-date-picker
-                v-model="date"
+                v-model="toDate"
                 no-title
-                @input="menu2 = false"
+                @input="toDateMenu = false"
               ></v-date-picker>
             </v-menu>
           </v-col>
@@ -141,11 +141,9 @@
                 </v-card-text>
                 <v-card-actions>
 
-
-
                   <!-- DISPLAY the Main Form when edit clicked -->
                   <v-dialog
-                    v-model="mainFormDialogs[timelineItem.entity.id]"
+                    v-model="mainFormDialogs[i]"
                     fullscreen
                     hide-overlay
                   >
@@ -160,21 +158,25 @@
                         dark
                         color="primary"
                       >
-                        <v-toolbar-title>{{ timelineItem.entity.fname }} {{ timelineItem.entity.lname }}</v-toolbar-title>
+                        <v-toolbar-title>
+                          {{ timelineItem.entity.fname }} {{ timelineItem.entity.lname }}
+                        </v-toolbar-title>
+                        <v-subheader>{{ timelineItem.workspace.title }} : {{ timelineItem.dashboard.title }} {{ formatDatetime(timelineItem.entity.created_datetime) }}</v-subheader>
                         <v-spacer></v-spacer>
                         <v-btn
                           icon
                           dark
-                          @click="mainFormDialogs[timelineItem.entity.id] = false"
+                          @click="mainFormDialogs[i] = false"
                         >
                           <v-icon>mdi-close</v-icon>
                         </v-btn>
                       </v-toolbar>
-                      <v-container>
+                      <v-container v-if="timelineItem.dashboard.mainForm != null">
                         <v-card flat width="100%">
                           <v-card-text>
+                            <!-- in case two timeline entities from different workspaces have same ID -->
                             <JsonForm
-                              :key="timelineItem.entity.id"
+                              :key="timelineItem.entity.id + i"
                               :form="timelineItem.dashboard.mainForm"
                               :model="timelineItem.entity"
                               :schema="timelineItem.dashboard.mainForm.schema"
@@ -204,6 +206,9 @@
                           </v-card-actions>
                         </v-card>
                       </v-container>
+                      <v-container v-else>
+                        <v-alert>No Main Form Selected for this dashboard</v-alert>
+                      </v-container>
                     </v-card>
                   </v-dialog>
                   <!---  - ----------------- - - - ----------->
@@ -224,13 +229,14 @@
 
 <script>
 import { createNamespacedHelpers } from 'vuex'
-import { formatDatetime } from '../display-helpers'
+import { formatDate, formatDatetime } from '../display-helpers'
 import { ALL_WORKSPACES } from '../store/types-workspace'
 import { GET_FORM } from '../store/types-form'
 import { GET_TIMELINE, GET_TIMELINE_FOR_PATIENT } from '../store/types-timeline'
 import JsonFormTimelineView from '../components/JsonFormTimelineView'
 import JsonForm from '../components/JsonForm'
 import { setOpenEmrPatient } from '../api'
+import moment from 'moment-timezone'
 
 const { mapGetters: mapTimelineGetters, mapActions: mapTimelineActions } = createNamespacedHelpers('timeline')
 const { mapGetters: mapWorkspaceGetters } = createNamespacedHelpers('workspace')
@@ -250,6 +256,12 @@ export default {
   },
   data: () => ({
     loaded: false,
+    fromDateMenu: false,
+    fromDate: '',
+    fromDateFormatted: '',
+    toDateMenu: false,
+    toDate: '',
+    toDateFormatted: '',
     mainFormDialogs: {},
     activeEntityModel: {},
     activePatientModel: {},
@@ -312,8 +324,22 @@ export default {
     ...mapTimelineActions({
       getTimelineForPatient: GET_TIMELINE_FOR_PATIENT
     }),
-    formatDatetime(datetime) {
+    formatDate (date) {
+      if (date == null) return ''
+      // Use the format date display helper to format dates
+      return formatDate(date)
+    },
+    parseDate (date) {
+      // parse date back to mysql
+      return moment(date).format('YYYY-MM-DD')
+    },
+    formatDatetime (datetime) {
+      // Use the format date display helper to format dates
       return formatDatetime(datetime)
+    },
+    parseDatetime (datetime) {
+      // parse date back to mysql
+      return moment(datetime).format('YYYY-MM-DD HH:mm')
     },
     loadPatientDashboard() {
       setOpenEmrPatient(this.pid)

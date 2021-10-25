@@ -107,7 +107,8 @@
               class="overflow-y-auto"
               max-height="400"
               min-height="400"
-              max-width="360"
+              min-width="360"
+              max-width="520"
               elevation="1"
             >
               <v-banner>
@@ -129,7 +130,7 @@
                   >
                     <v-list-item-content>
                       <v-list-item-title>{{ match.fname }} {{ match.lname }}</v-list-item-title>
-                      <v-list-item-subtitle>DOB: {{ match.DOB }}</v-list-item-subtitle>
+                      <v-list-item-subtitle>DOB: {{ formattedDOB }}</v-list-item-subtitle>
                       <v-list-item-subtitle>sex: {{ match.sex }}</v-list-item-subtitle>
                       <v-list-item-subtitle>pid: {{ match.pid }}</v-list-item-subtitle>
                     </v-list-item-content>
