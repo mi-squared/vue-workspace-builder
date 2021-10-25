@@ -139,7 +139,7 @@
                         <v-icon>mdi-close</v-icon>
                       </v-btn>
                     </v-toolbar>
-                    <v-container>
+                    <v-container v-if="mainForm != null">
                       <v-card flat width="100%">
                         <v-card-text>
                           <JsonForm
@@ -153,7 +153,6 @@
                             @changed="newEntityChanged"
                           ></JsonForm>
                         </v-card-text>
-
                         <v-card-actions>
                           <v-spacer></v-spacer>
                           <v-btn
@@ -172,6 +171,9 @@
                           </v-btn>
                         </v-card-actions>
                       </v-card>
+                    </v-container>
+                    <v-container v-else>
+                      <v-alert>No Main Form Selected for this dashboard</v-alert>
                     </v-container>
                   </v-card>
                 </v-dialog>
@@ -468,9 +470,9 @@
                     <template v-slot:activator="{ on, attrs }">
                       <v-text-field
                         dense
-                        :value="item[header.value]"
+                        :value="formatDate(item[header.value])"
                         v-bind="attrs"
-                        @blur="item[header.value] = parseDatetime(item[header.value])"
+                        @blur="item[header.value] = parseDate(item[header.value])"
                         v-on="on"
                         class="mt-4"
                         style="font-size: smaller; min-width: 100px;"
@@ -478,16 +480,13 @@
                         <v-icon slot="prepend-inner" small>mdi-calendar</v-icon>
                       </v-text-field>
                     </template>
-                    <v-datetime-picker
+                    <v-date-picker
                       v-model="item[header.value]"
                       no-title
                       @input="onEntityChanged(item)"
                     >
-                    </v-datetime-picker>
+                    </v-date-picker>
                   </v-menu>
-
-                  {{ formatDate(item[header.value]) }}
-
                 </div>
               </div>
 
@@ -929,6 +928,7 @@ export default {
       this.snackText = 'Canceled'
     },
     formatDate (date) {
+      if (date == null) return ''
       // Use the format date display helper to format dates
       return formatDate(date)
     },
