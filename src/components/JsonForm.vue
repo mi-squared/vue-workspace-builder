@@ -199,12 +199,12 @@ export default {
     })
 
     // Need to rebuild the schema dynamically by index otherwise JSON elements may render out of order.
-    let properties = {}
+    this.activeSchema.properties = {}
     for (const row of grid) {
-      properties[row.meta.name] = this.schema.properties[row.meta.name]
+      this.activeSchema.properties[row.meta.name] = {
+        ...this.schema.properties[row.meta.name]
+      }
     }
-    this.activeSchema.properties = properties
-
 
     // Push all of the listIds of lists required for this form into an array, and fetch them all
     let listIdsForFetch = ['active_users']
