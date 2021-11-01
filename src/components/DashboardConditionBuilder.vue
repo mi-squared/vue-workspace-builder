@@ -1,6 +1,15 @@
 <template>
   <v-sheet>
     <v-card v-for="(rule, ruleIndex) in conditionalLogic.rules" :key="ruleIndex" class="mt-2" outlined elevation="2">
+      <v-card-actions>
+        <v-spacer></v-spacer>
+        <v-btn
+          icon
+          @click="removeRule(ruleIndex)"
+        >
+          <v-icon>mdi-close</v-icon>
+        </v-btn>
+      </v-card-actions>
       <v-card-text>
         <v-row>
           <v-col>
@@ -237,6 +246,9 @@ export default {
         conditions: [],
       })
       this.addCondition(this.conditionalLogic.rules.length - 1)
+    },
+    removeRule(ruleIndex) {
+      this.conditionalLogic.rules.splice(ruleIndex, 1)
     },
     /**
      * Remove a condition from the array by it's index using splice()
