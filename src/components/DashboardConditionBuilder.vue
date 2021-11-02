@@ -78,6 +78,15 @@
               </template>
 
             </v-select>
+
+            <!-- For the Move to Dashboard action -->
+            <v-select
+              v-else-if="rule.action.name == 'Move to Dashboard'"
+              v-model="rule.action.actionData.dashboardId"
+              :items="dashboards"
+            >
+            </v-select>
+
           </v-col>
           <v-col>
             <v-dialog
@@ -150,6 +159,8 @@
 </template>
 
 <script>
+import { humanizeDataSourceString } from '../display-helpers'
+
 export default {
   name: 'DashboardConditionBuilder',
   props: {
@@ -191,7 +202,9 @@ export default {
     },
     actions() {
       return [
-        'Archive', 'Add Row Indicator'
+        'Archive',
+        'Add Row Indicator',
+        'Move to Dashboard'
       ]
     },
     logicalTypes() {
@@ -199,16 +212,32 @@ export default {
         'Any', 'All'
       ]
     },
+    /**
+     * For conditional logic, these are the fields that are available to do comparisons with
+     */
     fieldOptions() {
       let options = []
-      Object.values(this.dashboard.headers).forEach(function(header) {
+      Object.values(this.dataSource.spec.columns).forEach(function(column) {
         options.push({
-          text: header.text,  // title
-          value: header.value // data source column
+          text: humanizeDataSourceString(column.name),  // title
+          value: column.name // data source column name
         })
       })
 
       return options
+    },
+    dashboards () {
+      // Dashboard model has workspaces = { { id: title }, { id: title } } format for dashboards with ids as keys
+      let dashboards = []
+      Object.keys(this.dashboard.dashboardsInWorkspace).forEach(id => {
+        if (Number(id) != Number(this.dashboard.id)) {
+          dashboards.push({
+            text: this.dashboard.dashboardsInWorkspace[id],
+            value: id
+          })
+        }
+      })
+      return dashboards
     },
   },
   methods: {

@@ -951,7 +951,11 @@ export default {
     listOptionsForItem (header) {
       // Using the list ID for this header, return the options
       if (header.extra.listId != undefined) {
-        return this.listOptions[header.extra.listId].data
+        if (this.listOptions[header.extra.listId] != undefined) {
+          return this.listOptions[header.extra.listId].data
+        } else {
+          console.log("ERROR no list data for header: " + header.value)
+        }
       } else {
         console.log("ERROR no list Id for header: " + header.value)
         return []
@@ -1027,6 +1031,10 @@ export default {
             if (rule.action.name == 'Add Row Indicator') {
               // console.log("Evaluating indicator for entity: " + entity.id)
               indicators.push(rule.action.actionData)
+            } else if (rule.action.name == 'Move to Dashboard') {
+              if (rule.action.actionData.dashboardId != undefined) {
+                this.moveToDashboard(entity, rule.action.actionData.dashboardId)
+              }
             }
           }
         })
@@ -1317,23 +1325,25 @@ export default {
   mounted () {
     console.log("Dashboard Mounted")
     //this.loadEntitiesApi();
-    // start the counter that uses the current time to determine attrition
-    this.refreshAttrition()
 
     // fetch all workspaces
-    this.fetchAllWorkspaces()
+    this.fetchAllWorkspaces().then(() => {
+      // Push all of the listIds of lists required for this form into an array, and fetch them all
+      let listIdsForFetch = []
+      this.dashboard.headers.forEach(function(header) {
+        if (header.extra != undefined && header.extra.listId != undefined) {
+          listIdsForFetch.push(header.extra.listId)
+        }
+      })
+      const that = this
+      this.fetchListsBulk({ arrayOfListIds: listIdsForFetch }).then(listOptions => {
+        // We are basically copying all the lists to local state here (TODO we really only need the ones with IDs we identified)
+        that.listOptions = listOptions
 
-    // Push all of the listIds of lists required for this form into an array, and fetch them all
-    let listIdsForFetch = []
-    this.dashboard.headers.forEach(function(header) {
-      if (header.extra != undefined && header.extra.listId != undefined) {
-        listIdsForFetch.push(header.extra.listId)
-      }
-    })
-    const that = this
-    this.fetchListsBulk({ arrayOfListIds: listIdsForFetch }).then(listOptions => {
-      // We are basically copying all the lists to local state here (TODO we really only need the ones with IDs we identified)
-      that.listOptions = listOptions
+        // start the counter that uses the current time to determine attrition
+        this.refreshAttrition()
+
+      })
     })
   },
   unmounted () {
