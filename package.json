@@ -30,6 +30,7 @@
     "vuex-pathify": "^1.5.1"
   },
   "devDependencies": {
+    "@mdi/js": "^6.4.95",
     "@vue/cli-plugin-babel": "~4.5.0",
     "@vue/cli-plugin-eslint": "~4.5.0",
     "@vue/cli-plugin-router": "~4.5.0",

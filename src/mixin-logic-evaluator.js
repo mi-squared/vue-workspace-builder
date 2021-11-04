@@ -28,7 +28,10 @@ export const MixinLogicEvaluator = {
 
         const fieldValue = model[condition.field]
         let pass = false
-        if (condition.operator === '>') {
+        if (condition.operator == '') {
+          // No operator assigned, just pass
+          pass = true
+        } else if (condition.operator === '>') {
           pass = (Number(fieldValue) > Number(condition.value) ||
             fieldValue > condition.value)
         } else if (condition.operator === '<') {

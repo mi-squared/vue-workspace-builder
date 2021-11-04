@@ -284,8 +284,10 @@ export default {
       const forms = Object.values(this.getFormsByWorkspaceId(this.activeWorkspace.id))
       let formOptions = []
       forms.forEach(form => {
-        const option = { text: form.title, value: form.id }
-        formOptions.push(option)
+        if (form != undefined) {
+          const option = { text: form.title, value: form.id }
+          formOptions.push(option)
+        }
       })
       return formOptions
     },

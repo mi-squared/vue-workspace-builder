@@ -142,13 +142,13 @@ export const dashboard = {
       }
     },
 
-    [FETCH_ENTITIES] ({ commit, rootGetters }, { dashboardId, dashboardFilterEnabled, archivedFilterEnabled, search, paginationOptions }) {
+    [FETCH_ENTITIES] ({ commit, rootGetters }, { dashboardId, dashboardFilterEnabled, archivedFilterEnabled, search, filter, paginationOptions }) {
       const userMeta = rootGetters['user/GET_USER_META']
 
       // If we have a token, make the API call
       if (userMeta.csrfToken) {
         return new Promise(resolve => {
-          fetchEntities(dashboardId, dashboardFilterEnabled, archivedFilterEnabled, search, paginationOptions, userMeta).then(response => {
+          fetchEntities(dashboardId, dashboardFilterEnabled, archivedFilterEnabled, search, filter, paginationOptions, userMeta).then(response => {
             commit(SET_DASHBOARD_ROWS, { entities: response.entities })
 
             Object.values(response.entities).forEach(entity => {

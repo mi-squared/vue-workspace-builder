@@ -271,7 +271,7 @@ export function fetchDashboardRows(dashboardId, userMeta)
   })
 }
 
-export function fetchEntities(dashboardId, dashboardFilterEnabled, archivedFilterEnabled, search, paginationOptions, userMeta)
+export function fetchEntities(dashboardId, dashboardFilterEnabled, archivedFilterEnabled, search, filter, paginationOptions, userMeta)
 {
   return new Promise((resolve) => {
     axios.get(baseUrl + '/apis/api/entities', {
@@ -280,6 +280,7 @@ export function fetchEntities(dashboardId, dashboardFilterEnabled, archivedFilte
         dashboardFilterEnabled: dashboardFilterEnabled,
         archivedFilterEnabled: archivedFilterEnabled,
         search: search,
+        filter: filter,
         paginationOptions: paginationOptions
       },
       headers: {

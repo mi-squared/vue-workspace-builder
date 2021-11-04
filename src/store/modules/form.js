@@ -47,7 +47,11 @@ export const form = {
       // If we have a token, make the API call
       if (userMeta.csrfToken) {
         getFormById(formId, userMeta).then(form => {
-          commit(SET_FORM, { formId: form.id, form })
+          if (form != null) {
+            commit(SET_FORM, { formId: form.id, form })
+          } else {
+            console.log("Error: form with id `" + formId + "` was not found")
+          }
         })
       }
     },

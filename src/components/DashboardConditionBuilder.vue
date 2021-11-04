@@ -160,9 +160,11 @@
 
 <script>
 import { humanizeDataSourceString } from '../display-helpers'
+import { MixinFilterBuilder } from '../mixin-filter-builder'
 
 export default {
   name: 'DashboardConditionBuilder',
+  mixins: [MixinFilterBuilder],
   props: {
     dashboard: {
       type: Object,
@@ -197,8 +199,28 @@ export default {
         'mdi-circle',
         'mdi-message-text',
         'mdi-email',
-        'mdi-arrow-up-bold-box-outline'
-      ];
+        'mdi-arrow-up-bold-box-outline',
+        'mdi-human-child',
+        'mdi-mom-dad-child',
+        'mdi-account-child',
+        'mdi-account-lock-outline',
+        'mdi-account-plus-outline',
+        'mdi-mobile-friendly',
+        'mdi-cellphone-remove',
+        'mdi-cellphone-off',
+        'mdi-close-box-outline',
+        'mdi-checkbox-marked',
+        'mdi-file-pdf-box',
+        'mdi-train-car',
+        'mdi-account-group-outline',
+        'mdi-account-switch',
+        'mdi-account-supervisor-circle',
+        'mdi-account-check-outline',
+        'mdi-account-clock-outline',
+        'mdi-allergy',
+        'mdi-alarm',
+        'mdi-alert-box',
+      ]
     },
     actions() {
       return [
@@ -241,60 +263,9 @@ export default {
     },
   },
   methods: {
-    operators(expressionField) {
-      let operators = [
-        '>', '<', '=', '!='
-      ]
-      if (expressionField &&
-        this.dataSource.spec.columns[expressionField] != undefined) {
-        // TODO this doesn't drill down in to sub-fields like pid.DOB
-        const type = this.dataSource.spec.columns[expressionField].type
-        if (type == 'date' || type == 'datetime') {
-          operators.push('UNTIL NOW(minutes) <')
-          operators.push('UNTIL NOW(minutes) >')
-        } else if (type == 'patient') {
-          // TODO we can get this info dynamically from workspace.dataTypes
-          operators.push('Is High Utilizer')
-        }
-      }
-
-      return operators
-
-    },
-    addRule() {
-      this.conditionalLogic.rules.push({
-        action: {
-          name: '',
-          actionData: {
-            icon: '',
-            color: '',
-            note: ''
-          }
-        },
-        logicalType: '',
-        conditions: [],
-      })
-      this.addCondition(this.conditionalLogic.rules.length - 1)
-    },
-    removeRule(ruleIndex) {
-      this.conditionalLogic.rules.splice(ruleIndex, 1)
-    },
     /**
-     * Remove a condition from the array by it's index using splice()
-     * @param index
+     * Methods are mixed-in from mixin-filter-builder
      */
-    removeCondition(ruleIndex, conditionIndex) {
-      if (ruleIndex > -1) {
-        this.conditionalLogic.rules[ruleIndex].conditions.splice(conditionIndex, 1);
-      }
-    },
-    addCondition(ruleIndex) {
-      this.conditionalLogic.rules[ruleIndex].conditions.push({
-        field: '',
-        operator: '',
-        value: ''
-      })
-    }
   },
   mounted () {
     // If we don't have any rules, render the form for the first condition

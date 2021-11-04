@@ -9,15 +9,16 @@
         :server-items-length="totalEntities"
         :loading="loading"
         item-key="id"
-        show-group-by
         :custom-group="customGroup"
         :sort-by.sync="sortBy"
         :sort-desc.sync="sortDesc"
+        fixed-header
+        height="720px"
       >
 
         <!-- This is the toolbar at the top of the table -->
         <template v-slot:top>
-          <v-toolbar flat>
+          <v-toolbar flat color="grey lighten-5">
             <v-toolbar-title>{{ dashboard.title }} <span class="text--lighten-1">(#{{ dashboard.id }})</span></v-toolbar-title>
 
             <v-btn icon @click="loadEntitiesApi">
@@ -39,8 +40,6 @@
               New
             </v-btn>
 
-
-
             <v-text-field
               placeholder="Search"
               dense
@@ -48,6 +47,13 @@
               class="mt-6 expanding-search"
               v-model="globalSearch"
             ></v-text-field>
+
+            <DashboardFilters
+              :dashboard="dashboard"
+              :filter="filter"
+              :listOptions="listOptions"
+              @change="onFilterChanged"
+            ></DashboardFilters>
 
             <v-switch
               class="mt-4"
@@ -658,6 +664,7 @@ import { MixinLogicEvaluator } from '../mixin-logic-evaluator'
 import { setOpenEmrPatient } from '../api'
 import DatetimePicker from './DatetimePicker'
 import EditableString from './EditableString'
+import DashboardFilters from './DashboardFilters'
 
 export default {
   name: 'Dashboard',
@@ -673,6 +680,7 @@ export default {
     }
   },
   components: {
+    DashboardFilters,
     EditableString,
     DatetimePicker,
     NoteHistory,
@@ -713,29 +721,16 @@ export default {
       currentTimestamp: null,
       expanded: [],
       singleExpand: false,
-      slotName: 'item.name',
-      endpoint: '',
       entityTitle: 'Referral',
       max25chars: v => v.length <= 25 || 'Input too long!',
-      filters: {
-        firstName: [],
-        lastName: [],
-        DOB: [],
-        facility: [],
-        status: [],
-        completion: []
+      // This is the filter containing conditions for sending to server
+      filter: {
+        conditions: [],
       },
       // these are the slots for the inline editable elements
-      slotsOld: [
-        {
-          key: 1,
-          slotName: 'item.firstName',
-          fieldName: 'firstName',
-          component: 'Text'
-        }
-      ],
       sortBy: 'moved_to_dashboard_date',
       sortDesc: true,
+      // These are headers that are added by default
       idHeader: {
         "text": "ID",
         "value": "id",
@@ -870,33 +865,6 @@ export default {
       })
       return dashboards
     },
-    slots () {
-      // Get the slot data for displaying editable content based on the header definition
-      let slots = []
-      let keyCount = 0
-      this.headers.forEach((header) => {
-        if (header.editable === true) {
-          if (header.type === 'Text') {
-            slots.push({
-              key: ++keyCount,
-              slotName: 'item.' + header.value,
-              fieldName: header.value,
-              component: 'Text'
-            })
-          } else {
-            // Fallback to Text component
-            slots.push({
-              key: ++keyCount,
-              slotName: 'item.' + header.value,
-              fieldName: header.value,
-              component: 'Text'
-            })
-          }
-        }
-      })
-
-      return slots
-    },
     clocktime() {
       let m = this.currentTimestamp
       return m.tz(this.timeZone).format("MM/DD/YYYY HH:mm:ss")
@@ -926,6 +894,13 @@ export default {
       this.snack = true
       this.snackColor = 'error'
       this.snackText = 'Canceled'
+    },
+    onFilterChanged (filter) {
+      // Need to send a new request to server and reload results with new filter
+      // TODO
+      console.log(filter)
+      this.filter = filter
+      this.loadEntitiesApi()
     },
     formatDate (date) {
       if (date == null) return ''
@@ -1311,7 +1286,8 @@ export default {
         dashboardFilterEnabled: true,
         archivedFilterEnabled: this.showArchives,
         search: this.globalSearch,
-        paginationOptions: this.paginationOptions
+        filter: this.filter,
+        paginationOptions: this.paginationOptions,
       }).then((response) => {
         this.totalEntities = Number(response.total)
         this.entities = response.entities
