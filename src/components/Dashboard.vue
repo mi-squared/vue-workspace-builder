@@ -437,7 +437,7 @@
                         dense
                         :key="item.id"
                         v-model="item[header.value]"
-                        :items="listOptions['active_users'].data"
+                        :items="activeUsersList"
                         @input="onEntityChanged(item)"
                       >
                       </v-autocomplete>
@@ -519,7 +519,7 @@
           <tr>
             <td :colspan="headers.length">
               <!-- pass in entity ID for key-->
-              <NoteHistory :entity="item" :key="item.id"></NoteHistory>
+              <NoteHistory :entity="item" :key="item.id" :activeUsersList="activeUsersList"></NoteHistory>
 
 <!--              More info about {{ item }}-->
             </td>
@@ -799,6 +799,12 @@ export default {
     ...mapFormGetters({
       getForm: GET_FORM
     }),
+    activeUsersList () {
+      if (this.listOptions['active_users'] != undefined) {
+        return this.listOptions['active_users'].data
+      }
+      return []
+    },
     newEntityForm() {
       let form = null
       if (this.dashboard.newEntityFormId) {
@@ -1305,7 +1311,7 @@ export default {
     // fetch all workspaces
     this.fetchAllWorkspaces().then(() => {
       // Push all of the listIds of lists required for this form into an array, and fetch them all
-      let listIdsForFetch = []
+      let listIdsForFetch = ['active_users']
       this.dashboard.headers.forEach(function(header) {
         if (header.extra != undefined && header.extra.listId != undefined) {
           listIdsForFetch.push(header.extra.listId)

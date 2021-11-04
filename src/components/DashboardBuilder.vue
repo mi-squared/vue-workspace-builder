@@ -192,6 +192,7 @@
 
             <v-switch
               v-model="activeDashboardElement.editable"
+              :readonly="!isActiveElementEditable()"
               label="Is Editable?"
               ></v-switch>
 
@@ -323,6 +324,10 @@ export default {
     ...mapDashboardActions({
       setDashboard: SET_DASHBOARD
     }),
+    /**
+     * When a data source column is selected to be added as a dashboard header, this function is called
+     *
+     **/
     addColumn: function(column) {
 
       let extra = {}
@@ -336,7 +341,8 @@ export default {
         value: column.name,
         type: column.type,
         description: column.comment,
-        extra: extra
+        extra: extra,
+        databaseTable: column.databaseTable
       }
 
       this.dashboardElementClicked(this.activeDashboardElement)
@@ -348,6 +354,20 @@ export default {
         .then(function () {
           that.isDirty = false
         })
+    },
+    /**
+     * We use this to prevent setting non-direct data source columns to editable (like patient_data columns)
+     */
+    isActiveElementEditable() {
+      if (this.activeDashboardElement &&
+        this.activeDashboardElement.value != undefined) {
+        const column = this.dataSourceColumns[this.activeDashboardElement.value]
+        if (column != undefined &&
+          column.databaseTable == '') {
+          return true
+        }
+      }
+      return false
     },
     /**
      * This function is called whenever the Multi-Range Picker is changed, so we update our duration model
@@ -389,7 +409,7 @@ export default {
     },
     deleteActiveDashboardElement() {
       let index = this.activeDashboard.headers.findIndex((e) => e.value==this.activeDashboardElement.value)
-      
+
       if (index !== -1) {
         // remove the element from the headers
         this.activeDashboard.headers.splice(index, 1)
