@@ -6,106 +6,106 @@
   <!--      &lt;!&ndash; &ndash;&gt;-->
   <!--    </v-navigation-drawer>-->
 
-      <v-app-bar prominent fixed>
-        <v-btn icon class="mt-8" @click="loadPatientDashboard"><v-icon>mdi-arrow-left</v-icon></v-btn>
+      <v-app-bar dense fixed>
+        <v-btn @click="loadPatientDashboard"><v-icon>mdi-arrow-left</v-icon>Back To Patient</v-btn>
         <!-- -->
-        <v-row
-          class="mt-4"
-          align="center"
-        >
-          <v-col
-            cols="12"
-            sm="6"
-          >
-            <v-select
-              v-model="workspaceSelection"
-              :items="workspaces"
-              label="Select"
-              multiple
-              chips
-              hint="Select workspaces"
-              persistent-hint
-            >
-              <template v-slot:selection="{ item }">
-                <v-chip
-                  :color="item.color"
-                >
-                  <span>{{ item.text }}</span>
-                </v-chip>
-              </template>
+<!--        <v-row-->
+<!--          class="mt-4"-->
+<!--          align="center"-->
+<!--        >-->
+<!--          <v-col-->
+<!--            cols="12"-->
+<!--            sm="6"-->
+<!--          >-->
+<!--            <v-select-->
+<!--              v-model="workspaceSelection"-->
+<!--              :items="workspaces"-->
+<!--              label="Select"-->
+<!--              multiple-->
+<!--              chips-->
+<!--              hint="Select workspaces"-->
+<!--              persistent-hint-->
+<!--            >-->
+<!--              <template v-slot:selection="{ item }">-->
+<!--                <v-chip-->
+<!--                  :color="item.color"-->
+<!--                >-->
+<!--                  <span>{{ item.text }}</span>-->
+<!--                </v-chip>-->
+<!--              </template>-->
 
-            </v-select>
-          </v-col>
+<!--            </v-select>-->
+<!--          </v-col>-->
 
-          <v-col>
-            <v-menu
-              ref="fromDateMenu"
-              v-model="fromDateMenu"
-              :close-on-content-click="false"
-              transition="scale-transition"
-              offset-y
-              max-width="290px"
-              min-width="auto"
-            >
-              <template v-slot:activator="{ on, attrs }">
-                <v-text-field
-                  class="mt-2"
-                  v-model="fromDateFormatted"
-                  label="From Date"
-                  hint="MM/DD/YYYY format"
-                  persistent-hint
-                  prepend-icon="mdi-calendar"
-                  v-bind="attrs"
-                  @blur="fromDate = parseDate(fromDateFormatted)"
-                  v-on="on"
-                ></v-text-field>
-              </template>
-              <v-date-picker
-                v-model="fromDate"
-                no-title
-                @input="fromDateMenu = false"
-              ></v-date-picker>
-            </v-menu>
-          </v-col>
+<!--          <v-col>-->
+<!--            <v-menu-->
+<!--              ref="fromDateMenu"-->
+<!--              v-model="fromDateMenu"-->
+<!--              :close-on-content-click="false"-->
+<!--              transition="scale-transition"-->
+<!--              offset-y-->
+<!--              max-width="290px"-->
+<!--              min-width="auto"-->
+<!--            >-->
+<!--              <template v-slot:activator="{ on, attrs }">-->
+<!--                <v-text-field-->
+<!--                  class="mt-2"-->
+<!--                  v-model="fromDateFormatted"-->
+<!--                  label="From Date"-->
+<!--                  hint="MM/DD/YYYY format"-->
+<!--                  persistent-hint-->
+<!--                  prepend-icon="mdi-calendar"-->
+<!--                  v-bind="attrs"-->
+<!--                  @blur="fromDate = parseDate(fromDateFormatted)"-->
+<!--                  v-on="on"-->
+<!--                ></v-text-field>-->
+<!--              </template>-->
+<!--              <v-date-picker-->
+<!--                v-model="fromDate"-->
+<!--                no-title-->
+<!--                @input="fromDateMenu = false"-->
+<!--              ></v-date-picker>-->
+<!--            </v-menu>-->
+<!--          </v-col>-->
 
-          <v-col>
-            <v-menu
-              v-model="toDateMenu"
-              :close-on-content-click="false"
-              transition="scale-transition"
-              offset-y
-              max-width="290px"
-              min-width="auto"
-            >
-              <template v-slot:activator="{ on, attrs }">
-                <v-text-field
-                  class="mt-2"
-                  v-model="toDateFormatted"
-                  label="To Date"
-                  hint="MM/DD/YYYY format"
-                  persistent-hint
-                  prepend-icon="mdi-calendar"
-                  readonly
-                  v-bind="attrs"
-                  v-on="on"
-                ></v-text-field>
-              </template>
-              <v-date-picker
-                v-model="toDate"
-                no-title
-                @input="toDateMenu = false"
-              ></v-date-picker>
-            </v-menu>
-          </v-col>
-        </v-row>
+<!--          <v-col>-->
+<!--            <v-menu-->
+<!--              v-model="toDateMenu"-->
+<!--              :close-on-content-click="false"-->
+<!--              transition="scale-transition"-->
+<!--              offset-y-->
+<!--              max-width="290px"-->
+<!--              min-width="auto"-->
+<!--            >-->
+<!--              <template v-slot:activator="{ on, attrs }">-->
+<!--                <v-text-field-->
+<!--                  class="mt-2"-->
+<!--                  v-model="toDateFormatted"-->
+<!--                  label="To Date"-->
+<!--                  hint="MM/DD/YYYY format"-->
+<!--                  persistent-hint-->
+<!--                  prepend-icon="mdi-calendar"-->
+<!--                  readonly-->
+<!--                  v-bind="attrs"-->
+<!--                  v-on="on"-->
+<!--                ></v-text-field>-->
+<!--              </template>-->
+<!--              <v-date-picker-->
+<!--                v-model="toDate"-->
+<!--                no-title-->
+<!--                @input="toDateMenu = false"-->
+<!--              ></v-date-picker>-->
+<!--            </v-menu>-->
+<!--          </v-col>-->
+<!--        </v-row>-->
 
       </v-app-bar>
 
       <!-- Sizes your content based upon application components -->
-      <v-main class="mt-16">
+      <v-main class="mt-4">
 
         <!-- Provides the application the proper gutter -->
-        <v-container fluid class="mt-12">
+        <v-container fluid class="mt-4">
           <v-timeline>
             <v-timeline-item
               v-for="(timelineItem, i) in timelineItems"
@@ -192,7 +192,7 @@
                             <v-btn
                               color="blue darken-1"
                               text
-                              @click="mainFormDialogs[timelineItem.entity.id] = false"
+                              @click="mainFormDialogs[i] = false"
                             >
                               Close
                             </v-btn>
@@ -212,8 +212,22 @@
                     </v-card>
                   </v-dialog>
                   <!---  - ----------------- - - - ----------->
-                  <v-btn>Show Notes</v-btn>
+                  <v-btn
+                    v-if="showNotes[i]"
+                    @click="toggleNotes(i)"
+                  >
+                    Hide Notes
+                  </v-btn>
+                  <v-btn
+                    v-else
+                    @click="toggleNotes(i)"
+                  >
+                    Show Notes
+                  </v-btn>
                 </v-card-actions>
+                <v-card-text v-if="showNotes[i]">
+                  <NoteHistoryTimeline :notes="timelineItem.notes" :activeUsersList="listOptions['active_users'].data"></NoteHistoryTimeline>
+                </v-card-text>
               </v-card>
             </v-timeline-item>
           </v-timeline>
@@ -237,14 +251,19 @@ import JsonFormTimelineView from '../components/JsonFormTimelineView'
 import JsonForm from '../components/JsonForm'
 import { setOpenEmrPatient } from '../api'
 import moment from 'moment-timezone'
+import NoteHistoryTimeline from '../components/NoteHistoryTimeline'
+import { FETCH_LISTS_WITH_DATA_BULK, GET_LIST } from '../store/types-list'
+
 
 const { mapGetters: mapTimelineGetters, mapActions: mapTimelineActions } = createNamespacedHelpers('timeline')
 const { mapGetters: mapWorkspaceGetters } = createNamespacedHelpers('workspace')
 const { mapGetters: mapFormGetters } = createNamespacedHelpers('form')
+const { mapGetters: mapListGetters, mapActions: mapListActions } = createNamespacedHelpers('list')
 
 export default {
   name: 'PageTimeline',
   components: {
+    NoteHistoryTimeline,
     JsonFormTimelineView,
     JsonForm
   },
@@ -263,9 +282,11 @@ export default {
     toDate: '',
     toDateFormatted: '',
     mainFormDialogs: {},
+    showNotes: [],
     activeEntityModel: {},
     activePatientModel: {},
     workspaceSelection: [],
+    listOptions: [],
     workspaces: [
       {
         text: "WS 1",
@@ -316,6 +337,9 @@ export default {
     ...mapFormGetters({
       getForm: GET_FORM
     }),
+    ...mapListGetters({
+      getList: GET_LIST
+    }),
     timelineItems () {
       return this.timeline.items
     }
@@ -324,6 +348,19 @@ export default {
     ...mapTimelineActions({
       getTimelineForPatient: GET_TIMELINE_FOR_PATIENT
     }),
+    ...mapListActions({
+      fetchListsBulk: FETCH_LISTS_WITH_DATA_BULK
+    }),
+    toggleNotes(i) {
+      // We must use $set here because since the values of the showNotes are not initialized,
+      // they are not reactive by default
+      if (this.showNotes[i] == undefined ||
+        this.showNotes[i] == false) {
+        this.$set(this.showNotes, i, true)
+      } else {
+        this.$set(this.showNotes, i, false)
+      }
+    },
     formatDate (date) {
       if (date == null) return ''
       // Use the format date display helper to format dates
@@ -357,7 +394,15 @@ export default {
     document.title = "Timeline"
     this.getTimelineForPatient({ pid: this.pid }).then(timeline => {
       console.log(timeline)
-      this.loaded = true
+
+      let listIdsForFetch = ['active_users']
+      const that = this
+      this.fetchListsBulk({ arrayOfListIds: listIdsForFetch }).then(listOptions => {
+        // We are basically copying all the lists to local state here (TODO we really only need the ones with IDs we identified)
+        that.listOptions = listOptions
+        this.loaded = true
+      })
+
     })
   }
 }

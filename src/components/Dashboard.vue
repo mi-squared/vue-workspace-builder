@@ -69,7 +69,6 @@
         </template>
         <!-- end of the tooolbar -->
 
-
         <!-- Header Row template - with column filters -->
         <!-- TODO implement column filters based on columns -->
 <!--        <template v-slot:body.prepend>-->
@@ -414,6 +413,7 @@
                   <v-tooltip :key="item.id + '-list-tooltip'" bottom>
                     <template v-slot:activator="{ on, attrs }">
                       <v-autocomplete
+                        style=""
                         v-bind="attrs"
                         v-on="on"
                         dense
@@ -432,6 +432,7 @@
                   <v-tooltip :key="item.id + '-user-tooltip'" bottom>
                     <template v-slot:activator="{ on, attrs }">
                       <v-autocomplete
+                        style="min-width: 220px; max-width: 300px;"
                         v-bind="attrs"
                         v-on="on"
                         dense
@@ -481,7 +482,7 @@
                         @blur="item[header.value] = parseDate(item[header.value])"
                         v-on="on"
                         class="mt-4"
-                        style="font-size: smaller; min-width: 100px;"
+                        style="font-size: smaller;"
                       >
                         <v-icon slot="prepend-inner" small>mdi-calendar</v-icon>
                       </v-text-field>
@@ -735,13 +736,13 @@ export default {
         "text": "ID",
         "value": "id",
         "groupable": false,
-        "sortable": true
+        "sortable": true,
       },
       indicatorsHeader: {
         "text": "",
         "value": "data-indicators",
         "groupable": false,
-        "sortable": false
+        "sortable": false,
       },
       noteHeader: {
         "text": "",
@@ -1354,4 +1355,7 @@ export default {
 .v-icon::before {
   display: inline;
 }
+
+
+
 </style>

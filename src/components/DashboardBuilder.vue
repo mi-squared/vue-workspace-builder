@@ -159,7 +159,6 @@
       <v-navigation-drawer
           v-model="drawer"
           app
-          absolute
           right
           temporary
           width="420"
