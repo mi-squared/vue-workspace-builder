@@ -1,5 +1,5 @@
 <template>
-  <div class="patient-picker">
+  <div class="patient-picker" id="patient-picker">
     <v-card v-if="loaded == true" class="mx-auto" outlined>
 
       <v-system-bar height="36px">
@@ -302,7 +302,8 @@ export default {
       this.loaded = true
     })
 
-    window.addEventListener('keyup', this.debounce( () => {
+    let picker = document.getElementById('patient-picker')
+    picker.addEventListener('keyup', this.debounce( () => {
       // code you would like to run 1000ms after the keyup event has stopped firing
       // further keyup events reset the timer, as expected
       this.fetchMatches()
