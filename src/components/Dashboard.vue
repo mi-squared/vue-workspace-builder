@@ -413,7 +413,6 @@
                   <v-tooltip :key="item.id + '-list-tooltip'" bottom>
                     <template v-slot:activator="{ on, attrs }">
                       <v-autocomplete
-                        style=""
                         v-bind="attrs"
                         v-on="on"
                         dense
@@ -432,7 +431,6 @@
                   <v-tooltip :key="item.id + '-user-tooltip'" bottom>
                     <template v-slot:activator="{ on, attrs }">
                       <v-autocomplete
-                        style="min-width: 220px; max-width: 300px;"
                         v-bind="attrs"
                         v-on="on"
                         dense
@@ -749,7 +747,7 @@ export default {
         "value": "data-notes",
         "groupable": false,
         "sortable": false,
-        "width": "160px"
+        "width": "120px"
       },
       actionHeader: {
         "text": "",
@@ -1351,11 +1349,13 @@ export default {
 }
 </script>
 
-<style scoped>
+<style>
 .v-icon::before {
   display: inline;
 }
 
-
+.v-data-table > .v-data-table__wrapper > table > tbody > tr > td, .v-data-table > .v-data-table__wrapper > table > tbody > tr > th, .v-data-table > .v-data-table__wrapper > table > thead > tr > td, .v-data-table > .v-data-table__wrapper > table > thead > tr > th, .v-data-table > .v-data-table__wrapper > table > tfoot > tr > td, .v-data-table > .v-data-table__wrapper > table > tfoot > tr > th {
+  padding: 0 8px;
+}
 
 </style>

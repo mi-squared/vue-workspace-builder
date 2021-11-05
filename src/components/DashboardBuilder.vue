@@ -195,6 +195,12 @@
               label="Is Editable?"
               ></v-switch>
 
+            <v-text-field
+              v-model="activeDashboardElement.width"
+              label="Width"
+              hint="100px"
+            ></v-text-field>
+
             <v-row>
               <v-col cols="7">
                 <v-btn

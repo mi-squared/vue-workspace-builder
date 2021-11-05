@@ -212,18 +212,29 @@
                     </v-card>
                   </v-dialog>
                   <!---  - ----------------- - - - ----------->
-                  <v-btn
-                    v-if="showNotes[i]"
-                    @click="toggleNotes(i)"
+                  <v-badge
+                    v-if="timelineItem.notes.length > 0"
+                    color="green"
+                    :content="timelineItem.notes.length"
+                    overlap
                   >
-                    Hide Notes
-                  </v-btn>
-                  <v-btn
-                    v-else
-                    @click="toggleNotes(i)"
-                  >
-                    Show Notes
-                  </v-btn>
+                    <v-btn
+                      class="ml-2"
+                      v-if="showNotes[i]"
+                      @click="toggleNotes(i)"
+                    >
+                      Hide Notes
+                      <v-icon>mdi-menu-up</v-icon>
+                    </v-btn>
+                    <v-btn
+                      class="ml-2"
+                      v-else
+                      @click="toggleNotes(i)"
+                    >
+                      Show Notes
+                      <v-icon>mdi-menu-down</v-icon>
+                    </v-btn>
+                  </v-badge>
                 </v-card-actions>
                 <v-card-text v-if="showNotes[i]">
                   <NoteHistoryTimeline :notes="timelineItem.notes" :activeUsersList="listOptions['active_users'].data"></NoteHistoryTimeline>

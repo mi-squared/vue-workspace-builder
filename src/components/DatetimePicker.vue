@@ -2,7 +2,7 @@
   <v-dialog v-model="display" :width="dialogWidth">
     <template v-slot:activator="{ on }">
       <v-text-field
-        style="font-size: smaller; min-width: 100px;"
+        style="font-size: smaller;"
         v-bind="textFieldProps"
         :disabled="disabled"
         :loading="loading"
