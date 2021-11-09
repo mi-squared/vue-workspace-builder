@@ -206,6 +206,7 @@ export default {
         'mdi-account-lock-outline',
         'mdi-account-plus-outline',
         'mdi-mobile-friendly',
+        'mdi-account-voice',
         'mdi-cellphone-remove',
         'mdi-cellphone-off',
         'mdi-close-box-outline',

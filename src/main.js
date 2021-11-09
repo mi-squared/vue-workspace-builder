@@ -10,6 +10,8 @@ import router from "./router";
 import VueMask from 'v-mask'
 Vue.use(VueMask);
 
+import '@mdi/font/css/materialdesignicons.css'
+
 Vue.config.productionTip = false;
 
 if (process.env.NODE_ENV === "development" && process.env.VUE_APP_API_MOCK) {

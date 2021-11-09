@@ -163,7 +163,7 @@
                           <v-btn
                             color="blue darken-1"
                             text
-                            @click="mainFormDialogs[item.id] = false"
+                            @click="onMainFormClosed(item)"
                           >
                             Close
                           </v-btn>
@@ -976,6 +976,13 @@ export default {
         ...this.newEntityModel
       }
       this.onEntityChanged(updatedEntity)
+      this.onMainFormClosed(entity)
+    },
+    onMainFormClosed (entity) {
+      // Clear the entity and patient models when we close the main form
+      this.newEntityModel = {}
+      this.newPatientModel = {}
+      this.mainFormDialogs[entity.id] = false
     },
     onNoteSaved(payload) {
       console.log("note saved with text:" + payload.text)
