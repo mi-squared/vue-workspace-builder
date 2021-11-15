@@ -201,7 +201,7 @@ export default {
         'mdi-email',
         'mdi-arrow-up-bold-box-outline',
         'mdi-human-child',
-        'mdi-mom-dad-child',
+        'mdi-family',
         'mdi-account-child',
         'mdi-account-lock-outline',
         'mdi-account-plus-outline',

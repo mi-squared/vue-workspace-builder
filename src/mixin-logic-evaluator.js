@@ -40,7 +40,7 @@ export const MixinLogicEvaluator = {
         } else if (condition.operator === '=') {
           // If the field value is null, and our condition is for an empty string,
           // we should pass it
-          if (fieldValue == null && condition.value =="") {
+          if (fieldValue == null && condition.value == "") {
             pass = true
           } else {
             pass = (fieldValue == condition.value)

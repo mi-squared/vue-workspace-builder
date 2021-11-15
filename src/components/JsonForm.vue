@@ -1,9 +1,6 @@
 <template>
   <div class="json-form">
     <v-form v-if="loaded" v-model="valid">
-      <!-- TODO Does this need:
-
-        -->
       <v-jsf
         v-model="activeModel"
         :key="form.id"

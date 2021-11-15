@@ -13,7 +13,7 @@
         :sort-by.sync="sortBy"
         :sort-desc.sync="sortDesc"
         fixed-header
-        height="720px"
+        :height="dashboardHeight()"
       >
 
         <!-- This is the toolbar at the top of the table -->
@@ -136,6 +136,12 @@
                     >
                       <v-toolbar-title>{{ item.fname }} {{ item.lname }}</v-toolbar-title>
                       <v-spacer></v-spacer>
+                      <v-switch
+                        class="mt-5 mr-8"
+                        label="Archived"
+                        :value="item.archived == 1 ? true : false"
+                        @change="archiveEntity(item, 1 - item.archived)"
+                      ></v-switch>
                       <v-btn
                         icon
                         dark
@@ -198,13 +204,14 @@
               </div>
 
               <!-- Display the created_datetime within a chip that indicates how old (attrition) the row is -->
-              <div v-else-if="header.value == 'moved_to_dashboard_date'">
+              <div v-else-if="header.value == durationField">
                 <v-chip
                   :key="currentTimestamp.unix()"
                   :color="getColor(item)"
                   dark
                 >
-                  <AppDate :timestamp="item.moved_to_dashboard_date" :timezone="timeZone"></AppDate>
+                  <AppDate v-if="header.type == 'datetime'" :timestamp="getDurationValue(item)" :timezone="timeZone"></AppDate>
+                  <span v-else-if="header.type == 'date'">{{ formatDate(item[durationField]) || 'Date Not Set' }}</span>
                 </v-chip>
 
               </div>
@@ -356,6 +363,15 @@
 <!--                      </v-btn>-->
 
                       <v-btn
+                        v-if="item.archived == 1"
+
+                        icon
+                        @click="archiveEntity(item, 0)"
+                      >
+                        <v-icon>mdi-archive-cancel-outline</v-icon>
+                      </v-btn>
+                      <v-btn
+                        v-else
                         icon
                         @click="archiveEntity(item)"
                       >
@@ -689,6 +705,7 @@ export default {
   },
   data () {
     return {
+      tableHeight: '',
       timeZone: '',
       paginationOptions: {},
       listOptions: {}, // Stores the options for select lists fetched from API
@@ -798,6 +815,13 @@ export default {
     ...mapFormGetters({
       getForm: GET_FORM
     }),
+    durationField () {
+      if (this.dashboard.durationField) {
+        return this.dashboard.durationField
+      } else {
+        return 'moved_to_dashboard_date'
+      }
+    },
     activeUsersList () {
       if (this.listOptions['active_users'] != undefined) {
         return this.listOptions['active_users'].data
@@ -890,6 +914,15 @@ export default {
     ...mapListActions({
       fetchListsBulk: FETCH_LISTS_WITH_DATA_BULK
     }),
+    getDurationValue(entity) {
+      const durationField = this.durationField;
+      if (entity[durationField] != undefined) {
+        return entity[durationField]
+      } else {
+        console.log("ERROR: The field used for duration is undefined: " + durationField)
+        return ''
+      }
+    },
     save () {
       this.snack = true
       this.snackColor = 'success'
@@ -1122,14 +1155,14 @@ export default {
         this.loadEntitiesApi()
       })
     },
-    archiveEntity(entity) {
+    archiveEntity(entity, archive = 1) {
       // Let the user know we're doing something
       this.loaded = false
 
       // We want to remove the entity row from the table before VUEX mutates it, so let's remove it first
       this.removeEntityFromDashboard(entity)
 
-      entity.archived = 1
+      entity.archived = archive
 
       // Now use our vuex action to push the entity via API, when we callback, reload the entities
       this.pushEntity({
@@ -1261,6 +1294,9 @@ export default {
       }
       return this.dashboard.durationModel.outOfRangeColor
     },
+    dashboardHeight() {
+      return this.tableHeight || document.body.scrollHeight - 64 - 60
+    },
     customGroup (items, groupBy, groupDesc) {
       console.log(groupDesc)
       const key = groupBy[0]
@@ -1309,6 +1345,13 @@ export default {
         // that.refreshAttrition()
       })
     },
+    calculateTableHeight() {
+      return document.querySelector('#app').clientHeight - 64 - 60
+    },
+    onResize() {
+      this.tableHeight = this.calculateTableHeight()
+      console.log("height: " + this.tableHeight)
+    }
   },
   mounted () {
     console.log("Dashboard Mounted")
@@ -1331,6 +1374,7 @@ export default {
         // start the counter that uses the current time to determine attrition
         this.refreshAttrition()
 
+        this.tableHeight = this.calculateTableHeight()
       })
     })
   },
@@ -1348,9 +1392,12 @@ export default {
     }
 
     this.currentTimestamp = this.getCurrentTimestamp()
+
+    window.addEventListener("resize", this.onResize)
   },
   destroyed () {
     this.cancelAutoUpdate()
+    window.removeEventListener("resize", this.onResize)
   },
 
 }

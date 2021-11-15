@@ -62,9 +62,16 @@
 
             <v-switch
                 v-model="activeDashboard.displayDuration"
-                label="Color-code the 'Date Added' Column"
+                label="Display color-coded date Column"
                 hint="Displays the date and time that an entity was added to this dashboard"
             ></v-switch>
+
+            <v-select
+              v-if="activeDashboard.displayDuration"
+              v-model="activeDashboard.durationField"
+              label="The field on which you wish to display the color-coded duration chip"
+              :items="dateFields"
+            ></v-select>
             <v-divider></v-divider>
 
             <MultiRangePicker
@@ -322,6 +329,19 @@ export default {
         formOptions.push(option)
       })
       return formOptions
+    },
+    dateFields () {
+      // List all the date fields on the data source
+      let dateFields = []
+      Object.values(this.dataSourceColumns).forEach(column => {
+        if (column.type == 'date' || column.type == 'datetime') {
+          dateFields.push({
+            text: column.name,
+            value: column.name
+          })
+        }
+      })
+      return dateFields
     }
   },
   methods: {

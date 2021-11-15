@@ -163,6 +163,14 @@
                         </v-toolbar-title>
                         <v-subheader>{{ timelineItem.workspace.title }} : {{ timelineItem.dashboard.title }} {{ formatDatetime(timelineItem.entity.created_datetime) }}</v-subheader>
                         <v-spacer></v-spacer>
+
+                        <v-switch
+                          class="mt-5 mr-8"
+                          label="Archived"
+                          :value="timelineItem.entity.archived == 1 ? true : false"
+                          @change="archiveEntity(timelineItem.entity, 1 - timelineItem.entity.archived)"
+                        ></v-switch>
+
                         <v-btn
                           icon
                           dark
@@ -199,7 +207,7 @@
                             <v-btn
                               color="blue darken-1"
                               text
-                              @click=onMainFormEntitySaved(timelineItem.entity)
+                              @click=onMainFormEntitySaved(timelineItem)
                             >
                               Save
                             </v-btn>
@@ -264,12 +272,15 @@ import { setOpenEmrPatient } from '../api'
 import moment from 'moment-timezone'
 import NoteHistoryTimeline from '../components/NoteHistoryTimeline'
 import { FETCH_LISTS_WITH_DATA_BULK, GET_LIST } from '../store/types-list'
-
+import {
+  PUSH_ENTITY
+} from '../store/types-dashboard'
 
 const { mapGetters: mapTimelineGetters, mapActions: mapTimelineActions } = createNamespacedHelpers('timeline')
 const { mapGetters: mapWorkspaceGetters } = createNamespacedHelpers('workspace')
 const { mapGetters: mapFormGetters } = createNamespacedHelpers('form')
 const { mapGetters: mapListGetters, mapActions: mapListActions } = createNamespacedHelpers('list')
+const { mapActions: mapDashboardActions } = createNamespacedHelpers('dashboard')
 
 export default {
   name: 'PageTimeline',
@@ -362,6 +373,9 @@ export default {
     ...mapListActions({
       fetchListsBulk: FETCH_LISTS_WITH_DATA_BULK
     }),
+    ...mapDashboardActions({
+      pushEntity: PUSH_ENTITY,
+    }),
     toggleNotes(i) {
       // We must use $set here because since the values of the showNotes are not initialized,
       // they are not reactive by default
@@ -396,9 +410,34 @@ export default {
       this.activeEntityModel = model
       this.activePatientModel = patient
     },
-    onMainFormEntitySaved() {
+    onMainFormEntitySaved(timelineItem) {
+      // Update the timeline model with the active model from the form
+      timelineItem.entity = {
+        ...this.activeEntityModel
+      }
+      this.pushEntity({
+        workspaceId: timelineItem.dashboard.workspaceId,
+        dashboardId: timelineItem.dashboard.id,
+        entityId: timelineItem.entity.id,
+        entity: timelineItem.entity
+      }).then(() => {
+      })
+    },
+    archiveEntity(timelineItem, archive = 1) {
 
-    }
+      timelineItem.entity.archived = archive
+
+      // Now use our vuex action to push the entity via API, when we callback, reload the entities
+      this.pushEntity({
+        workspaceId: timelineItem.dashboard.workspaceId,
+        dashboardId: timelineItem.dashboard.id,
+        entityId: timelineItem.entity.id,
+        entity: timelineItem.entity
+      }).then(() => {
+        this.loaded = true
+        //this.loadEntitiesApi()
+      })
+    },
   },
   mounted () {
     console.log("timeline mounted")
