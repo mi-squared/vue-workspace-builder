@@ -224,6 +224,13 @@ export default {
 }
 </script>
 
-<style scoped>
-
+<style>
+/*
+  TODO This is added to hide the "clear" X. The clear functionality (clearable prop in vuetify select)
+  is tied to required fields. This is not implemented at this time, and they want to be able to leave
+  fields blank until set and requires more thought on how to implement. for now, we hide.
+ */
+.v-input__icon--clear {
+  display: none;
+}
 </style>
