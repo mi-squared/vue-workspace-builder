@@ -380,7 +380,7 @@ export default {
         // the Select input. For example, if the list column name is 'insurance' we will set the x-fromData
         // dynamically here to be 'context.insurance_items'. Then when we render the form, we'll pass in the
         // items from that list_options list.
-        if (schemaTemplate['x-display'] == 'autocomplete' || element['x-display'] == 'list' ) {
+        if (this.dataSource.spec.columns[row.meta.name].type == 'list' ) {
           // If a 'list' type is selected, the user is required to select a LIST to go with it. The listId
           // is stored in the 'extra' section so it can be retrieved here, so we know what list to fetch when
           // rendering the form

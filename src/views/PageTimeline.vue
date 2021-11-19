@@ -434,7 +434,6 @@ export default {
         entityId: timelineItem.entity.id,
         entity: timelineItem.entity
       }).then(() => {
-        this.loaded = true
         //this.loadEntitiesApi()
       })
     },

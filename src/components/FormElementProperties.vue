@@ -24,11 +24,14 @@
         :value="activeElement.type"
         label="Data Type"
         readonly
+        disabled
       ></v-text-field>
-      <v-text-field
-        :value="activeElement['x-display']"
+
+      <v-select
+        v-model="activeElement['x-display']"
         label="Display Type"
-      ></v-text-field>
+        :items="displayTypes"
+      ></v-select>
 
       <v-text-field
         v-model="activeElement.title"
@@ -131,6 +134,27 @@ export default {
 
         ...this.element
       } // Copy the element prop into our local data for modification
+    }
+  },
+  computed: {
+    displayTypes () {
+      let displayOptions = []
+      if (this.activeElement['x-display'] != undefined) {
+        if (Array.isArray(this.activeElement['x-display'])) {
+          displayOptions = this.activeElement['x-display']
+        } else {
+          displayOptions.push(this.activeElement['x-display'])
+        }
+      }
+
+      // If we have a list, allow user to select radio buttons as display type
+      if (this.dataSource.spec.columns[this.activeElement.dataSourceColumn].type == 'list') {
+        displayOptions = []
+        displayOptions.push("radio")
+        displayOptions.push("autocomplete")
+      }
+
+      return displayOptions
     }
   },
   methods: {

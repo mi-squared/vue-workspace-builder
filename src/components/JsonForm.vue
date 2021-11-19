@@ -153,7 +153,7 @@ export default {
 
         // Done working on conditional logic
         // If we have to pull in data, pull it in!
-        if (properties['x-display'] == 'autocomplete' || properties['x-display'] == 'list') {
+        if (properties['listId'] != undefined) {
           // Get the context key by taking out 'context.'
           let listItemsContextKey = properties['x-fromData']
           listItemsContextKey = listItemsContextKey.replace("context.", "")
