@@ -84,6 +84,31 @@
 
             <v-row>
               <v-col>
+
+                <v-text-field
+                  v-mask="'###-###-####'"
+                  hint="555-555-5555"
+                  persistent-hint
+                  v-model="activePatient.phone_home"
+                  label="Phone Home"
+                >
+                </v-text-field>
+
+              </v-col>
+              <v-col>
+                <v-text-field
+                  v-mask="'###-###-####'"
+                  hint="555-555-5555"
+                  persistent-hint
+                  v-model="activePatient.phone_cell"
+                  label="Phone Cell"
+                >
+                </v-text-field>
+              </v-col>
+            </v-row>
+
+            <v-row>
+              <v-col>
                 <v-text-field
                   readonly
                   disabled

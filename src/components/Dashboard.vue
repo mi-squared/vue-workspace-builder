@@ -50,7 +50,8 @@
 
             <DashboardFilters
               :dashboard="dashboard"
-              :filter="filter"
+              :customFilter="customFilter"
+              :indicatorFilters="indicatorFilters"
               :listOptions="listOptions"
               @change="onFilterChanged"
             ></DashboardFilters>
@@ -59,6 +60,13 @@
               class="mt-4"
               v-model="showArchives"
               label="Show Archives"
+            >
+            </v-switch>
+
+            <v-switch
+              class="mt-4"
+              v-model="backgroundRefresh"
+              label="Background Refresh"
             >
             </v-switch>
 
@@ -604,7 +612,7 @@
                 <v-btn
                   color="blue darken-1"
                   text
-                  @click="dialog = false"
+                  @click="onNewEntityModalClosed"
                 >
                   Close
                 </v-btn>
@@ -723,6 +731,7 @@ export default {
       snackbar: false,
       snackbarText: '',
       showArchives: false,
+      backgroundRefresh: true,
       isPreview: this.preview || false,
       skeletonLoaderAttrs: {
         class: 'mb-6',
@@ -739,10 +748,15 @@ export default {
       singleExpand: false,
       entityTitle: 'Referral',
       max25chars: v => v.length <= 25 || 'Input too long!',
-      // This is the filter containing conditions for sending to server
-      filter: {
+      // This is the filter containing conditions for sending to server. Custom filter is the filter created
+      // by the dashboard filter tool, and indicator filters are those filters engaged that are pre-defined by the
+      // dashboard condition builder
+      filter: [],
+      customFilter: {
+        logicalType: 'All',
         conditions: [],
       },
+      indicatorFilters: [],
       // these are the slots for the inline editable elements
       sortBy: 'moved_to_dashboard_date',
       sortDesc: true,
@@ -937,7 +951,10 @@ export default {
       // Need to send a new request to server and reload results with new filter
       // TODO
       console.log(filter)
-      this.filter = filter
+      this.customFilter = filter.customFilter
+      this.indicatorFilters = filter.indicatorFilters
+      this.filter = [...this.indicatorFilters]
+      this.filter.push(this.customFilter)
       this.loadEntitiesApi()
     },
     formatDate (date) {
@@ -973,6 +990,12 @@ export default {
         console.log("ERROR no list Id for header: " + header.value)
         return []
       }
+    },
+    onNewEntityModalClosed () {
+      this.dialog = false
+      this.newEntityModel = {}
+      this.newPatientModel = {}
+      this.entityCreateKey++
     },
     saveNewEntity () {
       // Save the entity
@@ -1268,7 +1291,9 @@ export default {
       }, 1000)
 
       this.updateTimer = setInterval(() => {
-        this.loadEntitiesApi(false)
+        if (this.backgroundRefresh === true) {
+          this.loadEntitiesApi(false)
+        }
       }, 5000)
     },
     cancelAutoUpdate () {

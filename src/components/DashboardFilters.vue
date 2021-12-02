@@ -13,8 +13,8 @@
         <v-badge
           color="green"
           overlap
-          :value="validConditions.length"
-          :content="validConditions.length"
+          :value="validConditionsCount"
+          :content="validConditionsCount"
         >
           <v-icon>
             mdi-filter
@@ -28,6 +28,31 @@
         <span class="text-h5">Filters</span>
       </v-card-title>
       <v-card-text>
+        <v-row>
+          <v-col>
+            <v-btn-toggle
+              v-model="toggle_indicator_filters"
+              dense
+              multiple
+            >
+              <v-btn v-for="(rule, index) in dashboardIndicatorFilterRules" :key="index">
+                <v-icon :color="rule.action.actionData.color">{{ rule.action.actionData.icon }}</v-icon>
+              </v-btn>
+
+            </v-btn-toggle>
+          </v-col>
+        </v-row>
+
+        <v-row>
+          <v-col>
+          <IndicatorFilterReadOnly
+            class="mb-2"
+            v-for="(indicatorFilterRule, index) in activeIndicatorFilters"
+            :key="index"
+            :rule="indicatorFilterRule"
+          ></IndicatorFilterReadOnly>
+          </v-col>
+        </v-row>
 
         <v-row>
           <v-col>
@@ -48,47 +73,64 @@
           <v-col>
           </v-col>
         </v-row>
-        <v-row v-for="(filter, filterIndex) in activeFilter.conditions" :key="filterIndex">
-          <v-col>
-            <v-select :items="fieldOptions" v-model="filter.field"></v-select>
-          </v-col>
 
-          <v-col>
-            <v-select :items="operators(filter.field)" v-model="filter.operator"></v-select>
-          </v-col>
+        <v-card v-if="activeFilter.conditions.length > 0">
+          <v-card-text>
+            <v-row>
+              <v-col>
+                <v-select v-model="activeFilter.logicalType" :items="logicalTypes"></v-select>
+              </v-col>
+              <v-col>
+              </v-col>
+              <v-col>
+              </v-col>
+              <v-col>
+              </v-col>
+            </v-row>
 
-          <!-- If the filter field type is a list, render the list options -->
-          <v-col>
-            <v-autocomplete
-              v-if="isList(filter.field)"
-              v-model="filter.value"
-              :items="listOptionsForField(filter.field)"
-            ></v-autocomplete>
+            <v-row v-for="(filter, filterIndex) in activeFilter.conditions" :key="filterIndex">
+              <v-col>
+                <v-select :items="fieldOptions" v-model="filter.field"></v-select>
+              </v-col>
 
-            <v-text-field
-              v-else
-              v-model="filter.value"
-            ></v-text-field>
-          </v-col>
+              <v-col>
+                <v-select :items="operators(filter.field)" v-model="filter.operator"></v-select>
+              </v-col>
 
-          <v-col cols="2">
-            <v-btn-toggle dense>
-              <v-btn
-                icon
-                @click="removeFilter(filterIndex)"
-              >
-                <v-icon>mdi-close</v-icon>
-              </v-btn>
-              <v-btn
-                v-if="filterIndex == activeFilter.conditions.length - 1"
-                icon
-                @click="addFilter(filterIndex)"
-              >
-                <v-icon>mdi-plus</v-icon>
-              </v-btn>
-            </v-btn-toggle>
-          </v-col>
-        </v-row>
+              <!-- If the filter field type is a list, render the list options -->
+              <v-col>
+                <v-autocomplete
+                  v-if="isList(filter.field)"
+                  v-model="filter.value"
+                  :items="listOptionsForField(filter.field)"
+                ></v-autocomplete>
+
+                <v-text-field
+                  v-else
+                  v-model="filter.value"
+                ></v-text-field>
+              </v-col>
+
+              <v-col cols="2">
+                <v-btn-toggle dense>
+                  <v-btn
+                    icon
+                    @click="removeFilter(filterIndex)"
+                  >
+                    <v-icon>mdi-close</v-icon>
+                  </v-btn>
+                  <v-btn
+                    v-if="filterIndex == activeFilter.conditions.length - 1"
+                    icon
+                    @click="addFilter(filterIndex)"
+                  >
+                    <v-icon>mdi-plus</v-icon>
+                  </v-btn>
+                </v-btn-toggle>
+              </v-col>
+            </v-row>
+          </v-card-text>
+        </v-card>
         <!-- -->
       </v-card-text>
       <v-card-actions>
@@ -121,16 +163,22 @@
 
 <script>
 
+import IndicatorFilterReadOnly from './IndicatorFilterReadOnly'
 export default {
   name: 'DashboardFilters',
+  components: { IndicatorFilterReadOnly },
   props: {
     dashboard: {
       type: Object,
       required: true
     },
-    filter: {
+    customFilter: {
       type: Object,
       required: true
+    },
+    indicatorFilters: {
+      type: Array,
+      required: false
     },
     listOptions: {
       type: Object,
@@ -140,16 +188,42 @@ export default {
   data () {
     return {
       dialog: false,
+      toggle_indicator_filters: [],
+      activeIndicatorFilters: [...this.indicatorFilters],
       activeFilter: {
-        ...this.filter
+        logicalType: 'All',
+        ...this.customFilter
       }
+    }
+  },
+  watch: {
+    toggle_indicator_filters: {
+      // Watch the indicator buttons and if they change, add or remove their associated filters from the dashbaord filters
+      handler() {
+        let that = this
+        this.activeIndicatorFilters = []
+        this.dashboardIndicatorFilterRules.forEach((rule, index) => {
+          if (that.toggle_indicator_filters.includes(index)) {
+            that.activeIndicatorFilters.push(rule)
+          }
+        })
+        if (this.activeIndicatorFilters.length > 0) {
+          this.mergeFiltersAndEmit()
+        }
+      },
+      deep: true
     }
   },
   computed: {
     headers () {
       return this.dashboard.headers
     },
-    fieldOptions() {
+    logicalTypes() {
+      return [
+        'Any', 'All'
+      ]
+    },
+    fieldOptions () {
       let fieldOptions = [
         { text: 'Referral.ID', value: 'Referral.ID' },
         { text: 'Patient.fname', value: 'Patient.fname' },
@@ -171,16 +245,35 @@ export default {
 
       return fieldOptions
     },
-    validConditions() {
-      return this.activeFilter.conditions.filter(filter => {
+    validConditionsCount () {
+      let customFilterConditions = this.activeFilter.conditions.filter(filter => {
         if (filter.field && filter.operator) {
           return filter
         }
       })
-    }
+
+      return customFilterConditions.length + this.activeIndicatorFilters.length
+    },
+    dashboardIndicatorFilterRules () {
+      let rules = []
+      this.dashboard.conditionalLogic.rules.forEach(rule => {
+        if (rule.action.name == 'Add Row Indicator') {
+          rules.push(rule)
+        }
+      })
+      return rules
+    },
   },
   methods: {
-    operators(expressionField) {
+    mergeFiltersAndEmit () {
+      let mergedFilters = {
+          indicatorFilters: this.activeIndicatorFilters,
+          customFilter: this.activeFilter
+      }
+
+      this.$emit('change', mergedFilters)
+    },
+    operators (expressionField) {
       let operators = [
         '=', 'contains'
       ]
@@ -206,7 +299,7 @@ export default {
 
       return operators
     },
-    isList(field) {
+    isList (field) {
       let retval = false
       if (field) {
         const header = this.headers.find(header => header.value == field)
@@ -217,7 +310,7 @@ export default {
 
       return retval
     },
-    listOptionsForField(field) {
+    listOptionsForField (field) {
       const header = this.headers.find(header => header.value == field)
       return this.listOptionsForHeader(header)
     },
@@ -234,27 +327,34 @@ export default {
         return []
       }
     },
-    removeFilter(filterIndex) {
+    removeFilter (filterIndex) {
       if (filterIndex > -1) {
         this.activeFilter.conditions.splice(filterIndex, 1)
       }
     },
-    addFilter() {
+    addPopulatedFilter (field, operator, value) {
+      this.activeFilter.conditions.push({
+        field: field,
+        operator: operator,
+        value: value
+      })
+    },
+    addFilter () {
       this.activeFilter.conditions.push({
         field: '',
         operator: '',
         value: ''
       })
     },
-    clearFilters() {
+    clearFilters () {
       this.activeFilter = {
         conditions: []
       }
-      this.$emit('change', this.activeFilter)
+      this.mergeFiltersAndEmit()
     },
     applyFilter () {
       this.dialog = false
-      this.$emit('change', this.activeFilter)
+      this.mergeFiltersAndEmit()
     }
   },
 }

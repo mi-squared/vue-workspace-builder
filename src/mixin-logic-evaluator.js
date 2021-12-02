@@ -46,7 +46,13 @@ export const MixinLogicEvaluator = {
             pass = (fieldValue == condition.value)
           }
         } else if (condition.operator === '!=') {
-          pass = (fieldValue != condition.value)
+          // If we're checking for NOT Equal to an empty string, then we can consider null to equal empty string,
+          // so we fail.
+          if (fieldValue == null && condition.value == "") {
+            pass = false
+          } else {
+            pass = (fieldValue != condition.value)
+          }
         } else if (condition.operator === 'UNTIL NOW(minutes) <') {
           // This passes if the difference between now and then is less than the condition value
           const rightHereRightNow = moment();
