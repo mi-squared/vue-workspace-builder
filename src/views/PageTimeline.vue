@@ -129,6 +129,8 @@
                     {{ timelineItem.workspace.title }}
                   </span>&nbsp;
                   <span class="mt-1 subtitle-1 font-weight-light">{{ timelineItem.dashboard.title }}</span>
+                  &nbsp;
+                  <span class="mt-1 subtitle-1 font-weight-light text--lighten-1">(#{{ timelineItem.entity.dashboard_entity_id }})</span>
 
                 </v-card-title>
                 <v-card-text>
@@ -161,13 +163,13 @@
                         <v-toolbar-title>
                           {{ timelineItem.entity.fname }} {{ timelineItem.entity.lname }}
                         </v-toolbar-title>
-                        <v-subheader>{{ timelineItem.workspace.title }} : {{ timelineItem.dashboard.title }} {{ formatDatetime(timelineItem.entity.created_datetime) }}</v-subheader>
+                        <v-subheader>{{ timelineItem.workspace.title }} : {{ timelineItem.dashboard.title }} {{ formatDatetime(timelineItem.entity.created_datetime) }} &nbsp; <span class="text--lighten-1">(#{{ timelineItem.entity.dashboard_entity_id }})</span></v-subheader>
                         <v-spacer></v-spacer>
 
                         <v-switch
                           class="mt-5 mr-8"
                           label="Archived"
-                          :value="timelineItem.entity.archived == 1 ? true : false"
+                          :input-value="timelineItem.entity.archived == 1 ? true : false"
                           @change="archiveEntity(timelineItem.entity, 1 - timelineItem.entity.archived)"
                         ></v-switch>
 
@@ -184,7 +186,7 @@
                           <v-card-text>
                             <!-- in case two timeline entities from different workspaces have same ID -->
                             <JsonForm
-                              :key="timelineItem.entity.id + i"
+                              :key="timelineItem.entity.dashboard_entity_id + i"
                               :form="timelineItem.dashboard.mainForm"
                               :model="timelineItem.entity"
                               :schema="timelineItem.dashboard.mainForm.schema"
@@ -418,7 +420,7 @@ export default {
       this.pushEntity({
         workspaceId: timelineItem.dashboard.workspaceId,
         dashboardId: timelineItem.dashboard.id,
-        entityId: timelineItem.entity.id,
+        entityId: timelineItem.entity.dashboard_entity_id,
         entity: timelineItem.entity
       }).then(() => {
       })
@@ -431,7 +433,7 @@ export default {
       this.pushEntity({
         workspaceId: timelineItem.dashboard.workspaceId,
         dashboardId: timelineItem.dashboard.id,
-        entityId: timelineItem.entity.id,
+        entityId: timelineItem.entity.dashboard_entity_id,
         entity: timelineItem.entity
       }).then(() => {
         //this.loadEntitiesApi()

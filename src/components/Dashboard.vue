@@ -142,12 +142,16 @@
                       dark
                       color="primary"
                     >
-                      <v-toolbar-title>{{ item.fname }} {{ item.lname }}</v-toolbar-title>
+                      <v-toolbar-title>
+                        {{ item.fname }} {{ item.lname }}
+                        <span class="lighten-1">(#{{ item.id }})</span>
+                      </v-toolbar-title>
+
                       <v-spacer></v-spacer>
                       <v-switch
                         class="mt-5 mr-8"
                         label="Archived"
-                        :value="item.archived == 1 ? true : false"
+                        :input-value="item.archived == 1 ? true : false"
                         @change="archiveEntity(item, 1 - item.archived)"
                       ></v-switch>
                       <v-btn
