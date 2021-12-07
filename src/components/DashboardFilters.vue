@@ -207,9 +207,7 @@ export default {
             that.activeIndicatorFilters.push(rule)
           }
         })
-        if (this.activeIndicatorFilters.length > 0) {
-          this.mergeFiltersAndEmit()
-        }
+        this.mergeFiltersAndEmit()
       },
       deep: true
     }
