@@ -135,7 +135,8 @@
                 </v-card-title>
                 <v-card-text>
                   <JsonFormTimelineView
-                    v-if="timelineItem.form != null"
+                    :key="'view_' + timelineItem.entity.dashboard_entity_id + '_' + i"
+                    v-if="timelineItem.form != null && (mainFormDialogs[i] == undefined || mainFormDialogs[i] == false)"
                     :form="timelineItem.form"
                     :model="timelineItem.entity"
                   >
@@ -186,13 +187,13 @@
                           <v-card-text>
                             <!-- in case two timeline entities from different workspaces have same ID -->
                             <JsonForm
-                              :key="timelineItem.entity.dashboard_entity_id + i"
+                              :key="timelineItem.entity.dashboard_entity_id + '_' + i"
                               :form="timelineItem.dashboard.mainForm"
                               :model="timelineItem.entity"
                               :schema="timelineItem.dashboard.mainForm.schema"
                               :options="timelineItem.dashboard.mainForm.options"
                               :pid="Number(timelineItem.entity.pid)"
-                              :patient="timelineItem.entity"
+                              :patient="extractPatient(timelineItem.entity)"
                               @changed="onEntityChanged"
                             ></JsonForm>
                           </v-card-text>
@@ -265,9 +266,9 @@
 <script>
 import { createNamespacedHelpers } from 'vuex'
 import { formatDate, formatDatetime } from '../display-helpers'
-import { ALL_WORKSPACES } from '../store/types-workspace'
+import { ALL_WORKSPACES, FETCH_ALL_WORKSPACES, GET_DATA_TYPES } from '../store/types-workspace'
 import { GET_FORM } from '../store/types-form'
-import { GET_TIMELINE, GET_TIMELINE_FOR_PATIENT } from '../store/types-timeline'
+import { GET_TIMELINE, GET_TIMELINE_FOR_PATIENT, SET_TIMELINE_ITEM_ENTITY } from '../store/types-timeline'
 import JsonFormTimelineView from '../components/JsonFormTimelineView'
 import JsonForm from '../components/JsonForm'
 import { setOpenEmrPatient } from '../api'
@@ -279,7 +280,7 @@ import {
 } from '../store/types-dashboard'
 
 const { mapGetters: mapTimelineGetters, mapActions: mapTimelineActions } = createNamespacedHelpers('timeline')
-const { mapGetters: mapWorkspaceGetters } = createNamespacedHelpers('workspace')
+const { mapGetters: mapWorkspaceGetters, mapActions: mapWorkspaceActions } = createNamespacedHelpers('workspace')
 const { mapGetters: mapFormGetters } = createNamespacedHelpers('form')
 const { mapGetters: mapListGetters, mapActions: mapListActions } = createNamespacedHelpers('list')
 const { mapActions: mapDashboardActions } = createNamespacedHelpers('dashboard')
@@ -357,6 +358,7 @@ export default {
     }),
     ...mapWorkspaceGetters({
       allWorkspaces: ALL_WORKSPACES,
+      getDataTypes: GET_DATA_TYPES,
     }),
     ...mapFormGetters({
       getForm: GET_FORM
@@ -370,13 +372,17 @@ export default {
   },
   methods: {
     ...mapTimelineActions({
-      getTimelineForPatient: GET_TIMELINE_FOR_PATIENT
+      getTimelineForPatient: GET_TIMELINE_FOR_PATIENT,
+      setTimelineItemEntity: SET_TIMELINE_ITEM_ENTITY
     }),
     ...mapListActions({
       fetchListsBulk: FETCH_LISTS_WITH_DATA_BULK
     }),
     ...mapDashboardActions({
       pushEntity: PUSH_ENTITY,
+    }),
+    ...mapWorkspaceActions({
+      fetchAllWorkspaces: FETCH_ALL_WORKSPACES
     }),
     toggleNotes(i) {
       // We must use $set here because since the values of the showNotes are not initialized,
@@ -408,21 +414,46 @@ export default {
     loadPatientDashboard() {
       setOpenEmrPatient(this.pid)
     },
+    extractPatient (entity) {
+      // Given an entity, which contains all patient data, extract only patient fields
+      const dataTypes = this.getDataTypes
+      const patientDatabaseColumns = dataTypes.patient.databaseColumns
+      let patient = {}
+      patientDatabaseColumns.forEach(column => {
+        if (column.name != 'id') {
+          if (entity[column.name]) {
+            patient[column.name] = entity[column.name]
+          } else {
+            patient[column.name] = null
+          }
+        }
+      })
+      return patient
+    },
     onEntityChanged ({ model, patient }) {
       this.activeEntityModel = model
-      this.activePatientModel = patient
+      this.activePatientModel = {
+        ...this.extractPatient(patient),
+      }
     },
     onMainFormEntitySaved(timelineItem) {
       // Update the timeline model with the active model from the form
       timelineItem.entity = {
+        ...timelineItem.entity,
         ...this.activeEntityModel
       }
       this.pushEntity({
         workspaceId: timelineItem.dashboard.workspaceId,
         dashboardId: timelineItem.dashboard.id,
         entityId: timelineItem.entity.dashboard_entity_id,
-        entity: timelineItem.entity
+        entity: timelineItem.entity,
+        patient: this.activePatientModel
       }).then(() => {
+        this.setTimelineItemEntity({
+          entityId: timelineItem.entity.dashboard_entity_id,
+          dashboardId: timelineItem.dashboard.id,
+          entity: timelineItem.entity
+        })
       })
     },
     archiveEntity(timelineItem, archive = 1) {
@@ -434,7 +465,8 @@ export default {
         workspaceId: timelineItem.dashboard.workspaceId,
         dashboardId: timelineItem.dashboard.id,
         entityId: timelineItem.entity.dashboard_entity_id,
-        entity: timelineItem.entity
+        entity: timelineItem.entity,
+        patient: this.activePatientModel
       }).then(() => {
         //this.loadEntitiesApi()
       })
@@ -443,15 +475,17 @@ export default {
   mounted () {
     console.log("timeline mounted")
     document.title = "Timeline"
+    const that = this
     this.getTimelineForPatient({ pid: this.pid }).then(timeline => {
       console.log(timeline)
-
-      let listIdsForFetch = ['active_users']
-      const that = this
-      this.fetchListsBulk({ arrayOfListIds: listIdsForFetch }).then(listOptions => {
-        // We are basically copying all the lists to local state here (TODO we really only need the ones with IDs we identified)
-        that.listOptions = listOptions
-        this.loaded = true
+      // fetch all workspaces
+      that.fetchAllWorkspaces().then(() => {
+        let listIdsForFetch = ['active_users']
+        that.fetchListsBulk({ arrayOfListIds: listIdsForFetch }).then(listOptions => {
+          // We are basically copying all the lists to local state here (TODO we really only need the ones with IDs we identified)
+          that.listOptions = listOptions
+          this.loaded = true
+        })
       })
 
     })

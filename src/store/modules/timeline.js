@@ -1,4 +1,4 @@
-import { GET_TIMELINE_FOR_PATIENT, SET_TIMELINE } from '../types-timeline'
+import { GET_TIMELINE_FOR_PATIENT, SET_TIMELINE, SET_TIMELINE_ITEM_ENTITY } from '../types-timeline'
 import { fetchTimelineByPid } from '../../api'
 import Vue from 'vue'
 // import axios from 'axios'
@@ -33,11 +33,30 @@ export const timeline = {
           })
         })
       })
+    },
+    [SET_TIMELINE_ITEM_ENTITY]: ({ commit }, { entityId, dashboardId, entity }) => {
+      commit(SET_TIMELINE_ITEM_ENTITY, { entityId, dashboardId, entity })
     }
   },
   mutations: {
     [SET_TIMELINE]: (state, { timeline }) => {
       Vue.set(state, 'timeline', timeline)
+    },
+    [SET_TIMELINE_ITEM_ENTITY]: (state, { entityId, dashboardId, entity }) => {
+      const index = state.timeline.items.findIndex(item => {
+        if (item.entity.dashboard_entity_id == entityId &&
+        item.entity.dashboard_id == dashboardId) {
+          return true
+        } else {
+          return false
+        }
+      })
+      const item = {
+        ...state.timeline.items[index],
+        entity: entity
+      }
+      state.timeline.items.splice(index, 1, item)
+      Vue.set(state, 'timeline', state.timeline)
     }
   }
 }

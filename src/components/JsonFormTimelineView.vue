@@ -9,7 +9,7 @@
       {{ element.title }}
     </p>
     <p class="font-weight-medium">
-      {{ model[element.dataSourceColumn] }}
+      {{ activeModel[element.dataSourceColumn] }}
     </p>
   </v-col>
 </v-row>
@@ -26,6 +26,11 @@ export default {
     model: {
       type: Object,
       required: true
+    }
+  },
+  data () {
+    return {
+      activeModel: this.model
     }
   },
   computed: {
