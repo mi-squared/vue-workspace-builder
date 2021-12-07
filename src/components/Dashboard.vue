@@ -1344,6 +1344,9 @@ export default {
     getColor (entity) {
       // We need to calculate "now" based on the system timezone so our diff relative to the timestamp is correct
       let moved_to_dashboard_date = entity.moved_to_dashboard_date
+      if (this.durationField) {
+        moved_to_dashboard_date = entity[this.durationField]
+      }
       let a = moment().tz(this.timeZone)
       let b = moment.tz(moved_to_dashboard_date, this.timeZone)
       let minutes = a.diff(b, 'minutes')
