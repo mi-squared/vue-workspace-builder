@@ -132,7 +132,8 @@
                   <template v-slot:activator="{ on, attrsMainForm }">
                     <a
                       class="mt-4 text-body-2 font-weight-light"
-                      v-bind="attrsMainForm" v-on="on"
+                      v-bind="attrsMainForm"
+                      @click="onEntityIdClick(item)"
                     >
                       #{{ item.id }}
                     </a>
@@ -157,7 +158,7 @@
                       <v-btn
                         icon
                         dark
-                        @click="mainFormDialogs[item.id] = false"
+                        @click="onMainFormClosed(item)"
                       >
                         <v-icon>mdi-close</v-icon>
                       </v-btn>
@@ -166,14 +167,15 @@
                       <v-card flat width="100%">
                         <v-card-text>
                           <JsonForm
+                            v-if="mainFormDialogs[item.id]"
                             :key="item.id"
                             :form="mainForm"
-                            :model="item"
+                            :model="mainEntityModel"
                             :schema="mainForm.schema"
                             :options="mainForm.options"
                             :pid="Number(item.pid)"
-                            :patient="item"
-                            @changed="newEntityChanged"
+                            :patient="mainPatientModel"
+                            @changed="mainEntityChanged"
                           ></JsonForm>
                         </v-card-text>
                         <v-card-actions>
@@ -660,7 +662,13 @@ import JsonForm from '@/components/JsonForm'
 import { newDashboardSourceDashboard, newDashboardSourceWorkspace } from '../model-builder'
 import { createNamespacedHelpers } from 'vuex'
 
-import { ALL_WORKSPACES, FETCH_ALL_WORKSPACES, GET_DASHBOARDS, GET_WORKSPACE } from '../store/types-workspace'
+import {
+  ALL_WORKSPACES,
+  FETCH_ALL_WORKSPACES,
+  GET_DASHBOARDS,
+  GET_DATA_TYPES,
+  GET_WORKSPACE
+} from '../store/types-workspace'
 
 const { mapGetters: mapWorkspaceGetters, mapActions: mapWorkspaceActions } = createNamespacedHelpers('workspace')
 
@@ -728,6 +736,8 @@ export default {
       newEntityModel: {},
       newPatientModel: {},
       mainFormDialogs: {},
+      mainEntityModel: {},
+      mainPatientModel: {},
       menus: {}, // v-models for the date picker dialogs, etc indexed by header.value
       formattedEntityValues: {}, // v-models for our formatted values like dates
       entityCreateKey: 0,
@@ -825,7 +835,8 @@ export default {
     ...mapWorkspaceGetters({
       allWorkspaces: ALL_WORKSPACES,
       getDashboards: GET_DASHBOARDS,
-      getWorkspaceById: GET_WORKSPACE
+      getWorkspaceById: GET_WORKSPACE,
+      getDataTypes: GET_DATA_TYPES,
     }),
     ...mapListGetters({
       getList: GET_LIST
@@ -982,6 +993,22 @@ export default {
       // Load the OpenEMR patient in a new OpenEMR tab
       setOpenEmrPatient(entity.pid)
     },
+    extractPatient (entity) {
+      // Given an entity, which contains all patient data, extract only patient fields
+      const dataTypes = this.getDataTypes
+      const patientDatabaseColumns = dataTypes.patient.databaseColumns
+      let patient = {}
+      patientDatabaseColumns.forEach(column => {
+        if (column.name != 'id') {
+          if (entity[column.name]) {
+            patient[column.name] = entity[column.name]
+          } else {
+            patient[column.name] = null
+          }
+        }
+      })
+      return patient
+    },
     listOptionsForItem (header) {
       // Using the list ID for this header, return the options
       if (header.extra.listId != undefined) {
@@ -1028,20 +1055,29 @@ export default {
       this.newEntityModel = model
       this.newPatientModel = patient
     },
+    mainEntityChanged({ model, patient }) {
+      this.mainEntityModel = model
+      this.mainPatientModel = patient
+    },
+    onEntityIdClick(entity) {
+      this.mainEntityModel = {...entity}
+      this.mainPatientModel = {...this.extractPatient(entity)}
+      this.mainFormDialogs[entity.id] = true
+    },
     onMainFormEntitySaved(entity) {
       // When save button is clicked on main form, we call this, grab the entity model we were using to store data,
       // and then call the onEntityChanged to persist data
       const updatedEntity = {
         ...entity,
-        ...this.newEntityModel
+        ...this.mainEntityModel
       }
       this.onEntityChanged(updatedEntity)
       this.onMainFormClosed(entity)
     },
     onMainFormClosed (entity) {
       // Clear the entity and patient models when we close the main form
-      this.newEntityModel = {}
-      this.newPatientModel = {}
+      this.mainEntityModel = {}
+      this.mainPatientModel = {}
       this.mainFormDialogs[entity.id] = false
     },
     onNoteSaved(payload) {
@@ -1176,7 +1212,8 @@ export default {
         workspaceId: this.dashboard.workspaceId,
         dashboardId: this.dashboard.id,
         entityId: entity.id,
-        entity
+        entity,
+        patient: this.mainPatientModel // Send the patient model along with the entity
       }).then(() => {
         this.loaded = true
         this.loadEntitiesApi()

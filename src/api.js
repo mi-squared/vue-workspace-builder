@@ -193,7 +193,7 @@ export function createEntity(workspaceId, dashboardId, entity, patient, userMeta
   })
 }
 
-export function updateEntity(workspaceId, dashboardId, entityId, entity, userMeta)
+export function updateEntity(workspaceId, dashboardId, entityId, entity, patient, userMeta)
 {
   return new Promise((resolve) => {
     axios.put(baseUrl + '/apis/api/entity', {
@@ -201,7 +201,8 @@ export function updateEntity(workspaceId, dashboardId, entityId, entity, userMet
           workspaceId: workspaceId,
           dashboardId: dashboardId,
           entityId: entityId,
-          entity: entity
+          entity: entity,
+          patient: patient
         }
       },
       {

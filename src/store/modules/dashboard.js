@@ -172,7 +172,7 @@ export const dashboard = {
     /**
      * Push an entity to the server using API
      */
-    [PUSH_ENTITY]: ({ commit, rootGetters }, { workspaceId, dashboardId, entityId, entity }) => {
+    [PUSH_ENTITY]: ({ commit, rootGetters }, { workspaceId, dashboardId, entityId, entity, patient }) => {
       const userMeta = rootGetters['user/GET_USER_META']
 
       // If we have a token, make the API call
@@ -180,7 +180,7 @@ export const dashboard = {
         // Make sure to update the dashboardId on the entity itself in case it changed
         entity.dashboard_id = dashboardId
         return new Promise(resolve => {
-          updateEntity(workspaceId, dashboardId, entityId, entity, userMeta).then(entity => {
+          updateEntity(workspaceId, dashboardId, entityId, entity, patient, userMeta).then(entity => {
             // If we have an entity on this dashboard, then find it and set it
             commit(SET_ENTITY, { entityId, entity })
 

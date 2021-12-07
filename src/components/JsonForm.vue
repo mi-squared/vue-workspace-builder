@@ -7,13 +7,10 @@
         :schema="activeSchema"
         :options="optionsForForm"
         @input="onFormChange"
-        @input-child="onFormChange"
-        @change="onFormChange"
-        @change-child="onFormChange"
       >
         <!-- Templates for custom elements -->
         <template slot="custom-patient" slot-scope="context">
-          <PatientPicker :pid="pid" :patient="patient" v-bind="context" @changed="onPatientChanged"></PatientPicker>
+          <PatientPicker :pid="pid" :patient="activePatient" :locked="patientPickerLocked" v-bind="context" @changed="onPatientChanged"></PatientPicker>
     <!--      <v-date-picker v-bind="context"></v-date-picker>-->
         </template>
 
@@ -70,6 +67,7 @@ export default {
   },
   data () {
     return {
+      patientPickerLocked: false,
       loaded: false,
       valid: false,
       listOptions: {},
@@ -93,13 +91,17 @@ export default {
       fetchListsBulk: FETCH_LISTS_WITH_DATA_BULK
     }),
     onFormChange(param) {
-      this.$emit('changed', {
-        model: this.activeModel,
-        patient: this.activePatient
-      })
-      this.optionsForForm = this.calculateOptions()
-      console.log("onFormChange(param)")
-      console.log(param)
+      if (this.loaded) {
+        this.$emit('changed', {
+          model: this.activeModel,
+          patient: this.activePatient
+        })
+        this.optionsForForm = this.calculateOptions()
+        console.log("onFormChange(param)")
+        console.log(param)
+      } else {
+        console.log("onFormChange: skipping notification parent")
+      }
     },
     onPatientChanged(data) {
       const patient = data.patient
@@ -170,6 +172,13 @@ export default {
       })
 
       return options
+    }
+  },
+  created () {
+    if (this.pid != undefined && this.pid > 0) {
+      this.patientPickerLocked = true
+    } else {
+      this.patientPickerLocked = false
     }
   },
   mounted () {

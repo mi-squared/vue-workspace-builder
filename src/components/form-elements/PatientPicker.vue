@@ -13,10 +13,14 @@
           height="6"
         ></v-progress-linear>
         <div v-else>
-        <span class="text-h6">{{ matches.length }}</span> potential matches
+        <span v-if="activeLocked == false">
+          <span class="text-h6" >{{ matches.length }}</span> potential matches
+        </span>
         </div>
 
         <v-spacer></v-spacer>
+        <v-btn icon v-if="activeLocked" @click="activeLocked = false"><v-icon>mdi-lock</v-icon></v-btn>
+        <v-btn icon v-else @click="activeLocked = true"><v-icon>mdi-lock-open</v-icon></v-btn>
       </v-system-bar>
 
       <v-container>
@@ -91,6 +95,7 @@
                   persistent-hint
                   v-model="activePatient.phone_home"
                   label="Phone Home"
+                  @input="onPatientChanged"
                 >
                 </v-text-field>
 
@@ -101,6 +106,7 @@
                   hint="555-555-5555"
                   persistent-hint
                   v-model="activePatient.phone_cell"
+                  @input="onPatientChanged"
                   label="Phone Cell"
                 >
                 </v-text-field>
@@ -126,7 +132,7 @@
               </v-col>
             </v-row>
           </v-col>
-          <v-col>
+          <v-col v-if="activeLocked == false">
 
             <v-card
               class="overflow-y-auto"
@@ -140,7 +146,7 @@
                 <v-list-item two-line class="pink--text">
                   <v-list-item-content>
                     <v-list-item-title>{{ activePatient.fname }} {{ activePatient.lname }}</v-list-item-title>
-                    <v-list-item-subtitle>DOB: {{ activePatient.DOB }}</v-list-item-subtitle>
+                    <v-list-item-subtitle>DOB: {{ formattedDOB }}</v-list-item-subtitle>
                   </v-list-item-content>
                 </v-list-item>
               </v-banner>
@@ -155,7 +161,7 @@
                   >
                     <v-list-item-content>
                       <v-list-item-title>{{ match.fname }} {{ match.lname }}</v-list-item-title>
-                      <v-list-item-subtitle>DOB: {{ formattedDOB }}</v-list-item-subtitle>
+                      <v-list-item-subtitle>DOB: {{ match.DOB }}</v-list-item-subtitle>
                       <v-list-item-subtitle>sex: {{ match.sex }}</v-list-item-subtitle>
                       <v-list-item-subtitle>pid: {{ match.pid }}</v-list-item-subtitle>
                     </v-list-item-content>
@@ -176,7 +182,7 @@
 
 
 
-      <v-card-actions>
+      <v-card-actions v-if="activeLocked == false">
         <v-btn
           @click="clearPatient"
         >
@@ -217,21 +223,17 @@ export default {
     patient: {
       type: Object,
       required: false
+    },
+    locked: {
+      type: Boolean,
+      required: false
     }
   },
   data() {
     return {
       loadingMatches: false,
-      activePatient: {
-        fname: "",
-        lname: "",
-        DOB: "",
-        sex: "",
-        pid: "",
-        NextStepID: "",
-
-        ...this.patient // Merge the patient prop with our model
-      },
+      activeLocked: false,
+      activePatient: {...this.patient }, // Reference to our patient prop, so it stays reactive
       DOB: "",
       formattedDOB: "",
       matches: [],
@@ -259,7 +261,9 @@ export default {
         DOB: "",
         sex: "",
         pid: "",
-        NextStepID: ""
+        NextStepID: "",
+        phone_home: "",
+        phone_cell: "",
       }
       this.matches = []
     },
@@ -285,8 +289,10 @@ export default {
       this.$emit('changed', { patient: this.activePatient })
     },
     onPatientChanged () {
-      this.activePatient.DOB = moment(this.formattedDOB, 'mm/dd/YYYY').format('YYYY-mm-dd')
-      this.$emit('changed', { patient: this.activePatient })
+      this.activePatient.DOB = moment(this.formattedDOB, 'mm/dd/YYYY').format('YYYY-MM-DD')
+      if (this.loaded) {
+        this.$emit('changed', { patient: this.activePatient })
+      }
     },
     /**
      * When fname or lname boxes are typed in (@keydown), or DOB is changed
@@ -298,7 +304,11 @@ export default {
         this.activePatient.DOB.length > 2)) {
         this.loadingMatches = true
         const userMeta = this.getUserMeta
-        const patientRequest = { ...this.activePatient }
+        const patientRequest = {
+
+          ...this.activePatient,
+          DOB: this.formattedDOB, // Send DOB to server in format 10/01/1976
+        }
         fetchPatients(patientRequest, userMeta).then(matches => {
           this.matches = matches
           console.log(matches)
@@ -315,6 +325,13 @@ export default {
     }
 
   },
+  created () {
+    if (this.locked != undefined) {
+      this.activeLocked = this.locked
+    } else {
+      this.activeLocked = true
+    }
+  },
   mounted () {
     const listIdsForFetch = ['sex']
     this.fetchListsBulk({ arrayOfListIds: listIdsForFetch }).then(listOptions => {
@@ -329,10 +346,12 @@ export default {
 
     let picker = document.getElementById('patient-picker')
     picker.addEventListener('keyup', this.debounce( () => {
-      // code you would like to run 1000ms after the keyup event has stopped firing
-      // further keyup events reset the timer, as expected
-      this.fetchMatches()
-    }, 1000))
+      if (this.activeLocked == false) {
+        // code you would like to run 1000ms after the keyup event has stopped firing
+        // further keyup events reset the timer, as expected
+        this.fetchMatches()
+      }
+    }, 500))
   }
 }
 </script>
