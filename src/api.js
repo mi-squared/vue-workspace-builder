@@ -361,12 +361,13 @@ export function createNote(note, userMeta)
   })
 }
 
-export function getNotesByEntityId(entityId, userMeta)
+export function getNotesByEntityId(entityId, dashboardId, userMeta)
 {
   return new Promise((resolve) => {
     axios.get(baseUrl + '/apis/api/notes', {
       params: {
-        entityId: entityId
+        entityId: entityId,
+        dashboardId: dashboardId
       },
       headers: {
         'apicsrftoken': userMeta.csrfToken

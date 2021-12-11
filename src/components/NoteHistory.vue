@@ -1,5 +1,5 @@
 <template>
-  <v-timeline dense>
+  <v-timeline dense v-if="loaded">
     <v-timeline-item
       v-for="(note, index) in notesNewestFirst"
       :key="index"
@@ -28,6 +28,10 @@ export default {
       type: Object,
       required: true
     },
+    dashboard: {
+      type: Object,
+      required: true
+    },
     activeUsersList: {
       type: Array,
       required: true
@@ -35,6 +39,7 @@ export default {
   },
   data () {
     return {
+      loaded: false
     }
   },
   computed: {
@@ -42,7 +47,10 @@ export default {
       getNotesByEntityId: GET_NOTES_BY_ENTITY_ID
     }),
     notesNewestFirst () {
-      return this.getNotesByEntityId(this.entity.id).reverse()
+      return this.getNotesByEntityId({
+        entityId: this.entity.id,
+        dashboardId: this.dashboard.id
+      }).reverse()
     }
   },
   methods: {
@@ -59,8 +67,12 @@ export default {
   },
   mounted () {
     // tell the API to fetch my notes
-    this.fetchNotesByEntityId(this.entity.id)
-
+    this.fetchNotesByEntityId({
+      entityId: this.entity.id,
+      dashboardId: this.dashboard.id
+    }).then(() => {
+      this.loaded = true
+    })
   }
 }
 </script>

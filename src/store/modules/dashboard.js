@@ -32,9 +32,10 @@ export const dashboard = {
       return state.dashboards[id]
     },
 
-    [GET_NOTES_BY_ENTITY_ID]: state => entityId => {
+    [GET_NOTES_BY_ENTITY_ID]: state => ({ entityId, dashboardId }) => {
       return Object.values(state.notes).filter(note => {
-        if (note.entityId == entityId) {
+        if (note.entityId == entityId &&
+          note.dashboardId == dashboardId) {
           return note
         }
       })
@@ -206,13 +207,13 @@ export const dashboard = {
       }
     },
 
-    [FETCH_NOTES_BY_ENTITY_ID]: ({ commit, rootGetters }, { entityId }) => {
+    [FETCH_NOTES_BY_ENTITY_ID]: ({ commit, rootGetters }, { entityId, dashboardId }) => {
       const userMeta = rootGetters['user/GET_USER_META']
 
       // If we have a token, make the API call
       if (userMeta.csrfToken) {
         // Return the promise created by the API
-        getNotesByEntityId(entityId, userMeta).then(notes => {
+        getNotesByEntityId(entityId, dashboardId, userMeta).then(notes => {
           Object.values(notes).forEach(note => {
             commit(SET_NOTE, { noteId: note.id, note })
           })

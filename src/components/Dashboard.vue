@@ -336,8 +336,8 @@
 
                         <v-btn icon @click="expand(!isExpanded)">
                           <v-badge
-                            :content="getNotesByEntityId(item.id).length"
-                            :value="getNotesByEntityId(item.id).length"
+                            :content="getNotesByEntityId({ entityId: item.id, dashboardId: dashboard.id }).length"
+                            :value="getNotesByEntityId({ entityId: item.id, dashboardId: dashboard.id }).length"
                             color="green"
                             overlap
                           >
@@ -548,7 +548,7 @@
           <tr>
             <td :colspan="headers.length">
               <!-- pass in entity ID for key-->
-              <NoteHistory :entity="item" :key="item.id" :activeUsersList="activeUsersList"></NoteHistory>
+              <NoteHistory :entity="item" :key="item.id" :dashboard="dashboard" :activeUsersList="activeUsersList"></NoteHistory>
 
 <!--              More info about {{ item }}-->
             </td>
@@ -1091,7 +1091,10 @@ export default {
       })
     },
     lastNoteText(entity) {
-      const notes = this.getNotesByEntityId(entity.id)
+      const notes = this.getNotesByEntityId({
+        entityId: entity.id,
+        dashboardId: this.dashboard.id
+      })
       if (notes.length > 0) {
         const noteText = notes[notes.length - 1].text
         if (noteText.length > 60) {
