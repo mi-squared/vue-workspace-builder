@@ -629,6 +629,13 @@
                 >
                   Save
                 </v-btn>
+                <v-btn
+                  color="blue darken-3"
+                  dark
+                  @click="saveNewEntity(true)"
+                >
+                  Save & Transmit
+                </v-btn>
               </v-card-actions>
             </v-card>
           </v-dialog>
@@ -1028,7 +1035,10 @@ export default {
       this.newPatientModel = {}
       this.entityCreateKey++
     },
-    saveNewEntity () {
+    saveNewEntity (transmit = false) {
+      // If the user clicks "Save & Transmit" then we set transmit_to_ns to true
+      this.newPatientModel.transmit_to_ns = transmit
+
       // Save the entity
       console.log("Saving New Entity: " + this.newEntityModel)
 
