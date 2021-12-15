@@ -75,7 +75,25 @@ export default {
        * Options are cloned, and modified in the mounted() function to add some dynamic
        * capabilities like conditional rendering.
        */
-      optionsForForm: { ...this.options },
+      optionsForForm: {
+        ...this.options,
+        "timePickerProps": {
+          "format": "24h"
+        },
+        "formats": {
+          time: (time, locale) => {
+            const date = new Date(`${new Date().toISOString().split('T')[0]}T${time}`)
+            return new Date(date.getTime() + (date.getTimezoneOffset() * 60000)).toLocaleTimeString(locale, { hour12: false })
+          },
+          date: (dateStr, locale) => {
+            const date = new Date(dateStr)
+            return new Date(date.getTime() + (date.getTimezoneOffset() * 60000)).toLocaleDateString(locale)
+          },
+          'date-time': (dateTime, locale) => {
+            return new Date(dateTime).toLocaleString(locale, { hour12: false })
+          }
+        }
+      },
       activeModel: { ...this.model },
       activePatient: { ...this.patient },
       activeSchema: { ...this.schema }
