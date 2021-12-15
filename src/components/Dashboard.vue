@@ -1470,7 +1470,7 @@ export default {
     if (userMeta.timeZone != undefined && userMeta.timeZone) {
       this.timeZone = userMeta.timeZone
     } else {
-      this.timeZone = 'America/New_York'
+      this.timeZone = 'America/Phoenix'
     }
 
     this.currentTimestamp = this.getCurrentTimestamp()

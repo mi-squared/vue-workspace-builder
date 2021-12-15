@@ -57,10 +57,8 @@
       </v-card-text>
       <v-card-actions>
         <v-spacer></v-spacer>
-        <slot name="actions" :parent="this">
-          <v-btn color="grey lighten-1" text @click.native="clearHandler">{{ clearText }}</v-btn>
-          <v-btn color="green darken-1" text @click="okHandler">{{ okText }}</v-btn>
-        </slot>
+        <v-btn color="grey lighten-1" text @click.native="clearHandler">{{ clearText }}</v-btn>
+        <v-btn color="green darken-1" text @click="okHandler">{{ okText }}</v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
@@ -68,6 +66,9 @@
 
 <script>
 import { format, parse } from 'date-fns'
+
+// We need to return a string in correct TZ
+import moment from 'moment-timezone'
 
 const DEFAULT_DATE = ''
 const DEFAULT_TIME = '00:00:00'
@@ -87,6 +88,10 @@ export default {
     datetime: {
       type: [Date, String],
       default: null
+    },
+    timeZone: {
+      type: String,
+      default: 'America/Phoenix'
     },
     disabled: {
       type: Boolean
@@ -133,7 +138,7 @@ export default {
       display: false,
       activeTab: 0,
       date: DEFAULT_DATE,
-      time: DEFAULT_TIME
+      time: DEFAULT_TIME,
     }
   },
   mounted() {
@@ -179,12 +184,18 @@ export default {
         initDateTime = parse(this.datetime, this.defaultDateTimeFormat, new Date())
       }
 
-      this.date = format(initDateTime, DEFAULT_DATE_FORMAT)
-      this.time = format(initDateTime, DEFAULT_TIME_FORMAT)
+      const date = format(initDateTime, DEFAULT_DATE_FORMAT)
+      this.date = date
+      const time = format(initDateTime, DEFAULT_TIME_FORMAT)
+      this.time = time
     },
     okHandler() {
       this.resetPicker()
-      this.$emit('input', this.selectedDatetime)
+      let outputDatetime = this.selectedDatetime
+      if (outputDatetime instanceof Date) {
+        outputDatetime = moment(this.selectedDatetime).format('YYYY-MM-DD HH:mm:ss')
+      }
+      this.$emit('input', outputDatetime)
     },
     clearHandler() {
       this.resetPicker()
