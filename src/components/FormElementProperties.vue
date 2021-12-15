@@ -148,10 +148,16 @@ export default {
       }
 
       // If we have a list, allow user to select radio buttons as display type
-      if (this.dataSource.spec.columns[this.activeElement.dataSourceColumn].type == 'list') {
-        displayOptions = []
-        displayOptions.push("radio")
-        displayOptions.push("autocomplete")
+      if (this.activeElement.dataSourceColumn != undefined) {
+        if (this.dataSource.spec.columns[this.activeElement.dataSourceColumn] != undefined) {
+          if (this.dataSource.spec.columns[this.activeElement.dataSourceColumn].type == 'list') {
+            displayOptions = []
+            displayOptions.push("radio")
+            displayOptions.push("autocomplete")
+          }
+        } else {
+          console.log('No Data Source Column Entry For:' + this.activeElement.dataSourceColumn)
+        }
       }
 
       return displayOptions
