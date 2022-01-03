@@ -207,7 +207,7 @@
 import { fetchPatients } from '../../api'
 import { formatDate } from '../../display-helpers'
 import { createNamespacedHelpers } from 'vuex'
-import moment from 'moment-timezone'
+// import moment from 'moment-timezone'
 import { FETCH_LISTS_WITH_DATA_BULK } from '../../store/types-list'
 import { GET_USER_META } from '../../store/types-user'
 const { mapActions: mapListActions } = createNamespacedHelpers('list')
@@ -276,7 +276,11 @@ export default {
       return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`
     },
     uppercase(data) {
-      data = data.toUpperCase()
+      if (data != undefined) {
+        data = data.toUpperCase()
+      } else {
+        data = ''
+      }
       return data
     },
     applyMatch(match) {
@@ -289,7 +293,8 @@ export default {
       this.$emit('changed', { patient: this.activePatient })
     },
     onPatientChanged () {
-      this.activePatient.DOB = moment(this.formattedDOB, 'mm/dd/YYYY').format('YYYY-MM-DD')
+      //this.activePatient.DOB = moment(this.formattedDOB, 'mm/dd/YYYY').format('YYYY-MM-DD')
+      this.activePatient.DOB = this.formatDOBMysql(this.formattedDOB)
       if (this.loaded) {
         this.$emit('changed', { patient: this.activePatient })
       }
