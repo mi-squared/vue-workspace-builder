@@ -300,6 +300,17 @@
                 </v-tooltip>
               </div>
 
+              <div v-else-if="header.value == 'data-files'">
+                <table>
+                  <tr>
+                    <td class="py-0 px-1">
+                      <DashboardFilesButton>
+                      </DashboardFilesButton>
+                    </td>
+                  </tr>
+                </table>
+              </div>
+
 
               <div v-else-if="header.value == 'data-notes'">
                 <table>
@@ -642,6 +653,7 @@ import EditableString from './EditableString'
 import DashboardFilters from './DashboardFilters'
 import SelectModal from './form-elements/SelectModal'
 import DatePickerModal from './form-elements/DatePickerModal'
+import DashboardFilesButton from './DashboardFilesButton'
 
 export default {
   name: 'Dashboard',
@@ -659,6 +671,7 @@ export default {
   components: {
     DatePickerModal,
     SelectModal,
+    DashboardFilesButton,
     DashboardFilters,
     EditableString,
     DatetimePicker,
@@ -1395,12 +1408,12 @@ export default {
       this.tableHeight = this.calculateTableHeight()
       console.log("height: " + this.tableHeight)
     },
-    pauseRefresh () {
-      //this.backgroundRefreshTimer = false
-      setInterval(() => {
-        //this.backgroundRefreshTimer = true
-      }, 3000)
-    },
+    // pauseRefresh () {
+    //   //this.backgroundRefreshTimer = false
+    //   setInterval(() => {
+    //     //this.backgroundRefreshTimer = true
+    //   }, 3000)
+    // },
     onDashboardComponentVisibilityChanged (isShowing) {
       if (isShowing) {
         this.backgroundRefreshTimer = false
@@ -1452,8 +1465,8 @@ export default {
     window.addEventListener("resize", this.onResize)
 
     // Pause the refresh when users are doing "stuff"
-    window.addEventListener("click", this.pauseRefresh)
-    window.addEventListener("keydown", this.pauseRefresh)
+    // window.addEventListener("click", this.pauseRefresh)
+    // window.addEventListener("keydown", this.pauseRefresh)
   },
   destroyed () {
     this.cancelAutoUpdate()
