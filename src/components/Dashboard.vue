@@ -476,12 +476,18 @@
                 </div>
 
                 <div v-if="header.type == 'string'">
-                  <EditableString :key="item.id" :entity="item" :index="header.value" @save="onEntityChanged"></EditableString>
+                  <EditableString
+                    :key="item.id"
+                    :entity="item"
+                    :index="header.value"
+                    @save="onEntityChanged"
+                  ></EditableString>
                 </div>
 
                 <div v-if="header.type == 'datetime'">
 
                   <DatetimePicker
+                    :key="item.id"
                     v-model="item[header.value]"
                     timeFormat="HH:mm"
                     dateFormat="MM/dd/yyyy"
@@ -495,6 +501,7 @@
                 <div v-if="header.type == 'date'">
 
                   <v-menu
+                    :key="item.id"
                     :ref="header.value"
                     v-model="menus[header.value + item.id]"
                     transition="scale-transition"
