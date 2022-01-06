@@ -1,5 +1,12 @@
 <template>
-  <v-dialog v-model="display" :width="dialogWidth">
+  <v-menu
+    v-model="display"
+    transition="scale-transition"
+    offset-y
+    max-width="340px"
+    min-width="340px"
+    :close-on-content-click="false"
+  >
     <template v-slot:activator="{ on }">
       <v-text-field
         style="font-size: smaller;"
@@ -57,11 +64,52 @@
       </v-card-text>
       <v-card-actions>
         <v-spacer></v-spacer>
-        <v-btn color="grey lighten-1" text @click.native="clearHandler">{{ clearText }}</v-btn>
-        <v-btn color="green darken-1" text @click="okHandler">{{ okText }}</v-btn>
+
+        <v-tooltip bottom>
+          <template v-slot:activator="{ on, attrs }">
+            <v-btn
+              @click="okHandler"
+              class="btn-sm"
+              icon
+              color="primary"
+              v-bind="attrs"
+              v-on="on"
+            ><v-icon>mdi-check-bold</v-icon></v-btn>
+          </template>
+          <!-- button tooltip -->
+          <span>Save</span>
+        </v-tooltip>
+
+        <v-tooltip bottom>
+          <template v-slot:activator="{ on, attrs }">
+            <v-btn
+              @click="clearHandler"
+              class="btn-sm"
+              icon
+              v-bind="attrs"
+              v-on="on"
+            ><v-icon>mdi-cancel</v-icon></v-btn>
+          </template>
+          <!-- button tooltip -->
+          <span>Clear</span>
+        </v-tooltip>
+
+        <v-tooltip bottom>
+          <template v-slot:activator="{ on, attrs }">
+            <v-btn
+              @click="onClose"
+              class="btn-sm"
+              icon
+              v-bind="attrs"
+              v-on="on"
+            ><v-icon>mdi-close</v-icon></v-btn>
+          </template>
+          <!-- button tooltip -->
+          <span>Cancel</span>
+        </v-tooltip>
       </v-card-actions>
     </v-card>
-  </v-dialog>
+  </v-menu>
 </template>
 
 <script>
@@ -70,11 +118,10 @@ import { format, parse } from 'date-fns'
 // We need to return a string in correct TZ
 import moment from 'moment-timezone'
 
-const DEFAULT_DATE = ''
-const DEFAULT_TIME = '00:00:00'
+const DEFAULT_DATE = null
+const DEFAULT_TIME = null
 const DEFAULT_DATE_FORMAT = 'yyyy-MM-dd'
 const DEFAULT_TIME_FORMAT = 'HH:mm:ss'
-const DEFAULT_DIALOG_WIDTH = 340
 const DEFAULT_CLEAR_TEXT = 'CLEAR'
 const DEFAULT_OK_TEXT = 'OK'
 
@@ -102,10 +149,6 @@ export default {
     label: {
       type: String,
       default: ''
-    },
-    dialogWidth: {
-      type: Number,
-      default: DEFAULT_DIALOG_WIDTH
     },
     dateFormat: {
       type: String,
@@ -171,11 +214,17 @@ export default {
   },
   methods: {
     init() {
+      let initDateTime
+
+      // If no datetime is set, initialize to "now"
       if (!this.datetime) {
-        return
+        if (this.display == true) {
+          initDateTime = new Date()
+        } else {
+          return
+        }
       }
 
-      let initDateTime
       if (this.datetime instanceof Date) {
         initDateTime = this.datetime
       } else if (typeof this.datetime === 'string' || this.datetime instanceof String) {
@@ -196,15 +245,38 @@ export default {
         outputDatetime = moment(this.selectedDatetime).format('YYYY-MM-DD HH:mm:ss')
       }
       this.$emit('input', outputDatetime)
+      this.display = false
     },
     clearHandler() {
       this.resetPicker()
       this.date = DEFAULT_DATE
       this.time = DEFAULT_TIME
-      this.$emit('input', null)
+      //this.$emit('input', null)
+    },
+    onClose () {
+      let initDateTime = null
+      if (this.datetime instanceof Date) {
+        initDateTime = this.datetime
+      } else if (typeof this.datetime === 'string' || this.datetime instanceof String) {
+        // see https://stackoverflow.com/a/9436948
+        // KCC on init, use the default (mysql) date time format to parse
+        initDateTime = parse(this.datetime, this.defaultDateTimeFormat, new Date())
+      }
+
+      if (initDateTime) {
+        const date = format(initDateTime, DEFAULT_DATE_FORMAT)
+        this.date = date
+        const time = format(initDateTime, DEFAULT_TIME_FORMAT)
+        this.time = time
+      } else {
+        this.date = null
+        this.time = null
+      }
+      this.resetPicker()
+      this.display = false
     },
     resetPicker() {
-      this.display = false
+      //this.display = false
       this.activeTab = 0
       if (this.$refs.timer) {
         this.$refs.timer.selectingHour = true
@@ -216,6 +288,9 @@ export default {
   },
   watch: {
     datetime: function() {
+      this.init()
+    },
+    display: function () {
       this.init()
     }
   }

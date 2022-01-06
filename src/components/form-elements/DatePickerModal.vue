@@ -127,7 +127,7 @@ export default {
       this.menu = false
     },
     onClose () {
-      this.activeModel = this.model
+      this.activeModel[this.index] = this.model[this.index]
       this.menu = false
     },
     onClear () {

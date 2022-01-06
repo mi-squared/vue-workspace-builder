@@ -9,6 +9,7 @@
     >
       <template v-slot:activator="{ on, attrs }">
         <v-text-field
+          :key="id + index + 'select-modal'"
           v-model="activeModel[index]"
           readonly
           v-bind="attrs"
@@ -112,6 +113,7 @@ export default {
       this.menu = false
     },
     onClose () {
+      this.activeModel[this.index] = this.model[this.index]
       this.menu = false
     },
     onClear () {

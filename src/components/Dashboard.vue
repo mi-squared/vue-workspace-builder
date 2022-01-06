@@ -441,6 +441,7 @@
 
                 <div v-if="header.type == 'list'">
                   <SelectModal
+                    :key="item.id + header.value + 'list'"
                     :id="item.id"
                     :index="header.value"
                     :model="item"
@@ -479,7 +480,7 @@
                 <div v-if="header.type == 'datetime'">
 
                   <DatetimePicker
-                    :key="item.id"
+                    :key="item.id + header.value + 'datetime'"
                     v-model="item[header.value]"
                     timeFormat="HH:mm"
                     dateFormat="MM/dd/yyyy"
@@ -492,6 +493,7 @@
 
                 <div v-if="header.type == 'date'">
                   <DatePickerModal
+                    :key="item.id + header.value + 'date'"
                     :id="item.id"
                     :model="item"
                     :index="header.value"
