@@ -440,21 +440,13 @@
               <div v-else-if="header.editable == true">
 
                 <div v-if="header.type == 'list'">
-                  <v-tooltip :key="item.id + '-list-tooltip'" bottom>
-                    <template v-slot:activator="{ on, attrs }">
-                      <v-autocomplete
-                        v-bind="attrs"
-                        v-on="on"
-                        dense
-                        :key="item.id"
-                        v-model="item[header.value]"
-                        :items="listOptionsForItem(header)"
-                        @input="onEntityChanged(item)"
-                      >
-                      </v-autocomplete>
-                    </template>
-                    <span>{{ item[header.value] }}</span>
-                  </v-tooltip>
+                  <SelectModal
+                    :id="item.id"
+                    :index="header.value"
+                    :model="item"
+                    :items="listOptionsForItem(header)"
+                    @changed="onEntityChanged"
+                  ></SelectModal>
                 </div>
 
                 <div v-if="header.type == 'user'">
@@ -714,6 +706,7 @@ import { setOpenEmrPatient } from '../api'
 import DatetimePicker from './DatetimePicker'
 import EditableString from './EditableString'
 import DashboardFilters from './DashboardFilters'
+import SelectModal from './form-elements/SelectModal'
 
 export default {
   name: 'Dashboard',
@@ -729,6 +722,7 @@ export default {
     }
   },
   components: {
+    SelectModal,
     DashboardFilters,
     EditableString,
     DatetimePicker,
