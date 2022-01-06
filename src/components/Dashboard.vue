@@ -491,36 +491,13 @@
                 </div>
 
                 <div v-if="header.type == 'date'">
+                  <DatePickerModal
+                    :id="item.id"
+                    :model="item"
+                    :index="header.value"
+                    @changed="onEntityChanged"
+                  ></DatePickerModal>
 
-                  <v-menu
-                    :key="item.id"
-                    :ref="header.value"
-                    v-model="menus[header.value + item.id]"
-                    transition="scale-transition"
-                    offset-y
-                    max-width="290px"
-                    min-width="auto"
-                  >
-                    <template v-slot:activator="{ on, attrs }">
-                      <v-text-field
-                        dense
-                        :value="formatDate(item[header.value])"
-                        v-bind="attrs"
-                        @blur="item[header.value] = parseDate(item[header.value])"
-                        v-on="on"
-                        class="mt-4"
-                        style="font-size: smaller;"
-                      >
-                        <v-icon slot="prepend-inner" small>mdi-calendar</v-icon>
-                      </v-text-field>
-                    </template>
-                    <v-date-picker
-                      v-model="item[header.value]"
-                      no-title
-                      @input="onEntityChanged(item)"
-                    >
-                    </v-date-picker>
-                  </v-menu>
                 </div>
               </div>
 
@@ -707,6 +684,7 @@ import DatetimePicker from './DatetimePicker'
 import EditableString from './EditableString'
 import DashboardFilters from './DashboardFilters'
 import SelectModal from './form-elements/SelectModal'
+import DatePickerModal from './form-elements/DatePickerModal'
 
 export default {
   name: 'Dashboard',
@@ -722,6 +700,7 @@ export default {
     }
   },
   components: {
+    DatePickerModal,
     SelectModal,
     DashboardFilters,
     EditableString,
@@ -788,6 +767,7 @@ export default {
         "value": "id",
         "groupable": false,
         "sortable": true,
+        width: "60px"
       },
       indicatorsHeader: {
         "text": "",
