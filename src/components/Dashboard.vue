@@ -175,26 +175,11 @@
                             :options="mainForm.options"
                             :pid="Number(item.pid)"
                             :patient="mainPatientModel"
-                            @changed="mainEntityChanged"
+                            @save="onMainFormEntitySaved"
+                            @cancel="mainFormDialogs[item.id] = false"
                           ></JsonForm>
                         </v-card-text>
-                        <v-card-actions>
-                          <v-spacer></v-spacer>
-                          <v-btn
-                            color="blue darken-1"
-                            text
-                            @click="onMainFormClosed(item)"
-                          >
-                            Close
-                          </v-btn>
-                          <v-btn
-                            color="blue darken-1"
-                            text
-                            @click=onMainFormEntitySaved(item)
-                          >
-                            Save
-                          </v-btn>
-                        </v-card-actions>
+
                       </v-card>
                     </v-container>
                     <v-container v-else>
@@ -441,7 +426,7 @@
 
                 <div v-if="header.type == 'list'">
                   <SelectModal
-                    :key="item.id + header.value + 'list'"
+                    :key="generateKey(item, header)"
                     :id="item.id"
                     :index="header.value"
                     :model="item"
@@ -457,7 +442,7 @@
                         v-bind="attrs"
                         v-on="on"
                         dense
-                        :key="item.id"
+                        :key="generateKey(item, header)"
                         v-model="item[header.value]"
                         :items="activeUsersList"
                         @input="onEntityChanged(item)"
@@ -470,7 +455,7 @@
 
                 <div v-if="header.type == 'string'">
                   <EditableString
-                    :key="item.id"
+                    :key="generateKey"
                     :entity="item"
                     :index="header.value"
                     @save="onEntityChanged"
@@ -480,7 +465,7 @@
                 <div v-if="header.type == 'datetime'">
 
                   <DatetimePicker
-                    :key="item.id + header.value + 'datetime'"
+                    :key="generateKey(item, header)"
                     v-model="item[header.value]"
                     timeFormat="HH:mm"
                     dateFormat="MM/dd/yyyy"
@@ -493,7 +478,7 @@
 
                 <div v-if="header.type == 'date'">
                   <DatePickerModal
-                    :key="item.id + header.value + 'date'"
+                    :key="generateKey(item, header)"
                     :id="item.id"
                     :model="item"
                     :index="header.value"
@@ -735,6 +720,8 @@ export default {
       snackbarText: '',
       showArchives: false,
       backgroundRefresh: true,
+      backgroundRefreshTimer: true,
+      changeCount: [],
       isPreview: this.preview || false,
       skeletonLoaderAttrs: {
         class: 'mb-6',
@@ -879,7 +866,8 @@ export default {
     },
     rows () {
       return this.orderedEntities.map(entityId => {
-        return this.getEntityById(entityId)
+        const rows = this.getEntityById(entityId)
+        return rows
       })
     },
     loading () {
@@ -933,6 +921,14 @@ export default {
     ...mapListActions({
       fetchListsBulk: FETCH_LISTS_WITH_DATA_BULK
     }),
+    /**
+     * Generate a unique key in the table grid for a component, using the item id, it's object index (DB column name)
+     * it's type and a count of how many times it's changed (this forces re-render of component when a field is changed
+     * by the main form)
+     */
+    generateKey (item, header) {
+      return item.id + '_' + header.value + '_' + header.type + '_' + this.changeCount[item.id]
+    },
     getDurationValue(entity) {
       const durationField = this.durationField;
       if (entity[durationField] != undefined) {
@@ -1048,24 +1044,23 @@ export default {
       this.newEntityModel = model
       this.newPatientModel = patient
     },
-    mainEntityChanged({ model, patient }) {
-      this.mainEntityModel = model
-      this.mainPatientModel = patient
-    },
     onEntityIdClick(entity) {
       this.mainEntityModel = {...entity}
       this.mainPatientModel = {...this.extractPatient(entity)}
       this.mainFormDialogs[entity.id] = true
     },
-    onMainFormEntitySaved(entity) {
-      // When save button is clicked on main form, we call this, grab the entity model we were using to store data,
-      // and then call the onEntityChanged to persist data
-      const updatedEntity = {
-        ...entity,
-        ...this.mainEntityModel
+    onMainFormEntitySaved({ model, patient }) {
+      this.mainEntityModel = {
+        ...this.mainEntityModel,
+        ...model
       }
-      this.onEntityChanged(updatedEntity)
-      this.onMainFormClosed(entity)
+      this.mainPatientModel = {
+        ...this.mainPatientModel,
+        ...patient
+      }
+      this.onEntityChanged(this.mainEntityModel)
+      this.onMainFormClosed(this.mainEntityModel)
+      this.loadEntitiesApi()
     },
     onMainFormClosed (entity) {
       // Clear the entity and patient models when we close the main form
@@ -1211,6 +1206,8 @@ export default {
         entity,
         patient: this.mainPatientModel // Send the patient model along with the entity
       }).then(() => {
+        // force update of the dashboard form components by incrementing change count, which they use as part of :key
+        this.changeCount[entity.id]++
         this.loaded = true
         this.loadEntitiesApi()
       })
@@ -1328,7 +1325,8 @@ export default {
       }, 1000)
 
       this.updateTimer = setInterval(() => {
-        if (this.backgroundRefresh === true) {
+        if (this.backgroundRefresh === true &&
+          this.backgroundRefreshTimer === true) {
           this.loadEntitiesApi(false)
         }
       }, 5000)
@@ -1416,6 +1414,12 @@ export default {
     onResize() {
       this.tableHeight = this.calculateTableHeight()
       console.log("height: " + this.tableHeight)
+    },
+    pauseRefresh () {
+      this.backgroundRefreshTimer = false
+      setInterval(() => {
+        this.backgroundRefreshTimer = true
+      }, 3000)
     }
   },
   mounted () {
@@ -1459,6 +1463,10 @@ export default {
     this.currentTimestamp = this.getCurrentTimestamp()
 
     window.addEventListener("resize", this.onResize)
+
+    // Pause the refresh when users are doing "stuff"
+    window.addEventListener("click", this.pauseRefresh)
+    window.addEventListener("keydown", this.pauseRefresh)
   },
   destroyed () {
     this.cancelAutoUpdate()

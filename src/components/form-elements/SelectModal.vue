@@ -10,12 +10,11 @@
       <template v-slot:activator="{ on, attrs }">
         <v-text-field
           :key="id + index + 'select-modal'"
-          v-model="activeModel[index]"
+          :value="displayValue"
           readonly
           v-bind="attrs"
           v-on="on"
         >
-          {{ activeModel[index] }}
         </v-text-field>
       </template>
 
@@ -24,7 +23,7 @@
         <v-autocomplete
           class="mt-2"
           :key="id"
-          v-model="activeModel[index]"
+          v-model="myValue"
           :items="items"
         >
         </v-autocomplete>
@@ -104,20 +103,43 @@ export default {
     return {
       loaded: false,
       menu: false,
-      activeModel: { ...this.model }
+      activeModel: this.model
+    }
+  },
+  computed: {
+    myValue: {
+      get: function () {
+        return this.activeModel[this.index]
+      },
+      // setter
+      set: function (newValue) {
+        this.activeModel[this.index] = newValue
+      }
+    },
+    displayValue () {
+      const displayValue = this.items.find(item => {
+        if (this.myValue != undefined &&
+          item.value == this.myValue) {
+          return item
+        }
+      })
+      if (displayValue != undefined) {
+        return displayValue.text
+      }
+      return ''
     }
   },
   methods: {
     onSave () {
-      this.$emit('changed', this.activeModel)
+      this.$emit('changed', this.model)
       this.menu = false
     },
     onClose () {
-      this.activeModel[this.index] = this.model[this.index]
+      this.myValue = this.model[this.index]
       this.menu = false
     },
     onClear () {
-      this.activeModel[this.index] = null
+      this.myValue = null
     }
   },
   mounted () {

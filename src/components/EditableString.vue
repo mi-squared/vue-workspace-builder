@@ -54,24 +54,23 @@ export default {
   },
   data() {
     return {
-      myEntity: { ...this.entity },
       menu: false
     }
   },
   computed: {
     myString: {
       get: function () {
-        return this.myEntity[this.index]
+        return this.entity[this.index]
       },
       // setter
       set: function (newValue) {
-        this.myEntity[this.index] = newValue
+        this.entity[this.index] = newValue
       }
     }
   },
   methods: {
     onSave() {
-      this.$emit('save', this.myEntity)
+      this.$emit('save', this.entity)
       this.menu = false
     }
   },

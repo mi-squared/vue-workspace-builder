@@ -13,9 +13,9 @@
     <template v-slot:activator="{ on, attrs }">
       <v-text-field
         dense
-        :value="formatDate(activeModel[index])"
+        :value="formatDate(myValue)"
         v-bind="attrs"
-        @blur="activeModel[index] = parseDate(activeModel[index])"
+        @blur="myValue = parseDate(myValue)"
         v-on="on"
         class="mt-4"
         style="font-size: smaller;"
@@ -25,7 +25,7 @@
     </template>
     <v-card>
       <v-date-picker
-        v-model="activeModel[index]"
+        v-model="myValue"
         no-title
       ></v-date-picker>
 
@@ -107,31 +107,42 @@ export default {
   data () {
     return {
       menu: false,
-      activeModel: { ...this.model },
+      activeModel: this.model
     }
   },
   watch: {
     menu: function () {
       if (this.menu === true) {
         // If
-        if (this.activeModel[this.index] == undefined ||
-          this.activeModel[this.index] == null) {
-          this.activeModel[this.index] = moment().format('YYYY-MM-DD')
+        if (this.myValue == undefined ||
+          this.myValue == null) {
+          this.myValue = moment().format('YYYY-MM-DD')
         }
+      }
+    }
+  },
+  computed: {
+    myValue: {
+      get: function () {
+        return this.activeModel[this.index]
+      },
+      // setter
+      set: function (newValue) {
+        this.activeModel[this.index] = newValue
       }
     }
   },
   methods: {
     onSave () {
-      this.$emit('changed', this.activeModel)
+      this.$emit('changed', this.model)
       this.menu = false
     },
     onClose () {
-      this.activeModel[this.index] = this.model[this.index]
+      this.myValue = this.model[this.index]
       this.menu = false
     },
     onClear () {
-      this.activeModel[this.index] = null
+      this.myValue = null
     },
     formatDate (date) {
       if (date == null) return ''

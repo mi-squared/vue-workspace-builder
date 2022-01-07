@@ -1,25 +1,45 @@
 <template>
   <div class="json-form">
-    <v-form v-if="loaded" v-model="valid">
-      <v-jsf
-        v-model="activeModel"
-        :key="form.id"
-        :schema="activeSchema"
-        :options="optionsForForm"
-        @input="onFormChange"
-      >
-        <!-- Templates for custom elements -->
-        <template slot="custom-patient" slot-scope="context">
-          <PatientPicker :pid="pid" :patient="activePatient" :locked="patientPickerLocked" v-bind="context" @changed="onPatientChanged"></PatientPicker>
-    <!--      <v-date-picker v-bind="context"></v-date-picker>-->
-        </template>
+    <v-card flat>
+      <v-form v-if="loaded" v-model="valid">
+        <v-jsf
+          v-model="VJSFModel"
+          :key="form.id"
+          :schema="activeSchema"
+          :options="optionsForForm"
+          @input-child="onFormElementChange"
+          @input="onFormChange"
+        >
+          <!-- Templates for custom elements -->
+          <template slot="custom-patient" slot-scope="context">
+            <PatientPicker :pid="pid" :patient="activePatient" :locked="patientPickerLocked" v-bind="context" @changed="onPatientChanged"></PatientPicker>
+      <!--      <v-date-picker v-bind="context"></v-date-picker>-->
+          </template>
 
-        <template slot="custom-user" slot-scope="context">
-          <v-autocomplete v-bind="context" :items="listOptions['active_users'].data"></v-autocomplete>
-        </template>
-      </v-jsf>
-    </v-form>
-    <v-skeleton-loader v-else type="article, actions "></v-skeleton-loader>
+          <template slot="custom-user" slot-scope="context">
+            <v-autocomplete v-bind="context" :items="listOptions['active_users'].data"></v-autocomplete>
+          </template>
+        </v-jsf>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn
+            color="blue darken-1"
+            text
+            @click="onCancel"
+          >
+            Close
+          </v-btn>
+          <v-btn
+            color="blue darken-1"
+            text
+            @click=onSave
+          >
+            Save
+          </v-btn>
+        </v-card-actions>
+      </v-form>
+      <v-skeleton-loader v-else type="article, actions "></v-skeleton-loader>
+    </v-card>
   </div>
 </template>
 
@@ -94,6 +114,7 @@ export default {
           }
         }
       },
+      VJSFModel: { ...this.model }, // Need to keep separate models for VJSF instance and maintain our own state because of the events component givies us
       activeModel: { ...this.model },
       activePatient: { ...this.patient },
       activeSchema: { ...this.schema }
@@ -108,12 +129,57 @@ export default {
     ...mapListActions({
       fetchListsBulk: FETCH_LISTS_WITH_DATA_BULK
     }),
-    onFormChange(param) {
+    onSave () {
       if (this.loaded) {
-        this.$emit('changed', {
+        this.$emit('save', {
           model: this.activeModel,
           patient: this.activePatient
         })
+      }
+    },
+    onCancel () {
+      this.activeModel = this.model
+      this.activePatient = this.patient
+      this.$emit('cancel')
+    },
+    /**
+     * Listen on the @input event on the vjsf instance. This gives us all the fields that have values.
+     * NOTE, that if a value is "cleared" (had a value, but now does not) it will NOT be in this object,
+     * so we handle those separately on the onFormElementChange event
+     */
+    onFormChange(param) {
+      if (this.loaded) {
+
+        // Merge our separate state with the state from the VJSF model. We have to do this because VJSF only
+        // provides fields that have values (not fields that have been cleared) in this message. We don't want
+        // VJSF to overwrite the record of the clearing of a model that happens in the onFormElementChange() function
+        this.activeModel = {
+          ...this.activeModel,
+          ...this.VJSFModel
+        }
+        this.optionsForForm = this.calculateOptions()
+        console.log("onFormChange(param)")
+        console.log(param)
+      } else {
+        console.log("onFormChange: skipping notification parent")
+      }
+    },
+    /**
+     * Listen to @input-child event on the vjsf instance. This gives us a key/value pair
+     * when a field is changed
+     *
+     * @param param
+     */
+    onFormElementChange(param) {
+      if (this.loaded) {
+
+        let newVal = param.value
+        if (param.value == undefined) {
+          newVal = null
+        }
+        // set entity
+        this.activeModel[param.fullKey] = newVal
+
         this.optionsForForm = this.calculateOptions()
         console.log("onFormChange(param)")
         console.log(param)
@@ -256,8 +322,10 @@ export default {
   TODO This is added to hide the "clear" X. The clear functionality (clearable prop in vuetify select)
   is tied to required fields. This is not implemented at this time, and they want to be able to leave
   fields blank until set and requires more thought on how to implement. for now, we hide.
- */
+
 .v-input__icon--clear {
   display: none;
 }
+
+ */
 </style>
