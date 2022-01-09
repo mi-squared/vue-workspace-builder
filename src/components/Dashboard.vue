@@ -432,6 +432,7 @@
                     :model="item"
                     :items="listOptionsForItem(header)"
                     @changed="onEntityChanged"
+                    @show="onDashboardComponentVisibilityChanged"
                   ></SelectModal>
                 </div>
 
@@ -459,6 +460,7 @@
                     :entity="item"
                     :index="header.value"
                     @save="onEntityChanged"
+                    @show="onDashboardComponentVisibilityChanged"
                   ></EditableString>
                 </div>
 
@@ -470,6 +472,7 @@
                     timeFormat="HH:mm"
                     dateFormat="MM/dd/yyyy"
                     @input="onEntityChanged(item)"
+                    @show="onDashboardComponentVisibilityChanged"
                   >
                     <v-icon slot="dateIcon">mdi-calendar</v-icon>
                     <v-icon slot="timeIcon">mdi-clock</v-icon>
@@ -483,6 +486,7 @@
                     :model="item"
                     :index="header.value"
                     @changed="onEntityChanged"
+                    @show="onDashboardComponentVisibilityChanged"
                   ></DatePickerModal>
 
                 </div>
@@ -556,51 +560,17 @@
             persistent
             max-width="800px"
           >
-
-            <v-card>
-              <v-card-title>
-                <span class="text-h5">New {{ this.entityTitle }}</span>
-              </v-card-title>
-              <v-card-text>
-                <v-container>
-                  <JsonForm
-                    v-if="newEntityForm"
-                    :form="newEntityForm"
-                    :key="entityCreateKey"
-                    :model="newEntityModel"
-                    :schema="newEntityForm.schema"
-                    :options="newEntityForm.options"
-                    @changed="newEntityChanged"
-                  ></JsonForm>
-                  <v-alert v-else dark color="red">No Form Selected For New Entity</v-alert>
-                </v-container>
-                <small>*indicates required field</small>
-              </v-card-text>
-              <v-card-actions>
-                <v-spacer></v-spacer>
-                <v-btn
-                  color="blue darken-1"
-                  text
-                  @click="onNewEntityModalClosed"
-                >
-                  Close
-                </v-btn>
-                <v-btn
-                  color="blue darken-1"
-                  text
-                  @click="saveNewEntity"
-                >
-                  Save
-                </v-btn>
-                <v-btn
-                  color="blue darken-3"
-                  dark
-                  @click="saveNewEntity(true)"
-                >
-                  Save & Transmit
-                </v-btn>
-              </v-card-actions>
-            </v-card>
+            <JsonForm
+              v-if="newEntityForm"
+              :form="newEntityForm"
+              :key="entityCreateKey"
+              :model="newEntityModel"
+              :schema="newEntityForm.schema"
+              :options="newEntityForm.options"
+              @save="saveNewEntity"
+              @cancel="onNewEntityModalClosed"
+            ></JsonForm>
+            <v-alert v-else dark color="red">No Form Selected For New Entity</v-alert>
           </v-dialog>
         </v-row>
       </template>
@@ -927,7 +897,7 @@ export default {
      * by the main form)
      */
     generateKey (item, header) {
-      return item.id + '_' + header.value + '_' + header.type + '_' + this.changeCount[item.id]
+      return item.id + '_' + header.value + '_' + header.type + '_' + this.changeCount[Number(item.id)]
     },
     getDurationValue(entity) {
       const durationField = this.durationField;
@@ -1010,16 +980,22 @@ export default {
     },
     onNewEntityModalClosed () {
       this.dialog = false
-      this.newEntityModel = {}
-      this.newPatientModel = {}
+      this.newEntityModel = null
+      this.newPatientModel = null
       this.entityCreateKey++
     },
-    saveNewEntity (transmit = false) {
-      // If the user clicks "Save & Transmit" then we set transmit_to_ns to true
-      this.newPatientModel.transmit_to_ns = transmit
-
+    saveNewEntity ({ entity, patient }) {
       // Save the entity
       console.log("Saving New Entity: " + this.newEntityModel)
+
+      this.newEntityModel = {
+        ...this.newEntityModel,
+        ...entity
+      }
+      this.newPatientModel = {
+        ...this.newPatientModel,
+        ...patient
+      }
 
       let that = this
       this.createEntity({
@@ -1032,27 +1008,20 @@ export default {
         // TODO we shouldn't have to do this if the API returned the correctly formatted entity on the create endpoint
         that.loadEntitiesApi()
         // Reset the model
-        that.newEntityModel = {}
-        that.newPatientModel = {}
-        that.entityCreateKey++
-
-        that.dialog = false
+        that.onNewEntityModalClosed()
       })
-
-    },
-    newEntityChanged({ model, patient }) {
-      this.newEntityModel = model
-      this.newPatientModel = patient
     },
     onEntityIdClick(entity) {
-      this.mainEntityModel = {...entity}
-      this.mainPatientModel = {...this.extractPatient(entity)}
+      this.backgroundRefreshTimer = false // Pause the timer / background refresh while form is open
+      this.mainEntityModel = { ...entity }
+      this.mainPatientModel = { ...this.extractPatient(entity) }
       this.mainFormDialogs[entity.id] = true
     },
-    onMainFormEntitySaved({ model, patient }) {
+    onMainFormEntitySaved({ entity, patient }) {
+      this.backgroundRefreshTimer = true
       this.mainEntityModel = {
         ...this.mainEntityModel,
-        ...model
+        ...entity
       }
       this.mainPatientModel = {
         ...this.mainPatientModel,
@@ -1063,9 +1032,10 @@ export default {
       this.loadEntitiesApi()
     },
     onMainFormClosed (entity) {
+      this.backgroundRefreshTimer = false // Pause the timer / background refresh while form is open
       // Clear the entity and patient models when we close the main form
-      this.mainEntityModel = {}
-      this.mainPatientModel = {}
+      this.mainEntityModel = null
+      this.mainPatientModel = null
       this.mainFormDialogs[entity.id] = false
     },
     onNoteSaved(payload) {
@@ -1148,9 +1118,9 @@ export default {
         } else {
           text = text + "Sent from workspace "
         }
-        const workspaceTitle = this.dashboard.workspaces[entity.source.extra.workspaceId]
-        if (workspaceTitle == undefined) {
-          console.log("ERROR: we don't have a title for workspace: " + entity.source.extra.workspaceId  )
+        let workspaceTitle = ''
+        if (this.dashboard.workspaces[entity.source.extra.workspaceId] != undefined) {
+          workspaceTitle = this.dashboard.workspaces[entity.source.extra.workspaceId]
         }
         return text + workspaceTitle
       }
@@ -1207,7 +1177,7 @@ export default {
         patient: this.mainPatientModel // Send the patient model along with the entity
       }).then(() => {
         // force update of the dashboard form components by incrementing change count, which they use as part of :key
-        this.changeCount[entity.id]++
+        this.incrementChangeCount(Number(entity.id))
         this.loaded = true
         this.loadEntitiesApi()
       })
@@ -1404,9 +1374,21 @@ export default {
         this.entities = response.entities
         this.orderedEntities = response.orderedEntities
         that.loaded = true
+
+        // Force re-render of dashboard form components
+        that.orderedEntities.forEach(entityId => {
+          that.incrementChangeCount(Number(entityId))
+        })
         // // start the counter that uses the current time to determine attrition
         // that.refreshAttrition()
       })
+    },
+    incrementChangeCount(entityId) {
+      if (this.changeCount[entityId] == undefined) {
+        this.changeCount[entityId] = 1
+      } else {
+        this.changeCount[entityId]++
+      }
     },
     calculateTableHeight() {
       return document.querySelector('#app').clientHeight - 64 - 60
@@ -1416,10 +1398,17 @@ export default {
       console.log("height: " + this.tableHeight)
     },
     pauseRefresh () {
-      this.backgroundRefreshTimer = false
+      //this.backgroundRefreshTimer = false
       setInterval(() => {
-        this.backgroundRefreshTimer = true
+        //this.backgroundRefreshTimer = true
       }, 3000)
+    },
+    onDashboardComponentVisibilityChanged (isShowing) {
+      if (isShowing) {
+        this.backgroundRefreshTimer = false
+      } else {
+        this.backgroundRefreshTimer = true
+      }
     }
   },
   mounted () {

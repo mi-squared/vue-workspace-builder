@@ -303,10 +303,14 @@ export default {
      * When fname or lname boxes are typed in (@keydown), or DOB is changed
      */
     fetchMatches() {
-      if (this.activePatient != undefined &&
-        (this.activePatient.fname.length > 2 ||
-        this.activePatient.lname.length > 2 ||
-        this.activePatient.DOB.length > 2)) {
+      if (
+        this.activePatient != undefined &&
+        (
+          (this.activePatient.fname != undefined && this.activePatient.fname.length > 2) ||
+          (this.activePatient.lname != undefined && this.activePatient.lname.length > 2) ||
+          (this.activePatient.DOB != undefined && this.activePatient.DOB.length > 2)
+        )
+      ) {
         this.loadingMatches = true
         const userMeta = this.getUserMeta
         const patientRequest = {
@@ -357,6 +361,11 @@ export default {
         this.fetchMatches()
       }
     }, 500))
+  },
+  beforeDestroy () {
+    this.activePatient = null
+    this.listOptions = null
+    this.formattedDOB = null
   }
 }
 </script>

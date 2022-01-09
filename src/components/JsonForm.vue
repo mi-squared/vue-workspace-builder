@@ -1,44 +1,55 @@
 <template>
   <div class="json-form">
     <v-card flat>
-      <v-form v-if="loaded" v-model="valid">
-        <v-jsf
-          v-model="VJSFModel"
-          :key="form.id"
-          :schema="activeSchema"
-          :options="optionsForForm"
-          @input-child="onFormElementChange"
-          @input="onFormChange"
-        >
-          <!-- Templates for custom elements -->
-          <template slot="custom-patient" slot-scope="context">
-            <PatientPicker :pid="pid" :patient="activePatient" :locked="patientPickerLocked" v-bind="context" @changed="onPatientChanged"></PatientPicker>
-      <!--      <v-date-picker v-bind="context"></v-date-picker>-->
-          </template>
+      <v-card-title v-if="this.title">{{ this.title }}</v-card-title>
+      <v-card-text>
+        <v-form v-if="loaded" v-model="valid">
+          <v-jsf
+            v-model="VJSFModel"
+            :key="form.id"
+            :schema="activeSchema"
+            :options="optionsForForm"
+            @input-child="onFormElementChange"
+            @input="onFormChange"
+          >
+            <!-- Templates for custom elements -->
+            <template slot="custom-patient" slot-scope="context">
+              <PatientPicker :pid="pid" :patient="activePatient" :locked="patientPickerLocked" v-bind="context" @changed="onPatientChanged"></PatientPicker>
+        <!--      <v-date-picker v-bind="context"></v-date-picker>-->
+            </template>
 
-          <template slot="custom-user" slot-scope="context">
-            <v-autocomplete v-bind="context" :items="listOptions['active_users'].data"></v-autocomplete>
-          </template>
-        </v-jsf>
-        <v-card-actions>
-          <v-spacer></v-spacer>
-          <v-btn
-            color="blue darken-1"
-            text
-            @click="onCancel"
-          >
-            Close
-          </v-btn>
-          <v-btn
-            color="blue darken-1"
-            text
-            @click=onSave
-          >
-            Save
-          </v-btn>
-        </v-card-actions>
-      </v-form>
-      <v-skeleton-loader v-else type="article, actions "></v-skeleton-loader>
+            <template slot="custom-user" slot-scope="context">
+              <v-autocomplete v-bind="context" :items="listOptions['active_users'].data"></v-autocomplete>
+            </template>
+          </v-jsf>
+          <v-card-actions>
+            <v-spacer></v-spacer>
+            <v-btn
+              color="blue darken-1"
+              text
+              @click="onCancel"
+            >
+              Close
+            </v-btn>
+            <v-btn
+              color="blue darken-1"
+              text
+              @click=onSave(false)
+            >
+              Save
+            </v-btn>
+
+            <v-btn
+              color="blue darken-3"
+              dark
+              @click="onSave(true)"
+            >
+              Save & Transmit
+            </v-btn>
+          </v-card-actions>
+        </v-form>
+        <v-skeleton-loader v-else type="article, actions "></v-skeleton-loader>
+      </v-card-text>
     </v-card>
   </div>
 </template>
@@ -75,6 +86,10 @@ export default {
     options: {
       type: Object,
       required: true
+    },
+    title: {
+      type: String,
+      required: false
     },
     pid: {
       type: Number,
@@ -129,10 +144,14 @@ export default {
     ...mapListActions({
       fetchListsBulk: FETCH_LISTS_WITH_DATA_BULK
     }),
-    onSave () {
+    onSave (transmit_to_ns = false) {
       if (this.loaded) {
+
+        // If the user clicks "Save & Transmit" then we set transmit_to_ns to true
+        this.activePatient.transmit_to_ns = transmit_to_ns
+
         this.$emit('save', {
-          model: this.activeModel,
+          entity: this.activeModel,
           patient: this.activePatient
         })
       }
@@ -264,6 +283,13 @@ export default {
     } else {
       this.patientPickerLocked = false
     }
+  },
+  beforeDestroy () {
+    this.VJSFModel = null
+    this.activeModel = null
+    this.activePatient = null
+    this.activeSchema = null
+    this.listOptions = null
   },
   mounted () {
     console.log("JsonForm Mounted")

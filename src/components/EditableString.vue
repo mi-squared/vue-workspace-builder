@@ -68,6 +68,15 @@ export default {
       }
     }
   },
+  watch: {
+    menu: function () {
+      if (this.menu === true) {
+        this.$emit("show", true)
+      } else {
+        this.$emit("show", false)
+      }
+    }
+  },
   methods: {
     onSave() {
       this.$emit('save', this.entity)

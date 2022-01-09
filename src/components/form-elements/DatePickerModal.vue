@@ -113,11 +113,14 @@ export default {
   watch: {
     menu: function () {
       if (this.menu === true) {
+        this.$emit("show", true)
         // If
         if (this.myValue == undefined ||
           this.myValue == null) {
           this.myValue = moment().format('YYYY-MM-DD')
         }
+      } else {
+        this.$emit("show", false)
       }
     }
   },
@@ -134,7 +137,7 @@ export default {
   },
   methods: {
     onSave () {
-      this.$emit('changed', this.model)
+      this.$emit('changed', this.activeModel)
       this.menu = false
     },
     onClose () {
@@ -156,6 +159,9 @@ export default {
   },
   mounted () {
 
+  },
+  beforeDestroy () {
+    this.activeModel = null
   }
 }
 </script>

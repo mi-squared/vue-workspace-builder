@@ -129,9 +129,18 @@ export default {
       return ''
     }
   },
+  watch: {
+    menu: function () {
+      if (this.menu === true) {
+        this.$emit("show", true)
+      } else {
+        this.$emit("show", false)
+      }
+    }
+  },
   methods: {
     onSave () {
-      this.$emit('changed', this.model)
+      this.$emit('changed', this.activeModel)
       this.menu = false
     },
     onClose () {
@@ -144,6 +153,9 @@ export default {
   },
   mounted () {
     this.loaded = true
+  },
+  beforeDestroy () {
+    this.activeModel = null
   }
 }
 </script>

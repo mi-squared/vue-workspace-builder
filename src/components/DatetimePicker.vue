@@ -237,6 +237,12 @@ export default {
       this.date = date
       const time = format(initDateTime, DEFAULT_TIME_FORMAT)
       this.time = time
+
+      if (this.display === true) {
+        this.$emit("show", true)
+      } else {
+        this.$emit("show", false)
+      }
     },
     okHandler() {
       this.resetPicker()
