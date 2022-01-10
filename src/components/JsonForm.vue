@@ -288,8 +288,8 @@ export default {
     this.VJSFModel = null
     this.activeModel = null
     this.activePatient = null
-    this.activeSchema = null
     this.listOptions = null
+    this.optionsForForm = null
   },
   mounted () {
     console.log("JsonForm Mounted")

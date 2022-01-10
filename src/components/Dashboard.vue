@@ -675,7 +675,6 @@ export default {
       listOptions: {}, // Stores the options for select lists fetched from API
       globalSearch: '',
       totalEntities: 0,
-      entities: {},
       orderedEntities: [],
       newEntityModel: {},
       newPatientModel: {},
@@ -733,6 +732,7 @@ export default {
         "value": "data-indicators",
         "groupable": false,
         "sortable": false,
+        width: "80px"
       },
       noteHeader: {
         "text": "",
@@ -873,7 +873,7 @@ export default {
     },
     clocktime() {
       let m = this.currentTimestamp
-      return m.tz(this.timeZone).format("MM/DD/YYYY HH:mm:ss")
+      return m.tz(this.timeZone).format("MM/DD/YYYY HH:mm")
     }
   },
   methods: {
@@ -904,7 +904,7 @@ export default {
       if (entity[durationField] != undefined) {
         return entity[durationField]
       } else {
-        console.log("ERROR: The field used for duration is undefined: " + durationField)
+        // Doesn't have the value set, just return empty string
         return ''
       }
     },
@@ -980,8 +980,8 @@ export default {
     },
     onNewEntityModalClosed () {
       this.dialog = false
-      this.newEntityModel = null
-      this.newPatientModel = null
+      this.newEntityModel = {}
+      this.newPatientModel = {}
       this.entityCreateKey++
     },
     saveNewEntity ({ entity, patient }) {
@@ -1034,8 +1034,8 @@ export default {
     onMainFormClosed (entity) {
       this.backgroundRefreshTimer = false // Pause the timer / background refresh while form is open
       // Clear the entity and patient models when we close the main form
-      this.mainEntityModel = null
-      this.mainPatientModel = null
+      this.mainEntityModel = {}
+      this.mainPatientModel = {}
       this.mainFormDialogs[entity.id] = false
     },
     onNoteSaved(payload) {
@@ -1291,15 +1291,14 @@ export default {
     refreshAttrition: function () {
       this.timer = setInterval(() => {
         this.currentTimestamp = this.getCurrentTimestamp()
-        //this.loadEntitiesApi()
-      }, 1000)
+      }, 5000)
 
       this.updateTimer = setInterval(() => {
         if (this.backgroundRefresh === true &&
           this.backgroundRefreshTimer === true) {
           this.loadEntitiesApi(false)
         }
-      }, 5000)
+      }, 10000)
     },
     cancelAutoUpdate () {
       clearInterval(this.updateTimer)
@@ -1311,8 +1310,8 @@ export default {
       if (this.durationField) {
         moved_to_dashboard_date = entity[this.durationField]
       }
-      let a = moment().tz(this.timeZone)
-      let b = moment.tz(moved_to_dashboard_date, this.timeZone)
+      const a = moment().tz(this.timeZone)
+      const b = moment.tz(moved_to_dashboard_date, this.timeZone)
       let minutes = a.diff(b, 'minutes')
       for (let i = 0; i < this.dashboard.durationModel.ranges.length; ++i) {
         const range = this.dashboard.durationModel.ranges[i]
@@ -1370,9 +1369,8 @@ export default {
         filter: this.filter,
         paginationOptions: this.paginationOptions,
       }).then((response) => {
-        this.totalEntities = Number(response.total)
-        this.entities = response.entities
-        this.orderedEntities = response.orderedEntities
+        that.totalEntities = Number(response.total)
+        that.orderedEntities = response.orderedEntities
         that.loaded = true
 
         // Force re-render of dashboard form components
@@ -1430,9 +1428,9 @@ export default {
         that.listOptions = listOptions
 
         // start the counter that uses the current time to determine attrition
-        this.refreshAttrition()
+        that.refreshAttrition()
 
-        this.tableHeight = this.calculateTableHeight()
+        that.tableHeight = that.calculateTableHeight()
       })
     })
   },
