@@ -1012,10 +1012,10 @@ export default {
       })
     },
     onEntityIdClick(entity) {
-      this.backgroundRefreshTimer = false // Pause the timer / background refresh while form is open
       this.mainEntityModel = { ...entity }
       this.mainPatientModel = { ...this.extractPatient(entity) }
       this.mainFormDialogs[entity.id] = true
+      this.backgroundRefreshTimer = false // Pause the timer / background refresh while form is open
     },
     onMainFormEntitySaved({ entity, patient }) {
       this.backgroundRefreshTimer = true
