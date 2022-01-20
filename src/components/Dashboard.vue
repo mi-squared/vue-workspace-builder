@@ -304,13 +304,15 @@
                 <table>
                   <tr>
                     <td class="py-0 px-1">
-                      <DashboardFilesButton>
+                      <DashboardFilesButton
+                        :entity="item"
+                        :dashboard="dashboard"
+                      >
                       </DashboardFilesButton>
                     </td>
                   </tr>
                 </table>
               </div>
-
 
               <div v-else-if="header.value == 'data-notes'">
                 <table>
@@ -703,7 +705,7 @@ export default {
       showArchives: false,
       backgroundRefresh: true,
       backgroundRefreshTimer: true,
-      changeCount: [],
+      changeCount: {}, // histogram of counts each compnenent changes
       isPreview: this.preview || false,
       skeletonLoaderAttrs: {
         class: 'mb-6',
@@ -753,6 +755,13 @@ export default {
         "groupable": false,
         "sortable": false,
         "width": "120px"
+      },
+      filesHeader: {
+        "text": "",
+        "value": "data-files",
+        "groupable": false,
+        "sortable": false,
+        "width": "40px"
       },
       actionHeader: {
         "text": "",
@@ -843,6 +852,7 @@ export default {
         ...this.dashboard.headers
       ]
       headers.push(this.noteHeader)
+      headers.push(this.filesHeader)
       // headers.push(this.expandHeader) we removed the header definition for expand, and removed show-expand from data table definition
       headers.push(this.actionHeader)
       return headers

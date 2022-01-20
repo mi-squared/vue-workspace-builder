@@ -125,7 +125,8 @@ export default {
             return new Date(date.getTime() + (date.getTimezoneOffset() * 60000)).toLocaleDateString(locale)
           },
           'date-time': (dateTime, locale) => {
-            return new Date(dateTime).toLocaleString(locale, { hour12: false })
+            const datetime = dateTime.toLocaleString(locale, { hour12: false })
+            return datetime
           }
         }
       },
