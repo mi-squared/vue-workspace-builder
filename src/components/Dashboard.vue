@@ -456,7 +456,7 @@
 
                 <div v-if="header.type == 'string'">
                   <EditableString
-                    :key="generateKey"
+                    :key="generateKey(item, header)"
                     :entity="item"
                     :index="header.value"
                     @save="onEntityChanged"
