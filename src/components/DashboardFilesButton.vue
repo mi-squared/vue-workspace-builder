@@ -26,7 +26,7 @@
         <v-list-item
           v-for="(item, index) in files"
           :key="index"
-          @click="onClick"
+          @click="onClick(item)"
         >
           <v-list-item-title>{{ item.title }}</v-list-item-title>
         </v-list-item>
@@ -68,15 +68,13 @@ export default {
     }
   },
   methods: {
-    onClick () {
+    onClick (item) {
       // If there is one file, then open the file, if there is more than one, open selector
-      if (this.fileCount == 1) {
-        const pdf = '/openemr/controller.php?document&retrieve&patient_id=165742&document_id=715412';
-        window.open(pdf);
-      } else {
-        const pdf = '/openemr/controller.php?document&retrieve&patient_id=165742&document_id=715412';
-        window.open(pdf);
-      }
+      const pdf = '/openemr/controller.php?document&retrieve&patient_id=' +
+        item.pid +
+        '&document_id=' +
+        item.metaValue;
+      window.open(pdf);
     }
   }
 }
