@@ -147,14 +147,17 @@ export default {
     }),
     onSave (transmit_to_ns = false) {
       if (this.loaded) {
+        if (this.valid) {
+          // If the user clicks "Save & Transmit" then we set transmit_to_ns to true
+          this.activePatient.transmit_to_ns = transmit_to_ns
 
-        // If the user clicks "Save & Transmit" then we set transmit_to_ns to true
-        this.activePatient.transmit_to_ns = transmit_to_ns
-
-        this.$emit('save', {
-          entity: this.activeModel,
-          patient: this.activePatient
-        })
+          this.$emit('save', {
+            entity: this.activeModel,
+            patient: this.activePatient
+          })
+        } else {
+          alert("Some data is missing or invalid.")
+        }
       }
     },
     onCancel () {

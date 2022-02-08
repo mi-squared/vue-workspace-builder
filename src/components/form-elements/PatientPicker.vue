@@ -37,6 +37,7 @@
                   @input="onPatientChanged"
                   :readonly="readonly"
                   :disabled="readonly"
+                  :rules="[rules.required]"
                 ></v-text-field>
               </v-col>
               <v-col>
@@ -49,6 +50,7 @@
                   @input="onPatientChanged"
                   :readonly="readonly"
                   :disabled="readonly"
+                  :rules="[rules.required]"
                 ></v-text-field>
               </v-col>
             </v-row>
@@ -65,6 +67,7 @@
                   @input="onPatientChanged"
                   :readonly="readonly"
                   :disabled="readonly"
+                  :rules="[rules.required, rules.validateDOB]"
                 >
                   <span slot="prepend">
                     <v-icon
@@ -82,6 +85,7 @@
                   v-model="activePatient.sex"
                   :readonly="readonly"
                   :disabled="readonly"
+                  :rules="[rules.required]"
                 ></v-select>
               </v-col>
             </v-row>
@@ -240,6 +244,19 @@ export default {
       loaded: false,
       modal: false, // DOB date-picker modal
       listOptions: {},
+      rules: {
+        required: value => !!value || 'Required.',
+        validateDOB: (dobString) => {
+          let valid = true
+          if (dobString != null) {
+            const dob = new Date(dobString)
+            if (dob == undefined || dob == "Invalid Date" || isNaN(dob)) {
+              valid = 'Invalid DOB.'
+            }
+          }
+          return valid
+        }
+      }
     }
   },
   computed: {

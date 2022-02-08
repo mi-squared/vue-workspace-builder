@@ -128,17 +128,19 @@ export default {
       }
     ),
     specialColumns () {
-      let dataTypes = this.getDataTypes
+      // let dataTypes = this.getDataTypes()
+      //
+      // let columns = dataTypes.filter(dataType => {
+      //   if (dataType.mysql == 'has_many') {
+      //     return dataType
+      //   }
+      // }).map(dataType => {
+      //   return { column: dataType.name }
+      // })
+      //
+      // return columns
 
-      let columns = dataTypes.filter(dataType => {
-        if (dataType.mysql == 'has_many') {
-          return dataType
-        }
-      }).map(dataType => {
-        return { column: dataType.name }
-      })
-
-      return columns
+      return []
     },
     /**
      * Get data source columns that don't have any database columns

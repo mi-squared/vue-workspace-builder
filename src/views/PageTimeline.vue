@@ -224,9 +224,9 @@
                   </v-dialog>
                   <!---  - ----------------- - - - ----------->
                   <v-badge
-                    v-if="timelineItem.notes.length > 0"
+                    v-if="timelineNotes(timelineItem).length > 0"
                     color="green"
-                    :content="timelineItem.notes.length"
+                    :content="timelineNotes(timelineItem).length"
                     overlap
                   >
                     <v-btn
@@ -246,9 +246,13 @@
                       <v-icon>mdi-menu-down</v-icon>
                     </v-btn>
                   </v-badge>
+                  <v-spacer></v-spacer>
+                  <DashboardFilesButton
+                    :entity="timelineItem"
+                  ></DashboardFilesButton>
                 </v-card-actions>
                 <v-card-text v-if="showNotes[i]">
-                  <NoteHistoryTimeline :notes="timelineItem.notes" :activeUsersList="listOptions['active_users'].data"></NoteHistoryTimeline>
+                  <NoteHistoryTimeline :notes="timelineNotes(timelineItem)" :activeUsersList="listOptions['active_users'].data"></NoteHistoryTimeline>
                 </v-card-text>
               </v-card>
             </v-timeline-item>
@@ -278,6 +282,7 @@ import { FETCH_LISTS_WITH_DATA_BULK, GET_LIST } from '../store/types-list'
 import {
   PUSH_ENTITY
 } from '../store/types-dashboard'
+import DashboardFilesButton from '../components/DashboardFilesButton'
 
 const { mapGetters: mapTimelineGetters, mapActions: mapTimelineActions } = createNamespacedHelpers('timeline')
 const { mapGetters: mapWorkspaceGetters, mapActions: mapWorkspaceActions } = createNamespacedHelpers('workspace')
@@ -288,6 +293,7 @@ const { mapActions: mapDashboardActions } = createNamespacedHelpers('dashboard')
 export default {
   name: 'PageTimeline',
   components: {
+    DashboardFilesButton,
     NoteHistoryTimeline,
     JsonFormTimelineView,
     JsonForm
@@ -413,6 +419,12 @@ export default {
     },
     loadPatientDashboard() {
       setOpenEmrPatient(this.pid)
+    },
+    timelineNotes(timelineItem) {
+      if (timelineItem.notes != undefined) {
+       return Object.values(timelineItem.notes)
+      }
+      return []
     },
     extractPatient (entity) {
       // Given an entity, which contains all patient data, extract only patient fields

@@ -1289,7 +1289,8 @@ export default {
           workspaceId: workspaceId,
           dashboardId: defaultDashboardId,
           entity: newEntity,
-          patient: null // We don't send the patient, because there should already be an existing PID in the entity
+          patient: null, // We don't send the patient, because there should already be an existing PID in the entity
+          sourceEntityId: entity.id // source is the original entity
         }).then(() => {
           this.snackbarText = "Successfully Sent to Workspace " + this.workspaces[workspaceId]
           this.snackbar = true

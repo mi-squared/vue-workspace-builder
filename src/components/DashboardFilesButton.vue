@@ -1,24 +1,5 @@
 <template>
-  <div
-    v-if="fileCount == 1"
-  >
-    <v-btn
-      icon
-      @click="onClick"
-    >
-      <v-badge
-        :content="fileCount"
-        :value="fileCount"
-        color="orange"
-        overlap
-      >
-        <v-icon>
-          mdi-attachment
-        </v-icon>
-      </v-badge>
-    </v-btn>
-  </div>
-  <div v-else>
+  <div>
     <v-menu
       :close-on-click="true"
     >
@@ -65,7 +46,7 @@ export default {
     },
     dashboard: {
       type: Object,
-      required: true
+      required: false
     }
   },
   data () {
@@ -76,14 +57,14 @@ export default {
   computed: {
     fileCount () {
       //getFilessByEntityId({ entityId: item.id, dashboardId: dashboard.id }).length
-      return 3
+      return this.files.length
     },
     files () {
-      return [
-        { title: 'file 1' },
-        { title: 'file 2' },
-        { title: 'file 3' },
-      ]
+      if (this.entity.attachments != null) {
+        return Object.values(this.entity.attachments)
+      } else {
+        return []
+      }
     }
   },
   methods: {
