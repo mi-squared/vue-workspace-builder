@@ -1,6 +1,6 @@
 <template>
 <div class="select-modal">
-  <div v-if="loaded && items != undefined">
+  <div v-if="loaded && items != undefined && items.length > 0">
 
     <v-menu
       top
@@ -80,12 +80,19 @@
 </template>
 
 <script>
+import { createNamespacedHelpers } from 'vuex'
+import { GET_LIST } from '../../store/types-list'
+const { mapGetters: mapListGetters } = createNamespacedHelpers('list')
 export default {
   name: 'SelectModal',
   props: {
-    items: {
+    listId :{
+      type: String,
       required: true
     },
+    // items: {
+    //   required: true
+    // },
     id: {
       type: String,
       required: true
@@ -107,6 +114,9 @@ export default {
     }
   },
   computed: {
+    ...mapListGetters({
+      getList: GET_LIST
+    }),
     myValue: {
       get: function () {
         return this.activeModel[this.index]
@@ -115,6 +125,9 @@ export default {
       set: function (newValue) {
         this.activeModel[this.index] = newValue
       }
+    },
+    items () {
+      return this.getList(this.listId).data
     },
     displayValue () {
       const displayValue = this.items.find(item => {

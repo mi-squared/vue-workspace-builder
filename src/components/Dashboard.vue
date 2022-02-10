@@ -443,7 +443,7 @@
                     :id="item.id"
                     :index="header.value"
                     :model="item"
-                    :items="listOptionsForItem(header)"
+                    :listId="listIdForItem(header)"
                     @changed="onEntityChanged"
                     @show="onDashboardComponentVisibilityChanged"
                   ></SelectModal>
@@ -988,6 +988,14 @@ export default {
       })
       return patient
     },
+    listIdForItem (header) {
+      // Using the list ID for this header, return the options
+      if (header.extra.listId != undefined) {
+        return header.extra.listId
+      } else {
+        return ''
+      }
+    },
     listOptionsForItem (header) {
       // Using the list ID for this header, return the options
       if (header.extra.listId != undefined) {
@@ -1072,10 +1080,11 @@ export default {
       })
     },
     lastNoteText(entity) {
-      const notes = this.getNotesByEntityId({
-        entityId: entity.id,
-        dashboardId: this.dashboard.id
-      })
+      // const notes = this.getNotesByEntityId({
+      //   entityId: entity.id,
+      //   dashboardId: this.dashboard.id
+      // })
+      const notes = entity.notes
       if (notes.length > 0) {
         const noteText = notes[notes.length - 1].text
         if (noteText.length > 60) {

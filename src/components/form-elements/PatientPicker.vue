@@ -248,7 +248,9 @@ export default {
         required: value => !!value || 'Required.',
         validateDOB: (dobString) => {
           let valid = true
-          if (dobString != null) {
+          if (dobString.length != 10) {
+            valid = 'Invalid DOB.'
+          } else if (dobString != null) {
             const dob = new Date(dobString)
             if (dob == undefined || dob == "Invalid Date" || isNaN(dob)) {
               valid = 'Invalid DOB.'
@@ -282,6 +284,8 @@ export default {
         phone_home: "",
         phone_cell: "",
       }
+      this.formattedDOB = "";
+      this.DOB = ""
       this.matches = []
     },
     formatDOBMysql(date) {

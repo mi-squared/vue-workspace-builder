@@ -327,22 +327,18 @@ export default {
     }
 
     // Push all of the listIds of lists required for this form into an array, and fetch them all
-    let listIdsForFetch = ['active_users']
+    //let listIdsForFetch = ['active_users']
+    let that = this
     Object.values(this.schema.properties).forEach(function(properties) {
       if (properties['listId'] != undefined) {
-        listIdsForFetch.push(properties['listId'])
+        // listIdsForFetch.push(properties['listId'])
+        that.listOptions[properties['listId']] = that.getList(properties['listId'])
       }
     })
-    const that = this
-    this.fetchListsBulk({ arrayOfListIds: listIdsForFetch }).then(listOptions => {
-      // We are basically copying all the lists to local state here (TODO we really only need the ones with IDs we identified)
-      that.listOptions = listOptions
 
-      // These are the options passed to JSON Form
-      that.optionsForForm = that.calculateOptions()
-      that.loaded = true
-    })
-
+    // These are the options passed to JSON Form
+    this.optionsForForm = this.calculateOptions()
+    this.loaded = true
   }
 }
 </script>
