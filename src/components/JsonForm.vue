@@ -332,7 +332,9 @@ export default {
     Object.values(this.schema.properties).forEach(function(properties) {
       if (properties['listId'] != undefined) {
         // listIdsForFetch.push(properties['listId'])
-        that.listOptions[properties['listId']] = that.getList(properties['listId'])
+        if (that.getList(properties['listId']) != undefined) {
+          that.listOptions[properties['listId']] = that.getList(properties['listId'])
+        }
       }
     })
 

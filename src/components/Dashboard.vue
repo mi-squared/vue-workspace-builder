@@ -1447,16 +1447,36 @@ export default {
     //this.loadEntitiesApi();
 
     // fetch all workspaces
+    const that = this
     this.fetchAllWorkspaces().then(() => {
       // Push all of the listIds of lists required for this form into an array, and fetch them all
       let listIdsForFetch = ['active_users']
-      this.dashboard.headers.forEach(function(header) {
+      that.dashboard.headers.forEach(function(header) {
         if (header.extra != undefined && header.extra.listId != undefined) {
           listIdsForFetch.push(header.extra.listId)
         }
       })
-      const that = this
-      this.fetchListsBulk({ arrayOfListIds: listIdsForFetch }).then(listOptions => {
+
+      const newEntityForm = this.newEntityForm
+      if (newEntityForm != null) {
+        Object.values(newEntityForm.schema.properties).forEach(function (properties) {
+          if (properties['listId'] != undefined) {
+            listIdsForFetch.push(properties['listId'])
+          }
+        })
+      }
+
+      const mainForm = this.mainForm
+      if (mainForm != null) {
+        Object.values(mainForm.schema.properties).forEach(function (properties) {
+          if (properties['listId'] != undefined) {
+            listIdsForFetch.push(properties['listId'])
+          }
+        })
+      }
+
+
+      that.fetchListsBulk({ arrayOfListIds: listIdsForFetch }).then(listOptions => {
         // We are basically copying all the lists to local state here (TODO we really only need the ones with IDs we identified)
         that.listOptions = listOptions
 
