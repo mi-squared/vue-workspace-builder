@@ -616,16 +616,13 @@ import { newDashboardSourceDashboard, newDashboardSourceWorkspace } from '../mod
 import { createNamespacedHelpers } from 'vuex'
 
 import {
-  ALL_WORKSPACES,
-  FETCH_ALL_WORKSPACES,
-  GET_DASHBOARDS,
   GET_DATA_TYPES,
   GET_WORKSPACE
 } from '../store/types-workspace'
 
-const { mapGetters: mapWorkspaceGetters, mapActions: mapWorkspaceActions } = createNamespacedHelpers('workspace')
+const { mapGetters: mapWorkspaceGetters} = createNamespacedHelpers('workspace')
 
-import { FETCH_LISTS_WITH_DATA_BULK, GET_LIST } from '../store/types-list'
+import { ALL_LISTS, FETCH_LISTS_WITH_DATA_BULK, GET_LIST } from '../store/types-list'
 
 const { mapGetters: mapListGetters, mapActions: mapListActions } = createNamespacedHelpers('list')
 
@@ -635,7 +632,7 @@ import {
   FETCH_DASHBOARD,
   FETCH_DASHBOARD_ROWS, FETCH_ENTITIES,
   GET_DASHBOARD,
-  GET_DASHBOARD_ROWS, GET_ENTITY_BY_ID, GET_NOTES_BY_ENTITY_ID, PUSH_ENTITY
+  GET_DASHBOARD_ROWS, GET_ENTITY_BY_ID, GET_NOTES_BY_ENTITY_ID, INIT_DASHBOARD, PUSH_ENTITY
 } from '../store/types-dashboard'
 
 const { mapGetters: mapDashboardGetters, mapActions: mapDashboardActions } = createNamespacedHelpers('dashboard')
@@ -687,7 +684,6 @@ export default {
       tableHeight: '',
       timeZone: '',
       paginationOptions: {},
-      listOptions: {}, // Stores the options for select lists fetched from API
       globalSearch: '',
       totalEntities: 0,
       orderedEntities: [],
@@ -802,17 +798,19 @@ export default {
       getUserMeta: GET_USER_META
     }),
     ...mapWorkspaceGetters({
-      allWorkspaces: ALL_WORKSPACES,
-      getDashboards: GET_DASHBOARDS,
       getWorkspaceById: GET_WORKSPACE,
       getDataTypes: GET_DATA_TYPES,
     }),
     ...mapListGetters({
-      getList: GET_LIST
+      getList: GET_LIST,
+      allLists: ALL_LISTS
     }),
     ...mapFormGetters({
       getForm: GET_FORM
     }),
+    listOptions () {
+      return this.allLists
+    },
     durationField () {
       if (this.dashboard.durationField) {
         return this.dashboard.durationField
@@ -821,8 +819,8 @@ export default {
       }
     },
     activeUsersList () {
-      if (this.listOptions['active_users'] != undefined) {
-        return this.listOptions['active_users'].data
+      if (this.getList('active_users') != undefined) {
+        return this.getList('active_users').data
       }
       return []
     },
@@ -900,10 +898,8 @@ export default {
     }
   },
   methods: {
-    ...mapWorkspaceActions({
-      fetchAllWorkspaces: FETCH_ALL_WORKSPACES
-    }),
     ...mapDashboardActions({
+      initDashboard: INIT_DASHBOARD,
       fetchDashboard: FETCH_DASHBOARD,
       fetchDashboardRows: FETCH_DASHBOARD_ROWS,
       fetchEntities: FETCH_ENTITIES,
@@ -999,8 +995,9 @@ export default {
     listOptionsForItem (header) {
       // Using the list ID for this header, return the options
       if (header.extra.listId != undefined) {
-        if (this.listOptions[header.extra.listId] != undefined) {
-          return this.listOptions[header.extra.listId].data
+        if (this.getList(header.extra.listId) != undefined) {
+          // Call into list vuex module
+          return this.getList(header.extra.listId).data
         } else {
           console.log("ERROR no list data for header: " + header.value)
         }
@@ -1063,7 +1060,7 @@ export default {
       this.loadEntitiesApi()
     },
     onMainFormClosed (entity) {
-      this.backgroundRefreshTimer = false // Pause the timer / background refresh while form is open
+      this.backgroundRefreshTimer = true // un-Pause the timer / background refresh
       // Clear the entity and patient models when we close the main form
       this.mainEntityModel = {}
       this.mainPatientModel = {}
@@ -1444,48 +1441,11 @@ export default {
   },
   mounted () {
     console.log("Dashboard Mounted")
-    //this.loadEntitiesApi();
 
-    // fetch all workspaces
-    const that = this
-    this.fetchAllWorkspaces().then(() => {
-      // Push all of the listIds of lists required for this form into an array, and fetch them all
-      let listIdsForFetch = ['active_users']
-      that.dashboard.headers.forEach(function(header) {
-        if (header.extra != undefined && header.extra.listId != undefined) {
-          listIdsForFetch.push(header.extra.listId)
-        }
-      })
+    // start the counter that uses the current time to determine attrition
+    this.refreshAttrition()
 
-      const newEntityForm = this.newEntityForm
-      if (newEntityForm != null) {
-        Object.values(newEntityForm.schema.properties).forEach(function (properties) {
-          if (properties['listId'] != undefined) {
-            listIdsForFetch.push(properties['listId'])
-          }
-        })
-      }
-
-      const mainForm = this.mainForm
-      if (mainForm != null) {
-        Object.values(mainForm.schema.properties).forEach(function (properties) {
-          if (properties['listId'] != undefined) {
-            listIdsForFetch.push(properties['listId'])
-          }
-        })
-      }
-
-
-      that.fetchListsBulk({ arrayOfListIds: listIdsForFetch }).then(listOptions => {
-        // We are basically copying all the lists to local state here (TODO we really only need the ones with IDs we identified)
-        that.listOptions = listOptions
-
-        // start the counter that uses the current time to determine attrition
-        that.refreshAttrition()
-
-        that.tableHeight = that.calculateTableHeight()
-      })
-    })
+    this.tableHeight = this.calculateTableHeight()
   },
   unmounted () {
     this.cancelAutoUpdate()

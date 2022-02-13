@@ -81,7 +81,7 @@
               <v-col>
                 <v-select
                   label="sex"
-                  :items="listOptions.sex.data"
+                  :items="getList('sex').data"
                   v-model="activePatient.sex"
                   :readonly="readonly"
                   :disabled="readonly"
@@ -212,9 +212,9 @@ import { fetchPatients } from '../../api'
 import { formatDate } from '../../display-helpers'
 import { createNamespacedHelpers } from 'vuex'
 // import moment from 'moment-timezone'
-import { FETCH_LISTS_WITH_DATA_BULK } from '../../store/types-list'
+import { GET_LIST } from '../../store/types-list'
 import { GET_USER_META } from '../../store/types-user'
-const { mapActions: mapListActions } = createNamespacedHelpers('list')
+const { mapGetters: mapListGetters } = createNamespacedHelpers('list')
 const { mapGetters: mapUserGetters } = createNamespacedHelpers('user')
 
 export default {
@@ -243,7 +243,6 @@ export default {
       matches: [],
       loaded: false,
       modal: false, // DOB date-picker modal
-      listOptions: {},
       rules: {
         required: value => !!value || 'Required.',
         validateDOB: (dobString) => {
@@ -265,14 +264,14 @@ export default {
     ...mapUserGetters({
       getUserMeta: GET_USER_META
     }),
+    ...mapListGetters({
+      getList: GET_LIST
+    }),
     readonly () {
       return this.activePatient.pid != "" && this.activePatient.pid != null
     }
   },
   methods: {
-    ...mapListActions({
-      fetchListsBulk: FETCH_LISTS_WITH_DATA_BULK
-    }),
     clearPatient () {
       this.activePatient = {
         fname: "",
@@ -363,16 +362,11 @@ export default {
     }
   },
   mounted () {
-    const listIdsForFetch = ['sex']
-    this.fetchListsBulk({ arrayOfListIds: listIdsForFetch }).then(listOptions => {
-      // We are basically copying all the lists to local state here (TODO we really only need the ones with IDs we identified)
-      this.listOptions = listOptions
 
-      // If we were passed a pid, load that patient model
-      this.formattedDOB = formatDate(this.activePatient.DOB)
+    // If we were passed a pid, load that patient model
+    this.formattedDOB = formatDate(this.activePatient.DOB)
 
-      this.loaded = true
-    })
+    this.loaded = true
 
     let picker = document.getElementById('patient-picker')
     picker.addEventListener('keyup', this.debounce( () => {
@@ -385,7 +379,6 @@ export default {
   },
   beforeDestroy () {
     this.activePatient = null
-    this.listOptions = null
     this.formattedDOB = null
   }
 }

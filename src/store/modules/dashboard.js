@@ -4,7 +4,7 @@ import {
   CREATE_DASHBOARD, CREATE_ENTITY,
   FETCH_DASHBOARD, FETCH_DASHBOARD_ROWS, FETCH_ENTITIES, FETCH_NOTES_BY_ENTITY_ID,
   GET_DASHBOARD,
-  GET_DASHBOARD_ROWS, GET_ENTITY_BY_ID, GET_NOTES_BY_ENTITY_ID, PUSH_ENTITY,
+  GET_DASHBOARD_ROWS, GET_ENTITY_BY_ID, GET_NOTES_BY_ENTITY_ID, INIT_DASHBOARD, PUSH_ENTITY,
   SET_DASHBOARD, SET_DASHBOARD_ROWS, SET_ENTITY, SET_NOTE
 } from '../types-dashboard'
 import Vue from 'vue'
@@ -12,7 +12,7 @@ import {
   createDashboard,
   createEntity, createNote,
   fetchDashboardRows, fetchEntities,
-  getDashboardById, getNotesByEntityId,
+  getDashboardById, getNotesByEntityId, initDashboardById,
   updateDashboard,
   updateEntity
 } from '../../api'
@@ -89,6 +89,50 @@ export const dashboard = {
         commit(SET_DASHBOARD, { dashboardId, dashboard })
         return dashboard
       })
+    },
+
+    /**
+     * Fetch a dashboard and all of it's dependencies and commit them to the state
+     *
+     * @param commit
+     * @param dispatch
+     * @param rootGetters
+     * @param dashboardId
+     * @returns {Promise<unknown>}
+     */
+    [INIT_DASHBOARD] ({ commit, dispatch, rootGetters }, { dashboardId }) {
+      console.log("Fetching Dashboard: " + dashboardId)
+      // Get meta data from the user module
+      const userMeta = rootGetters['user/GET_USER_META']
+
+      // If we have a token, make the API call
+      if (userMeta.csrfToken) {
+
+        // Return the promise created by the API
+        return new Promise(resolve => {
+           initDashboardById(dashboardId, userMeta).then(response => {
+
+            commit(SET_DASHBOARD, { dashboardId: response.dashboard.id, dashboard: response.dashboard })
+
+            dispatch('workspace/VUEX_SET_DATA_TYPES', { dataTypes: response.dataTypes }, { root: true })
+
+            Object.values(response.workspaces).forEach(workspace => {
+              dispatch('workspace/VUEX_SET_WORKSPACE', { workspaceId: workspace.id, workspace }, { root: true })
+            })
+
+            Object.values(response.forms).forEach(form => {
+              dispatch('form/VUEX_SET_FORM', { formId: form.id, form }, { root: true })
+            })
+
+            // the response contains all the state we need, need to commit lists, forms
+            Object.values(response.lists).forEach(list => {
+              dispatch('list/VUEX_SET_LIST', { listId: list.id, list: list }, { root: true })
+            })
+
+            resolve(response)
+          })
+        })
+      }
     },
 
     /**

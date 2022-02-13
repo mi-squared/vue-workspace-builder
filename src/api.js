@@ -239,6 +239,22 @@ export function createDataSourceColumn(userId, workspaceId, column, userMeta) {
   })
 }
 
+export function initDashboardById(dashboardId, userMeta)
+{
+  return new Promise((resolve) => {
+    axios.get(baseUrl + '/apis/api/dashboardinit', {
+      params: {
+        id: dashboardId
+      },
+      headers: {
+        'apicsrftoken': userMeta.csrfToken
+      }
+    }).then(function (response) {
+      resolve(response.data)
+    }).catch(handleApiError)
+  })
+}
+
 export function getDashboardById(dashboardId, userMeta)
 {
   return new Promise((resolve) => {
