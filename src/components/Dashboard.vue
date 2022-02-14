@@ -1040,10 +1040,11 @@ export default {
       })
     },
     onEntityIdClick(entity) {
+      this.backgroundRefreshTimer = false // Pause the timer / background refresh while form is open
+      this.mainFormDialogs[entity.id] = true
       this.mainEntityModel = { ...entity }
       this.mainPatientModel = { ...this.extractPatient(entity) }
-      this.mainFormDialogs[entity.id] = true
-      this.backgroundRefreshTimer = false // Pause the timer / background refresh while form is open
+      this.mainPatientModel = { ...this.extractPatient(entity) }
     },
     onMainFormEntitySaved({ entity, patient }) {
       this.backgroundRefreshTimer = true
@@ -1067,7 +1068,7 @@ export default {
       this.mainFormDialogs[entity.id] = false
     },
     onNoteSaved(payload) {
-      console.log("note saved with text:" + payload.text)
+      // console.log("note saved with text:" + payload.text)
       this.addNote({
         workspaceId: this.dashboard.workspaceId,
         dashboardId: this.dashboard.id,

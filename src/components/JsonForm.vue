@@ -170,7 +170,7 @@ export default {
      * NOTE, that if a value is "cleared" (had a value, but now does not) it will NOT be in this object,
      * so we handle those separately on the onFormElementChange event
      */
-    onFormChange(param) {
+    onFormChange() {
       if (this.loaded) {
 
         // Merge our separate state with the state from the VJSF model. We have to do this because VJSF only
@@ -181,8 +181,7 @@ export default {
           ...this.VJSFModel
         }
         this.optionsForForm = this.calculateOptions()
-        console.log("onFormChange(param)")
-        console.log(param)
+        //console.log("onFormChange(param)")
       } else {
         console.log("onFormChange: skipping notification parent")
       }
@@ -204,8 +203,8 @@ export default {
         this.activeModel[param.fullKey] = newVal
 
         this.optionsForForm = this.calculateOptions()
-        console.log("onFormChange(param)")
-        console.log(param)
+        //console.log("onFormElementChange(param)")
+        //console.log(param)
       } else {
         console.log("onFormChange: skipping notification parent")
       }
@@ -214,7 +213,7 @@ export default {
       const patient = data.patient
       this.activeModel.pid = patient.pid
       this.activePatient = patient
-      this.onFormChange(this.activeModel.pid)
+      this.onFormChange()
     },
     calculateOptions() {
       let that = this
@@ -257,7 +256,7 @@ export default {
             options.context[contextKey] = false
           }
 
-          console.log('Condition Result: show = ' + show)
+          // console.log('Condition Result: show = ' + show)
         }
 
         // Done working on conditional logic
@@ -282,6 +281,7 @@ export default {
     }
   },
   created () {
+    console.log("JsonForm Created")
     if (this.pid != undefined && this.pid > 0) {
       this.patientPickerLocked = true
     } else {

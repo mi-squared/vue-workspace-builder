@@ -273,18 +273,16 @@ export default {
       // Allow editing of fields that don't have values, or if there's no PID
       let readonly = true
       if (
-        this.activePatient.pid != "" &&
-        this.activePatient.pid != null
+        this.activePatient.pid == "" ||
+        this.activePatient.pid == null
       ) {
         // NO PID, so all fields are fair game
         readonly = false
       } else if (name != null) {
         if (
-          this.activePatient[name] != "" &&
-          this.activePatient[name] != null
+          this.activePatient[name] == "" ||
+          this.activePatient[name] == null
         ) {
-          readonly = true
-        } else {
           readonly = false
         }
       }
