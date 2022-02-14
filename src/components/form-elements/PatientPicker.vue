@@ -35,8 +35,8 @@
                   required
                   @keyup="activePatient.fname = uppercase(activePatient.fname)"
                   @input="onPatientChanged"
-                  :readonly="readonly"
-                  :disabled="readonly"
+                  :readonly="isReadOnly('fname')"
+                  :disabled="isReadOnly('fname')"
                   :rules="[rules.required]"
                 ></v-text-field>
               </v-col>
@@ -48,8 +48,8 @@
                   required
                   @keyup="activePatient.lname = uppercase(activePatient.lname)"
                   @input="onPatientChanged"
-                  :readonly="readonly"
-                  :disabled="readonly"
+                  :readonly="isReadOnly('lname')"
+                  :disabled="isReadOnly('lname')"
                   :rules="[rules.required]"
                 ></v-text-field>
               </v-col>
@@ -65,8 +65,8 @@
                   label="DOB"
                   @blur="activePatient.DOB = formatDOBMysql(formattedDOB)"
                   @input="onPatientChanged"
-                  :readonly="readonly"
-                  :disabled="readonly"
+                  :readonly="isReadOnly('DOB')"
+                  :disabled="isReadOnly('DOB')"
                   :rules="[rules.required, rules.validateDOB]"
                 >
                   <span slot="prepend">
@@ -83,8 +83,8 @@
                   label="sex"
                   :items="getList('sex').data"
                   v-model="activePatient.sex"
-                  :readonly="readonly"
-                  :disabled="readonly"
+                  :readonly="isReadOnly('sex')"
+                  :disabled="isReadOnly('sex')"
                   :rules="[rules.required]"
                 ></v-select>
               </v-col>
@@ -266,12 +266,31 @@ export default {
     }),
     ...mapListGetters({
       getList: GET_LIST
-    }),
-    readonly () {
-      return this.activePatient.pid != "" && this.activePatient.pid != null
-    }
+    })
   },
   methods: {
+    isReadOnly (name = null) {
+      // Allow editing of fields that don't have values, or if there's no PID
+      let readonly = true
+      if (
+        this.activePatient.pid != "" &&
+        this.activePatient.pid != null
+      ) {
+        // NO PID, so all fields are fair game
+        readonly = false
+      } else if (name != null) {
+        if (
+          this.activePatient[name] != "" &&
+          this.activePatient[name] != null
+        ) {
+          readonly = true
+        } else {
+          readonly = false
+        }
+      }
+
+      return readonly
+    },
     clearPatient () {
       this.activePatient = {
         fname: "",
