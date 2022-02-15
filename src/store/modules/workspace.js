@@ -4,7 +4,7 @@ import {
   CREATE_DATA_SOURCE_COLUMN, CREATE_WORKSPACE, FETCH_ALL_WORKSPACES, FETCH_DATA_TYPES, FETCH_WORKSPACE, GET_DASHBOARDS,
   GET_DATA_SOURCE, GET_DATA_TYPES, GET_FORMS, GET_SCHEMA_TEMPLATE_BY_TYPE,
   GET_WORKSPACE, SET_DATA_TYPES,
-  SET_WORKSPACE
+  SET_WORKSPACE, VUEX_SET_DATA_TYPES, VUEX_SET_WORKSPACE
 } from '../types-workspace'
 import Vue from "vue";
 import {
@@ -190,6 +190,23 @@ export const workspace = {
         commit(SET_WORKSPACE, { workspaceId, workspace })
         return workspace
       })
+    },
+
+    [VUEX_SET_WORKSPACE] ({ commit }, { workspaceId, workspace }) {
+      return commit(SET_WORKSPACE, { workspaceId, workspace })
+    },
+
+    [SET_DATA_TYPES]  ({ commit, rootGetters }, { workspaceId, workspace }) {
+      // Get meta data from the user module
+      const userMeta = rootGetters['user/GET_USER_META']
+      pushWorkspace(workspaceId, workspace, userMeta).then(workspace => {
+        commit(SET_WORKSPACE, { workspaceId, workspace })
+        return workspace
+      })
+    },
+
+    [VUEX_SET_DATA_TYPES]  ({ commit }, { dataTypes }) {
+      return commit(SET_DATA_TYPES, { dataTypes })
     },
 
   },

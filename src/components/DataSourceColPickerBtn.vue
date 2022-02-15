@@ -10,11 +10,28 @@
     <v-card>
 
       <v-card-title class="text-h5 grey lighten-2">
-        Data Source Elements
+        Column Options
       </v-card-title>
 
       <v-card-text>
         <v-list>
+
+          <v-list-item
+            two-line
+            v-for="(column, i) in specialColumns"
+            :key="i"
+            link
+            @click="addColumn(column)"
+          >
+            <v-list-item-content>
+              <v-list-item-title>{{ column.name }}</v-list-item-title>
+              <v-list-item-subtitle>
+                {{ column.type }}
+              </v-list-item-subtitle>
+              <v-list-item-content>{{ column.comment }}</v-list-item-content>
+              <v-divider></v-divider>
+            </v-list-item-content>
+          </v-list-item>
 
           <!-- first list all the columns with joined subcolumns -->
           <v-list-group
@@ -110,12 +127,39 @@ export default {
       getDataTypes: GET_DATA_TYPES
       }
     ),
+    specialColumns () {
+      // let dataTypes = this.getDataTypes()
+      //
+      // let columns = dataTypes.filter(dataType => {
+      //   if (dataType.mysql == 'has_many') {
+      //     return dataType
+      //   }
+      // }).map(dataType => {
+      //   return { column: dataType.name }
+      // })
+      //
+      // return columns
+
+      return []
+    },
     /**
      * Get data source columns that don't have any database columns
      * @returns {unknown[]}
      */
     dataSourceColumns () {
-      return Object.values(this.workspace.dataSource.spec.columns)
+      return Object.values(this.workspace.dataSource.spec.columns).sort(function (a, b) {
+        const nameA = a.name.toUpperCase() // ignore upper and lowercase
+        const nameB = b.name.toUpperCase() // ignore upper and lowercase
+        if (nameA < nameB) {
+          return -1
+        }
+        if (nameA > nameB) {
+          return 1
+        }
+
+        // names must be equal
+        return 0
+      })
     },
     columnsWithSubcolumns () {
       let dataTypes = this.getDataTypes

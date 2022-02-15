@@ -8,7 +8,6 @@ export const timeline = {
   state: {
     timeline: {
       pid: '',
-      notes: {},
       items: [
         {
           entity: {},

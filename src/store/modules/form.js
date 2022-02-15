@@ -6,7 +6,7 @@ import {
   GET_FORM,
   SET_FORM,
   SET_FORM_GRID,
-  SET_FORM_SCHEMA
+  SET_FORM_SCHEMA, VUEX_SET_FORM
 } from '../types-form'
 
 export const form = {
@@ -72,6 +72,10 @@ export const form = {
         commit(SET_FORM, { formId, form })
         return form
       })
+    },
+
+    [VUEX_SET_FORM] ({ commit }, { formId, form }) {
+      commit(SET_FORM, { formId, form })
     },
 
   },

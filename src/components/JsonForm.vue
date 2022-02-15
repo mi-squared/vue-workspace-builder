@@ -125,7 +125,8 @@ export default {
             return new Date(date.getTime() + (date.getTimezoneOffset() * 60000)).toLocaleDateString(locale)
           },
           'date-time': (dateTime, locale) => {
-            return new Date(dateTime).toLocaleString(locale, { hour12: false })
+            const datetime = dateTime.toLocaleString(locale, { hour12: false })
+            return datetime
           }
         }
       },
@@ -146,14 +147,17 @@ export default {
     }),
     onSave (transmit_to_ns = false) {
       if (this.loaded) {
+        if (this.valid) {
+          // If the user clicks "Save & Transmit" then we set transmit_to_ns to true
+          this.activePatient.transmit_to_ns = transmit_to_ns
 
-        // If the user clicks "Save & Transmit" then we set transmit_to_ns to true
-        this.activePatient.transmit_to_ns = transmit_to_ns
-
-        this.$emit('save', {
-          entity: this.activeModel,
-          patient: this.activePatient
-        })
+          this.$emit('save', {
+            entity: this.activeModel,
+            patient: this.activePatient
+          })
+        } else {
+          alert("Some data is missing or invalid.")
+        }
       }
     },
     onCancel () {
@@ -166,7 +170,7 @@ export default {
      * NOTE, that if a value is "cleared" (had a value, but now does not) it will NOT be in this object,
      * so we handle those separately on the onFormElementChange event
      */
-    onFormChange(param) {
+    onFormChange() {
       if (this.loaded) {
 
         // Merge our separate state with the state from the VJSF model. We have to do this because VJSF only
@@ -177,8 +181,7 @@ export default {
           ...this.VJSFModel
         }
         this.optionsForForm = this.calculateOptions()
-        console.log("onFormChange(param)")
-        console.log(param)
+        //console.log("onFormChange(param)")
       } else {
         console.log("onFormChange: skipping notification parent")
       }
@@ -200,8 +203,8 @@ export default {
         this.activeModel[param.fullKey] = newVal
 
         this.optionsForForm = this.calculateOptions()
-        console.log("onFormChange(param)")
-        console.log(param)
+        //console.log("onFormElementChange(param)")
+        //console.log(param)
       } else {
         console.log("onFormChange: skipping notification parent")
       }
@@ -210,7 +213,7 @@ export default {
       const patient = data.patient
       this.activeModel.pid = patient.pid
       this.activePatient = patient
-      this.onFormChange(this.activeModel.pid)
+      this.onFormChange()
     },
     calculateOptions() {
       let that = this
@@ -253,7 +256,7 @@ export default {
             options.context[contextKey] = false
           }
 
-          console.log('Condition Result: show = ' + show)
+          // console.log('Condition Result: show = ' + show)
         }
 
         // Done working on conditional logic
@@ -278,6 +281,7 @@ export default {
     }
   },
   created () {
+    console.log("JsonForm Created")
     if (this.pid != undefined && this.pid > 0) {
       this.patientPickerLocked = true
     } else {
@@ -323,22 +327,20 @@ export default {
     }
 
     // Push all of the listIds of lists required for this form into an array, and fetch them all
-    let listIdsForFetch = ['active_users']
+    //let listIdsForFetch = ['active_users']
+    let that = this
     Object.values(this.schema.properties).forEach(function(properties) {
       if (properties['listId'] != undefined) {
-        listIdsForFetch.push(properties['listId'])
+        // listIdsForFetch.push(properties['listId'])
+        if (that.getList(properties['listId']) != undefined) {
+          that.listOptions[properties['listId']] = that.getList(properties['listId'])
+        }
       }
     })
-    const that = this
-    this.fetchListsBulk({ arrayOfListIds: listIdsForFetch }).then(listOptions => {
-      // We are basically copying all the lists to local state here (TODO we really only need the ones with IDs we identified)
-      that.listOptions = listOptions
 
-      // These are the options passed to JSON Form
-      that.optionsForForm = that.calculateOptions()
-      that.loaded = true
-    })
-
+    // These are the options passed to JSON Form
+    this.optionsForForm = this.calculateOptions()
+    this.loaded = true
   }
 }
 </script>

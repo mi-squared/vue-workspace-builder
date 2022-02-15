@@ -4,7 +4,7 @@ import {
   SET_LIST,
   FETCH_LISTS_WITH_DATA_BULK,
   FETCH_ALL_LISTS,
-  GET_LIST_SELECT_ITEMS
+  GET_LIST_SELECT_ITEMS, VUEX_SET_LIST
 } from '../types-list'
 import { fetchAllLists, fetchListsWithDataBulk } from '../../api'
 import Vue from 'vue'
@@ -73,6 +73,10 @@ export const list = {
 
         })
       })
+    },
+
+    [VUEX_SET_LIST]: ({ commit }, { list }) => {
+      return commit(SET_LIST, { listId: list.id, list: list })
     }
   },
   mutations: {

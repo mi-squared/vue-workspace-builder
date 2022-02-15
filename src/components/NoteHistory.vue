@@ -19,7 +19,9 @@
 import { createNamespacedHelpers } from 'vuex'
 import { FETCH_NOTES_BY_ENTITY_ID, GET_NOTES_BY_ENTITY_ID } from '../store/types-dashboard'
 import { formatDatetime } from '../display-helpers'
+import { GET_LIST } from '../store/types-list'
 const { mapGetters: mapDashboardGetters, mapActions: mapDashboardActions } = createNamespacedHelpers('dashboard')
+const { mapGetters: mapListGetters } = createNamespacedHelpers('list')
 
 export default {
   name: 'NoteHistory',
@@ -31,10 +33,6 @@ export default {
     dashboard: {
       type: Object,
       required: true
-    },
-    activeUsersList: {
-      type: Array,
-      required: true
     }
   },
   data () {
@@ -43,6 +41,9 @@ export default {
     }
   },
   computed: {
+    ...mapListGetters({
+      getList: GET_LIST
+    }),
     ...mapDashboardGetters({
       getNotesByEntityId: GET_NOTES_BY_ENTITY_ID
     }),
@@ -51,6 +52,9 @@ export default {
         entityId: this.entity.id,
         dashboardId: this.dashboard.id
       }).reverse()
+    },
+    activeUsersList() {
+      return this.getList('active_users').data
     }
   },
   methods: {

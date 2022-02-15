@@ -35,8 +35,9 @@
                   required
                   @keyup="activePatient.fname = uppercase(activePatient.fname)"
                   @input="onPatientChanged"
-                  :readonly="readonly"
-                  :disabled="readonly"
+                  :readonly="isReadOnly('fname')"
+                  :disabled="isReadOnly('fname')"
+                  :rules="[rules.required]"
                 ></v-text-field>
               </v-col>
               <v-col>
@@ -47,8 +48,9 @@
                   required
                   @keyup="activePatient.lname = uppercase(activePatient.lname)"
                   @input="onPatientChanged"
-                  :readonly="readonly"
-                  :disabled="readonly"
+                  :readonly="isReadOnly('lname')"
+                  :disabled="isReadOnly('lname')"
+                  :rules="[rules.required]"
                 ></v-text-field>
               </v-col>
             </v-row>
@@ -63,8 +65,9 @@
                   label="DOB"
                   @blur="activePatient.DOB = formatDOBMysql(formattedDOB)"
                   @input="onPatientChanged"
-                  :readonly="readonly"
-                  :disabled="readonly"
+                  :readonly="isReadOnly('DOB')"
+                  :disabled="isReadOnly('DOB')"
+                  :rules="[rules.required, rules.validateDOB]"
                 >
                   <span slot="prepend">
                     <v-icon
@@ -78,10 +81,11 @@
               <v-col>
                 <v-select
                   label="sex"
-                  :items="listOptions.sex.data"
+                  :items="getList('sex').data"
                   v-model="activePatient.sex"
-                  :readonly="readonly"
-                  :disabled="readonly"
+                  :readonly="isReadOnly('sex')"
+                  :disabled="isReadOnly('sex')"
+                  :rules="[rules.required]"
                 ></v-select>
               </v-col>
             </v-row>
@@ -208,9 +212,9 @@ import { fetchPatients } from '../../api'
 import { formatDate } from '../../display-helpers'
 import { createNamespacedHelpers } from 'vuex'
 // import moment from 'moment-timezone'
-import { FETCH_LISTS_WITH_DATA_BULK } from '../../store/types-list'
+import { GET_LIST } from '../../store/types-list'
 import { GET_USER_META } from '../../store/types-user'
-const { mapActions: mapListActions } = createNamespacedHelpers('list')
+const { mapGetters: mapListGetters } = createNamespacedHelpers('list')
 const { mapGetters: mapUserGetters } = createNamespacedHelpers('user')
 
 export default {
@@ -239,21 +243,52 @@ export default {
       matches: [],
       loaded: false,
       modal: false, // DOB date-picker modal
-      listOptions: {},
+      rules: {
+        required: value => !!value || 'Required.',
+        validateDOB: (dobString) => {
+          let valid = true
+          if (dobString.length != 10) {
+            valid = 'Invalid DOB.'
+          } else if (dobString != null) {
+            const dob = new Date(dobString)
+            if (dob == undefined || dob == "Invalid Date" || isNaN(dob)) {
+              valid = 'Invalid DOB.'
+            }
+          }
+          return valid
+        }
+      }
     }
   },
   computed: {
     ...mapUserGetters({
       getUserMeta: GET_USER_META
     }),
-    readonly () {
-      return this.activePatient.pid != "" && this.activePatient.pid != null
-    }
+    ...mapListGetters({
+      getList: GET_LIST
+    })
   },
   methods: {
-    ...mapListActions({
-      fetchListsBulk: FETCH_LISTS_WITH_DATA_BULK
-    }),
+    isReadOnly (name = null) {
+      // Allow editing of fields that don't have values, or if there's no PID
+      let readonly = true
+      if (
+        this.activePatient.pid == "" ||
+        this.activePatient.pid == null
+      ) {
+        // NO PID, so all fields are fair game
+        readonly = false
+      } else if (name != null) {
+        if (
+          this.activePatient[name] == "" ||
+          this.activePatient[name] == null
+        ) {
+          readonly = false
+        }
+      }
+
+      return readonly
+    },
     clearPatient () {
       this.activePatient = {
         fname: "",
@@ -265,6 +300,8 @@ export default {
         phone_home: "",
         phone_cell: "",
       }
+      this.formattedDOB = "";
+      this.DOB = ""
       this.matches = []
     },
     formatDOBMysql(date) {
@@ -342,16 +379,11 @@ export default {
     }
   },
   mounted () {
-    const listIdsForFetch = ['sex']
-    this.fetchListsBulk({ arrayOfListIds: listIdsForFetch }).then(listOptions => {
-      // We are basically copying all the lists to local state here (TODO we really only need the ones with IDs we identified)
-      this.listOptions = listOptions
 
-      // If we were passed a pid, load that patient model
-      this.formattedDOB = formatDate(this.activePatient.DOB)
+    // If we were passed a pid, load that patient model
+    this.formattedDOB = formatDate(this.activePatient.DOB)
 
-      this.loaded = true
-    })
+    this.loaded = true
 
     let picker = document.getElementById('patient-picker')
     picker.addEventListener('keyup', this.debounce( () => {
@@ -364,7 +396,6 @@ export default {
   },
   beforeDestroy () {
     this.activePatient = null
-    this.listOptions = null
     this.formattedDOB = null
   }
 }

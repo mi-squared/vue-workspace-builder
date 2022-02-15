@@ -300,6 +300,19 @@
                 </v-tooltip>
               </div>
 
+              <div v-else-if="header.value == 'data-files'">
+                <table>
+                  <tr>
+                    <td class="py-0 px-1">
+                      <DashboardFilesButton
+                        :entity="item"
+                        :dashboard="dashboard"
+                      >
+                      </DashboardFilesButton>
+                    </td>
+                  </tr>
+                </table>
+              </div>
 
               <div v-else-if="header.value == 'data-notes'">
                 <table>
@@ -430,7 +443,7 @@
                     :id="item.id"
                     :index="header.value"
                     :model="item"
-                    :items="listOptionsForItem(header)"
+                    :listId="listIdForItem(header)"
                     @changed="onEntityChanged"
                     @show="onDashboardComponentVisibilityChanged"
                   ></SelectModal>
@@ -603,16 +616,13 @@ import { newDashboardSourceDashboard, newDashboardSourceWorkspace } from '../mod
 import { createNamespacedHelpers } from 'vuex'
 
 import {
-  ALL_WORKSPACES,
-  FETCH_ALL_WORKSPACES,
-  GET_DASHBOARDS,
   GET_DATA_TYPES,
   GET_WORKSPACE
 } from '../store/types-workspace'
 
-const { mapGetters: mapWorkspaceGetters, mapActions: mapWorkspaceActions } = createNamespacedHelpers('workspace')
+const { mapGetters: mapWorkspaceGetters} = createNamespacedHelpers('workspace')
 
-import { FETCH_LISTS_WITH_DATA_BULK, GET_LIST } from '../store/types-list'
+import { ALL_LISTS, FETCH_LISTS_WITH_DATA_BULK, GET_LIST } from '../store/types-list'
 
 const { mapGetters: mapListGetters, mapActions: mapListActions } = createNamespacedHelpers('list')
 
@@ -622,7 +632,7 @@ import {
   FETCH_DASHBOARD,
   FETCH_DASHBOARD_ROWS, FETCH_ENTITIES,
   GET_DASHBOARD,
-  GET_DASHBOARD_ROWS, GET_ENTITY_BY_ID, GET_NOTES_BY_ENTITY_ID, PUSH_ENTITY
+  GET_DASHBOARD_ROWS, GET_ENTITY_BY_ID, GET_NOTES_BY_ENTITY_ID, INIT_DASHBOARD, PUSH_ENTITY
 } from '../store/types-dashboard'
 
 const { mapGetters: mapDashboardGetters, mapActions: mapDashboardActions } = createNamespacedHelpers('dashboard')
@@ -642,6 +652,7 @@ import EditableString from './EditableString'
 import DashboardFilters from './DashboardFilters'
 import SelectModal from './form-elements/SelectModal'
 import DatePickerModal from './form-elements/DatePickerModal'
+import DashboardFilesButton from './DashboardFilesButton'
 
 export default {
   name: 'Dashboard',
@@ -659,6 +670,7 @@ export default {
   components: {
     DatePickerModal,
     SelectModal,
+    DashboardFilesButton,
     DashboardFilters,
     EditableString,
     DatetimePicker,
@@ -672,7 +684,6 @@ export default {
       tableHeight: '',
       timeZone: '',
       paginationOptions: {},
-      listOptions: {}, // Stores the options for select lists fetched from API
       globalSearch: '',
       totalEntities: 0,
       orderedEntities: [],
@@ -690,7 +701,7 @@ export default {
       showArchives: false,
       backgroundRefresh: true,
       backgroundRefreshTimer: true,
-      changeCount: [],
+      changeCount: {}, // histogram of counts each compnenent changes
       isPreview: this.preview || false,
       skeletonLoaderAttrs: {
         class: 'mb-6',
@@ -741,6 +752,13 @@ export default {
         "sortable": false,
         "width": "120px"
       },
+      filesHeader: {
+        "text": "",
+        "value": "data-files",
+        "groupable": false,
+        "sortable": false,
+        "width": "40px"
+      },
       actionHeader: {
         "text": "",
         "value": "data-menu",
@@ -780,17 +798,19 @@ export default {
       getUserMeta: GET_USER_META
     }),
     ...mapWorkspaceGetters({
-      allWorkspaces: ALL_WORKSPACES,
-      getDashboards: GET_DASHBOARDS,
       getWorkspaceById: GET_WORKSPACE,
       getDataTypes: GET_DATA_TYPES,
     }),
     ...mapListGetters({
-      getList: GET_LIST
+      getList: GET_LIST,
+      allLists: ALL_LISTS
     }),
     ...mapFormGetters({
       getForm: GET_FORM
     }),
+    listOptions () {
+      return this.allLists
+    },
     durationField () {
       if (this.dashboard.durationField) {
         return this.dashboard.durationField
@@ -799,8 +819,8 @@ export default {
       }
     },
     activeUsersList () {
-      if (this.listOptions['active_users'] != undefined) {
-        return this.listOptions['active_users'].data
+      if (this.getList('active_users') != undefined) {
+        return this.getList('active_users').data
       }
       return []
     },
@@ -830,6 +850,7 @@ export default {
         ...this.dashboard.headers
       ]
       headers.push(this.noteHeader)
+      headers.push(this.filesHeader)
       // headers.push(this.expandHeader) we removed the header definition for expand, and removed show-expand from data table definition
       headers.push(this.actionHeader)
       return headers
@@ -877,10 +898,8 @@ export default {
     }
   },
   methods: {
-    ...mapWorkspaceActions({
-      fetchAllWorkspaces: FETCH_ALL_WORKSPACES
-    }),
     ...mapDashboardActions({
+      initDashboard: INIT_DASHBOARD,
       fetchDashboard: FETCH_DASHBOARD,
       fetchDashboardRows: FETCH_DASHBOARD_ROWS,
       fetchEntities: FETCH_ENTITIES,
@@ -965,11 +984,20 @@ export default {
       })
       return patient
     },
+    listIdForItem (header) {
+      // Using the list ID for this header, return the options
+      if (header.extra.listId != undefined) {
+        return header.extra.listId
+      } else {
+        return ''
+      }
+    },
     listOptionsForItem (header) {
       // Using the list ID for this header, return the options
       if (header.extra.listId != undefined) {
-        if (this.listOptions[header.extra.listId] != undefined) {
-          return this.listOptions[header.extra.listId].data
+        if (this.getList(header.extra.listId) != undefined) {
+          // Call into list vuex module
+          return this.getList(header.extra.listId).data
         } else {
           console.log("ERROR no list data for header: " + header.value)
         }
@@ -1012,10 +1040,11 @@ export default {
       })
     },
     onEntityIdClick(entity) {
+      this.backgroundRefreshTimer = false // Pause the timer / background refresh while form is open
+      this.mainFormDialogs[entity.id] = true
       this.mainEntityModel = { ...entity }
       this.mainPatientModel = { ...this.extractPatient(entity) }
-      this.mainFormDialogs[entity.id] = true
-      this.backgroundRefreshTimer = false // Pause the timer / background refresh while form is open
+      this.mainPatientModel = { ...this.extractPatient(entity) }
     },
     onMainFormEntitySaved({ entity, patient }) {
       this.backgroundRefreshTimer = true
@@ -1032,14 +1061,14 @@ export default {
       this.loadEntitiesApi()
     },
     onMainFormClosed (entity) {
-      this.backgroundRefreshTimer = false // Pause the timer / background refresh while form is open
+      this.backgroundRefreshTimer = true // un-Pause the timer / background refresh
       // Clear the entity and patient models when we close the main form
       this.mainEntityModel = {}
       this.mainPatientModel = {}
       this.mainFormDialogs[entity.id] = false
     },
     onNoteSaved(payload) {
-      console.log("note saved with text:" + payload.text)
+      // console.log("note saved with text:" + payload.text)
       this.addNote({
         workspaceId: this.dashboard.workspaceId,
         dashboardId: this.dashboard.id,
@@ -1049,10 +1078,11 @@ export default {
       })
     },
     lastNoteText(entity) {
-      const notes = this.getNotesByEntityId({
-        entityId: entity.id,
-        dashboardId: this.dashboard.id
-      })
+      // const notes = this.getNotesByEntityId({
+      //   entityId: entity.id,
+      //   dashboardId: this.dashboard.id
+      // })
+      const notes = entity.notes
       if (notes.length > 0) {
         const noteText = notes[notes.length - 1].text
         if (noteText.length > 60) {
@@ -1266,7 +1296,8 @@ export default {
           workspaceId: workspaceId,
           dashboardId: defaultDashboardId,
           entity: newEntity,
-          patient: null // We don't send the patient, because there should already be an existing PID in the entity
+          patient: null, // We don't send the patient, because there should already be an existing PID in the entity
+          sourceEntityId: entity.id // source is the original entity
         }).then(() => {
           this.snackbarText = "Successfully Sent to Workspace " + this.workspaces[workspaceId]
           this.snackbar = true
@@ -1395,12 +1426,12 @@ export default {
       this.tableHeight = this.calculateTableHeight()
       console.log("height: " + this.tableHeight)
     },
-    pauseRefresh () {
-      //this.backgroundRefreshTimer = false
-      setInterval(() => {
-        //this.backgroundRefreshTimer = true
-      }, 3000)
-    },
+    // pauseRefresh () {
+    //   //this.backgroundRefreshTimer = false
+    //   setInterval(() => {
+    //     //this.backgroundRefreshTimer = true
+    //   }, 3000)
+    // },
     onDashboardComponentVisibilityChanged (isShowing) {
       if (isShowing) {
         this.backgroundRefreshTimer = false
@@ -1411,28 +1442,11 @@ export default {
   },
   mounted () {
     console.log("Dashboard Mounted")
-    //this.loadEntitiesApi();
 
-    // fetch all workspaces
-    this.fetchAllWorkspaces().then(() => {
-      // Push all of the listIds of lists required for this form into an array, and fetch them all
-      let listIdsForFetch = ['active_users']
-      this.dashboard.headers.forEach(function(header) {
-        if (header.extra != undefined && header.extra.listId != undefined) {
-          listIdsForFetch.push(header.extra.listId)
-        }
-      })
-      const that = this
-      this.fetchListsBulk({ arrayOfListIds: listIdsForFetch }).then(listOptions => {
-        // We are basically copying all the lists to local state here (TODO we really only need the ones with IDs we identified)
-        that.listOptions = listOptions
+    // start the counter that uses the current time to determine attrition
+    this.refreshAttrition()
 
-        // start the counter that uses the current time to determine attrition
-        that.refreshAttrition()
-
-        that.tableHeight = that.calculateTableHeight()
-      })
-    })
+    this.tableHeight = this.calculateTableHeight()
   },
   unmounted () {
     this.cancelAutoUpdate()
@@ -1452,8 +1466,8 @@ export default {
     window.addEventListener("resize", this.onResize)
 
     // Pause the refresh when users are doing "stuff"
-    window.addEventListener("click", this.pauseRefresh)
-    window.addEventListener("keydown", this.pauseRefresh)
+    // window.addEventListener("click", this.pauseRefresh)
+    // window.addEventListener("keydown", this.pauseRefresh)
   },
   destroyed () {
     this.cancelAutoUpdate()
