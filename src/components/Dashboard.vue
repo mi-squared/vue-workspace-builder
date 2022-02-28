@@ -1199,12 +1199,13 @@ export default {
       }
 
       // send the udpated entity to the server
+      const patientModel = this.extractPatient(entity)
       this.pushEntity({
         workspaceId: this.dashboard.workspaceId,
         dashboardId: this.dashboard.id,
         entityId: entity.id,
         entity,
-        patient: this.mainPatientModel // Send the patient model along with the entity
+        patient: patientModel // Send the patient model along with the entity
       }).then(() => {
         // force update of the dashboard form components by incrementing change count, which they use as part of :key
         this.incrementChangeCount(Number(entity.id))
