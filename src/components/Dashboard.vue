@@ -1044,7 +1044,6 @@ export default {
       this.mainFormDialogs[entity.id] = true
       this.mainEntityModel = { ...entity }
       this.mainPatientModel = { ...this.extractPatient(entity) }
-      this.mainPatientModel = { ...this.extractPatient(entity) }
     },
     onMainFormEntitySaved({ entity, patient }) {
       this.backgroundRefreshTimer = true
