@@ -444,7 +444,7 @@
                     :index="header.value"
                     :model="item"
                     :listId="listIdForItem(header)"
-                    @changed="onEntityChanged"
+                    @changed="onEntityChanged(item)"
                     @show="onDashboardComponentVisibilityChanged"
                   ></SelectModal>
                 </div>
@@ -472,7 +472,7 @@
                     :key="generateKey(item, header)"
                     :entity="item"
                     :index="header.value"
-                    @save="onEntityChanged"
+                    @save="onEntityChanged(item)"
                     @show="onDashboardComponentVisibilityChanged"
                   ></EditableString>
                 </div>
@@ -498,7 +498,7 @@
                     :id="item.id"
                     :model="item"
                     :index="header.value"
-                    @changed="onEntityChanged"
+                    @changed="onEntityChanged(item)"
                     @show="onDashboardComponentVisibilityChanged"
                   ></DatePickerModal>
 
@@ -1055,7 +1055,7 @@ export default {
         ...this.mainPatientModel,
         ...patient
       }
-      this.onEntityChanged(this.mainEntityModel)
+      this.onEntityChanged(this.mainEntityModel, this.mainPatientModel)
       this.onMainFormClosed(this.mainEntityModel)
       this.loadEntitiesApi()
     },
@@ -1178,7 +1178,7 @@ export default {
       })
       this.orderedEntities.splice(movedEntityIndex, 1)
     },
-    onEntityChanged(entity) {
+    onEntityChanged(entity, patient = null) {
       // Let the user know we're doing something
       this.loaded = false
 
@@ -1198,7 +1198,11 @@ export default {
       }
 
       // send the udpated entity to the server
-      const patientModel = this.extractPatient(entity)
+      let patientModel = patient
+      if (patientModel == null) {
+        patientModel = this.extractPatient(entity)
+      }
+
       this.pushEntity({
         workspaceId: this.dashboard.workspaceId,
         dashboardId: this.dashboard.id,
