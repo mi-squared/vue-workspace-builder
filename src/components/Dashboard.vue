@@ -314,9 +314,9 @@
                     <v-toolbar-title>#{{ item.id }}</v-toolbar-title>
                     <v-toolbar-items>
 
-<!--   TODO gmail indicator goes here                   <v-btn icon>-->
-<!--                        <v-icon>mdi-gmail</v-icon>-->
-<!--                      </v-btn>-->
+                      <MailToButton
+                        :toEmail="`mlundeen@crisisprepandrecovery.com`"
+                      ></MailToButton>
 
                       <v-btn
                         v-if="item.archived == 1"
@@ -656,6 +656,7 @@ import DashboardFilters from './DashboardFilters'
 import SelectModal from './form-elements/SelectModal'
 import DatePickerModal from './form-elements/DatePickerModal'
 import DashboardFilesButton from './DashboardFilesButton'
+import MailToButton from './MailToButton'
 
 export default {
   name: 'Dashboard',
@@ -671,6 +672,7 @@ export default {
     }
   },
   components: {
+    MailToButton,
     DatePickerModal,
     SelectModal,
     DashboardFilesButton,
