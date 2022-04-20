@@ -63,7 +63,11 @@ export default {
     }),
     displayUser(userId) {
       const user = this.activeUsersList.find(item => item.value == userId)
-      return user.text
+      if (user != undefined) {
+        return user.text
+      } else {
+        return "Unknown"
+      }
     },
     formatDatetime(datetime) {
       return formatDatetime(datetime)
