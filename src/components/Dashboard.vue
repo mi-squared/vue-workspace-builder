@@ -315,7 +315,9 @@
                     <v-toolbar-items>
 
                       <MailToButton
-                        :toEmail="`mlundeen@crisisprepandrecovery.com`"
+                        :entity="item"
+                        :templateList="templateList"
+                        @save="onNoteSaved"
                       ></MailToButton>
 
                       <v-btn
@@ -831,6 +833,12 @@ export default {
       }
       return []
     },
+    templateList () {
+      if (this.getList('jotform_templates') != undefined) {
+        return this.getList('jotform_templates').data
+      }
+      return []
+    },
     newEntityForm() {
       let form = null
       if (this.dashboard.newEntityFormId) {
@@ -1094,7 +1102,8 @@ export default {
         dashboardId: this.dashboard.id,
         entityId: payload.entity.id,
         pid: payload.entity.pid,
-        text: payload.text
+        text: payload.text,
+        coordinatorKey: payload.coordinatorKey
       })
     },
     lastNoteText(entity) {

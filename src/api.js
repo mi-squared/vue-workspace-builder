@@ -377,6 +377,27 @@ export function updateDashboard(dashboard, userMeta) {
   })
 }
 
+export function updateAttachment(attachment, userMeta)
+{
+  return new Promise( (resolve) => {
+    //id: Math.floor(Math.random() * 32768),
+    axios.post(baseUrl + '/apis/api/note', {
+        params: {
+          attachment: attachment
+        }
+      },
+      {
+        headers: {
+          'apicsrftoken': userMeta.csrfToken,
+          'Content-Type': 'application/json;charset=utf-8'
+        }
+      }).then(function (response) {
+      const attachment = response.data
+      resolve(attachment)
+    }).catch(handleApiError)
+  })
+}
+
 export function createNote(note, userMeta)
 {
   return new Promise( (resolve) => {

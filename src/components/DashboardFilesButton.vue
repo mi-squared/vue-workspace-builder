@@ -141,6 +141,7 @@ export default {
     },
     onClickConfirm()
     {
+
       this.dialog = false
     },
     onClickApprove (item)

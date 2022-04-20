@@ -61,7 +61,7 @@ export function newDashboard(workspaceId, dashboard) {
   }
 }
 
-export function newNote(workspaceId, dashboardId, entityId, pid, text)
+export function newNote(workspaceId, dashboardId, entityId, pid, text, coordinatorKey = null)
 {
     return {
       id: null,
@@ -69,7 +69,8 @@ export function newNote(workspaceId, dashboardId, entityId, pid, text)
       dashboardId: dashboardId,
       entityId: entityId,
       pid: pid,
-      text: text
+      text: text,
+      coordinatorKey: coordinatorKey
     }
 }
 

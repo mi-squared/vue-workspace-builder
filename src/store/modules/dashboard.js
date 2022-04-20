@@ -4,15 +4,15 @@ import {
   CREATE_DASHBOARD, CREATE_ENTITY,
   FETCH_DASHBOARD, FETCH_DASHBOARD_ROWS, FETCH_ENTITIES, FETCH_NOTES_BY_ENTITY_ID,
   GET_DASHBOARD,
-  GET_DASHBOARD_ROWS, GET_ENTITY_BY_ID, GET_NOTES_BY_ENTITY_ID, INIT_DASHBOARD, PUSH_ENTITY,
-  SET_DASHBOARD, SET_DASHBOARD_ROWS, SET_ENTITY, SET_NOTE, UPDATE_TEST
+  GET_DASHBOARD_ROWS, GET_ENTITY_BY_ID, GET_NOTES_BY_ENTITY_ID, INIT_DASHBOARD, PUSH_ENTITY, SET_ATTACHMENT,
+  SET_DASHBOARD, SET_DASHBOARD_ROWS, SET_ENTITY, SET_NOTE, UPDATE_ATTACHMENT
 } from '../types-dashboard'
 import Vue from 'vue'
 import {
   createDashboard,
   createEntity, createNote,
   fetchDashboardRows, fetchEntities,
-  getDashboardById, getNotesByEntityId, initDashboardById,
+  getDashboardById, getNotesByEntityId, initDashboardById, updateAttachment,
   updateDashboard,
   updateEntity, updateTestEntities
 } from '../../api'
@@ -23,7 +23,8 @@ export const dashboard = {
   state: {
     dashboards: {},
     entities: {},
-    notes: {}
+    notes: {},
+    attachments: {},
   },
   getters: {
     [ALL_DASHBOARDS]: state => state.dashboards,
@@ -179,6 +180,11 @@ export const dashboard = {
                 commit(SET_NOTE, { noteId: note.id, note })
               })
             }
+            if (entity.attachments != undefined) {
+              Object.values(entity.attachments).forEach(attachment => {
+                commit(SET_ATTACHMENT, { attachmentId: attachment.id, attachment })
+              })
+            }
           })
 
         }).catch(function () {
@@ -248,17 +254,28 @@ export const dashboard = {
       }
     },
 
-    [ADD_NOTE]: ({ commit, rootGetters }, { workspaceId, dashboardId, entityId, pid, text }) => {
+    [ADD_NOTE]: ({ commit, rootGetters }, { workspaceId, dashboardId, entityId, pid, text, coordinatorKey = null }) => {
       const userMeta = rootGetters['user/GET_USER_META']
 
       // If we have a token, make the API call
       if (userMeta.csrfToken) {
         // User the model-builder to combine our parameters into a note model
-        const note = newNote(workspaceId, dashboardId, entityId, pid, text)
+        const note = newNote(workspaceId, dashboardId, entityId, pid, text, coordinatorKey)
 
         // Make the API call to create the note
         createNote(note, userMeta).then(note => {
           commit(SET_NOTE, { noteId: note.id, note })
+        })
+      }
+    },
+
+    [UPDATE_ATTACHMENT]: ({ commit, rootGetters }, { attachment }) => {
+      const userMeta = rootGetters['user/GET_USER_META']
+
+      // If we have a token, make the API call
+      if (userMeta.csrfToken) {
+        updateAttachment(attachment, userMeta).then(attachment => {
+          commit(SET_ATTACHMENT, { attachmentId: attachment.id, attachment })
         })
       }
     },
@@ -303,6 +320,10 @@ export const dashboard = {
 
     [SET_NOTE] (state, { noteId, note }) {
       Vue.set(state.notes, noteId, note)
+    },
+
+    [SET_ATTACHMENT] (state, { attachmentId, attachment }) {
+      Vue.set(state.attachments, attachmentId, attachment)
     },
 
     // Dashboard Builder Mutations

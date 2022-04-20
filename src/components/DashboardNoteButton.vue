@@ -97,7 +97,8 @@ export default {
       // emit an event to the parent so the last note text can be updated adn note persisted
       this.$emit('save', {
         entity: this.entity,
-        text: this.noteText
+        text: this.noteText,
+        coordinatorKey: null
       })
 
       // Reset the note text
