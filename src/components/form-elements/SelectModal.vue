@@ -1,11 +1,11 @@
 <template>
-<div class="select-modal">
+<div class="select-modal relative-container">
   <div v-if="loaded && items != undefined && items.length > 0">
 
     <v-menu
-      top
       :close-on-content-click="false"
       v-model="menu"
+      attach
     >
       <template v-slot:activator="{ on, attrs }">
         <v-text-field
@@ -19,7 +19,9 @@
       </template>
 
       <!-- dialog content -->
-      <v-toolbar dense>
+      <v-toolbar
+        dense
+      >
         <v-autocomplete
           class="mt-2"
           :key="id"

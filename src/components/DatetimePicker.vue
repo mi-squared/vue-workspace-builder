@@ -1,4 +1,5 @@
 <template>
+<div class="date-time-picker relative-container">
   <v-menu
     v-model="display"
     transition="scale-transition"
@@ -6,6 +7,7 @@
     max-width="340px"
     min-width="340px"
     :close-on-content-click="false"
+    attach
   >
     <template v-slot:activator="{ on }">
       <v-text-field
@@ -110,6 +112,7 @@
       </v-card-actions>
     </v-card>
   </v-menu>
+</div>
 </template>
 
 <script>

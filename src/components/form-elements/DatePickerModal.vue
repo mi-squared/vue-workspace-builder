@@ -1,5 +1,5 @@
 <template>
-<div class="date-picker-modal">
+<div class="date-picker-modal relative-container">
   <v-menu
     :key="id"
     :ref="index"
@@ -9,6 +9,7 @@
     max-width="290px"
     min-width="auto"
     :close-on-content-click="false"
+    attach
   >
     <template v-slot:activator="{ on, attrs }">
       <v-text-field

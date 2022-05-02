@@ -1,10 +1,10 @@
 <template>
-  <div class="text-center">
+  <div class="text-center relative-container">
     <v-menu
       v-model="menu"
       :close-on-content-click="false"
-      :nudge-width="400"
-      offset-x
+      nudge-left="400px"
+      attach
     >
       <template v-slot:activator="{ on, attrs }">
         <v-btn
@@ -17,7 +17,7 @@
 
       </template>
 
-      <v-card>
+      <v-card min-width="400px">
         <v-list>
           <v-list-item>
             <v-list-item-content>
@@ -78,6 +78,15 @@ export default {
     return {
       menu: false,
       noteText: ''
+    }
+  },
+  watch: {
+    menu: function () {
+      if (this.menu === true) {
+        this.$emit("show", true)
+      } else {
+        this.$emit("show", false)
+      }
     }
   },
   methods: {

@@ -326,7 +326,9 @@
                   <tr>
                       <td class="py-0 px-1">
                         <DashboardNoteButton
-                          :entity="item" @save="onNoteSaved"
+                          :entity="item"
+                          @save="onNoteSaved"
+                          @show="onDashboardComponentVisibilityChanged"
                         >
                         </DashboardNoteButton>
                       </td>
@@ -1437,7 +1439,7 @@ export default {
     //   }, 3000)
     // },
     onDashboardComponentVisibilityChanged (isShowing) {
-      if (isShowing) {
+      if (isShowing === true) {
         this.backgroundRefreshTimer = false
       } else {
         this.backgroundRefreshTimer = true
@@ -1488,6 +1490,15 @@ export default {
 
 .v-data-table > .v-data-table__wrapper > table > tbody > tr > td, .v-data-table > .v-data-table__wrapper > table > tbody > tr > th, .v-data-table > .v-data-table__wrapper > table > thead > tr > td, .v-data-table > .v-data-table__wrapper > table > thead > tr > th, .v-data-table > .v-data-table__wrapper > table > tfoot > tr > td, .v-data-table > .v-data-table__wrapper > table > tfoot > tr > th {
   padding: 0 8px;
+}
+
+/* For making sure the menu on dashboard edit sticks to parent */
+.relative-container {
+  position: relative;
+}
+
+.v-select__slot {
+  min-width: 180px;
 }
 
 </style>
