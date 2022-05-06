@@ -17,7 +17,10 @@
 
       </template>
 
-      <v-card min-width="400px">
+      <v-card
+        in-width="400px"
+        v-click-outside="onClose"
+      >
         <v-list>
           <v-list-item>
             <v-list-item-content>
@@ -47,7 +50,7 @@
 
           <v-btn
             text
-            @click="menu = false"
+            @click="onClose"
           >
             Cancel
           </v-btn>
@@ -101,6 +104,9 @@ export default {
       this.noteText = ''
 
       // Close the modal
+      this.menu = false
+    },
+    onClose() {
       this.menu = false
     }
   },

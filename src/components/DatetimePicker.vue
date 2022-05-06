@@ -30,7 +30,9 @@
       </v-text-field>
     </template>
 
-    <v-card>
+    <v-card
+      v-click-outside="onClose"
+    >
       <v-card-text class="px-0 py-0">
         <v-tabs fixed-tabs v-model="activeTab">
           <v-tab key="calendar">

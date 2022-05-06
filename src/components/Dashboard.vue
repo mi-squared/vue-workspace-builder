@@ -205,7 +205,7 @@
               <!-- Display the created_datetime within a chip that indicates how old (attrition) the row is -->
               <div v-else-if="header.value == durationField">
                 <v-chip
-                  :key="currentTimestamp.unix()"
+                  :key="item.id + 'app-date'"
                   :color="getColor(item)"
                   dark
                 >
@@ -715,7 +715,8 @@ export default {
       dialog: false,
       timer: '',
       updateTimer: '',
-      currentTimestamp: null,
+      currentDateObject: null,
+      //currentUnixTimestamp: null,
       expanded: [],
       singleExpand: false,
       entityTitle: 'Referral',
@@ -895,8 +896,12 @@ export default {
       return dashboards
     },
     clocktime() {
-      let m = this.currentTimestamp
-      return m.tz(this.timeZone).format("MM/DD/YYYY HH:mm")
+      // let m = this.currentTimestamp
+      // return m.tz(this.timeZone).format("MM/DD/YYYY HH:mm")
+      return this.currentDateObject.toLocaleTimeString('en-US', {
+        timeZone: this.timeZone,
+        timeStyle: 'short'
+      })
     }
   },
   methods: {
@@ -1042,6 +1047,7 @@ export default {
       })
     },
     onEntityIdClick(entity) {
+      console.log(entity)
       this.backgroundRefreshTimer = false // Pause the timer / background refresh while form is open
       this.mainFormDialogs[entity.id] = true
       this.mainEntityModel = { ...entity }
@@ -1097,6 +1103,7 @@ export default {
     },
     conditionalLogicIndicators(entity) {
       // Evaluate conditional logic and get indicators
+      // console.log(entity)
       let indicators = []
       if (this.dashboard.hasConditionalLogic) {
         this.dashboard.conditionalLogic.rules.forEach(rule => {
@@ -1215,7 +1222,7 @@ export default {
         // force update of the dashboard form components by incrementing change count, which they use as part of :key
         this.incrementChangeCount(Number(entity.id))
         this.loaded = true
-        this.loadEntitiesApi()
+        //this.loadEntitiesApi()
       })
     },
     archiveEntity(entity, archive = 1) {
@@ -1239,8 +1246,8 @@ export default {
       })
     },
     moveToDashboard(entity, dashboardId) {
-      console.log("Moving Entity to dashboard: " + dashboardId)
-      console.log(entity)
+      // console.log("Moving Entity to dashboard: " + dashboardId)
+      // console.log(entity)
 
       // Let the user know we're doing something
       this.loaded = false
@@ -1264,7 +1271,7 @@ export default {
       })
     },
     sendToWorkspace(entity, workspaceId) {
-      console.log("Sending Entity to workspace: " + workspaceId)
+      // console.log("Sending Entity to workspace: " + workspaceId)
 
       const targetWorkspace = this.getWorkspaceById(workspaceId)
 
@@ -1321,19 +1328,16 @@ export default {
     close () {
       console.log('Dialog closed')
     },
-    getCurrentTimestamp () {
-      // Get the current timestamp
-      return moment()
-    },
     refreshAttrition: function () {
       this.timer = setInterval(() => {
-        this.currentTimestamp = this.getCurrentTimestamp()
-      }, 5000)
+        this.currentDateObject = new Date()
+      }, 29000)
 
+      const that = this
       this.updateTimer = setInterval(() => {
-        if (this.backgroundRefresh === true &&
-          this.backgroundRefreshTimer === true) {
-          this.loadEntitiesApi(false)
+        if (that.backgroundRefresh === true &&
+          that.backgroundRefreshTimer === true) {
+          that.loadEntitiesApi(false)
         }
       }, 10000)
     },
@@ -1432,12 +1436,6 @@ export default {
       this.tableHeight = this.calculateTableHeight()
       console.log("height: " + this.tableHeight)
     },
-    // pauseRefresh () {
-    //   //this.backgroundRefreshTimer = false
-    //   setInterval(() => {
-    //     //this.backgroundRefreshTimer = true
-    //   }, 3000)
-    // },
     onDashboardComponentVisibilityChanged (isShowing) {
       if (isShowing === true) {
         this.backgroundRefreshTimer = false
@@ -1467,7 +1465,7 @@ export default {
       this.timeZone = 'America/Phoenix'
     }
 
-    this.currentTimestamp = this.getCurrentTimestamp()
+    this.currentDateObject = new Date()
 
     window.addEventListener("resize", this.onResize)
 

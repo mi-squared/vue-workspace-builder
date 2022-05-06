@@ -247,12 +247,14 @@ export default {
         required: value => !!value || 'Required.',
         validateDOB: (dobString) => {
           let valid = true
-          if (dobString.length != 10) {
-            valid = 'Invalid DOB.'
-          } else if (dobString != null) {
-            const dob = new Date(dobString)
-            if (dob == undefined || dob == "Invalid Date" || isNaN(dob)) {
+          if (dobString !== null) {
+            if (dobString.length != 10) {
               valid = 'Invalid DOB.'
+            } else {
+              const dob = new Date(dobString)
+              if (dob == undefined || dob == "Invalid Date" || isNaN(dob)) {
+                valid = 'Invalid DOB.'
+              }
             }
           }
           return valid

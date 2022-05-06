@@ -1,5 +1,5 @@
 <template>
-  <div class="editable-string relative-container">
+  <div class="editable-string-component relative-container">
     <v-menu
       v-model="menu"
       :close-on-content-click="false"
@@ -11,14 +11,18 @@
     >
       <template v-slot:activator="{ on, attrs }">
         <span
-          class="text-decoration-underline"
+          class="editable-string"
           v-bind="attrs"
           v-on="on"
+          v-click-outside="onClose"
         >
           <span v-if="entity[index]">
             {{ entity[index] }}
           </span>
-          <v-icon v-else>mdi-note-plus-outline</v-icon>
+<!--          <v-icon v-else>mdi-note-plus-outline</v-icon>-->
+          <span class="mb-0" v-else>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+          </span>
         </span>
 
       </template>
@@ -35,8 +39,48 @@
           </v-text-field>
         </v-card-text>
         <v-card-actions>
-          <v-btn color="grey lighten-1" text @click="menu = false">Clear</v-btn>
-          <v-btn color="green darken-1" text @click="onSave">Save</v-btn>
+          <v-tooltip bottom>
+            <template v-slot:activator="{ on, attrs }">
+              <v-btn
+                @click="onSave"
+                class="btn-sm"
+                icon
+                color="primary"
+                v-bind="attrs"
+                v-on="on"
+              ><v-icon>mdi-check-bold</v-icon></v-btn>
+            </template>
+            <!-- button tooltip -->
+            <span>Save</span>
+          </v-tooltip>
+
+          <v-tooltip bottom>
+            <template v-slot:activator="{ on, attrs }">
+              <v-btn
+                @click="onClear"
+                class="btn-sm"
+                icon
+                v-bind="attrs"
+                v-on="on"
+              ><v-icon>mdi-cancel</v-icon></v-btn>
+            </template>
+            <!-- button tooltip -->
+            <span>Clear</span>
+          </v-tooltip>
+
+          <v-tooltip bottom>
+            <template v-slot:activator="{ on, attrs }">
+              <v-btn
+                @click="onClose"
+                class="btn-sm"
+                icon
+                v-bind="attrs"
+                v-on="on"
+              ><v-icon>mdi-close</v-icon></v-btn>
+            </template>
+            <!-- button tooltip -->
+            <span>Cancel</span>
+          </v-tooltip>
         </v-card-actions>
       </v-card>
 
@@ -57,18 +101,8 @@ export default {
   },
   data() {
     return {
-      menu: false
-    }
-  },
-  computed: {
-    myString: {
-      get: function () {
-        return this.entity[this.index]
-      },
-      // setter
-      set: function (newValue) {
-        this.entity[this.index] = newValue
-      }
+      menu: false,
+      myString: ''
     }
   },
   watch: {
@@ -82,15 +116,28 @@ export default {
   },
   methods: {
     onSave() {
+      this.entity[this.index] = this.myString
       this.$emit('save', this.entity)
+      this.menu = false
+    },
+    onClear() {
+      this.myString = null
+    },
+    onClose () {
+      this.myString = this.entity[this.index]
       this.menu = false
     }
   },
   mounted () {
+    this.myString = this.entity[this.index]
   }
 }
 </script>
 
 <style scoped>
-
+.editable-string {
+  text-decoration-line: underline;
+  text-decoration-style: dashed;
+  text-decoration-color: blue;
+}
 </style>

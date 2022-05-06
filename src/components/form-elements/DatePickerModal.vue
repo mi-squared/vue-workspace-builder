@@ -28,6 +28,7 @@
       <v-date-picker
         v-model="myValue"
         no-title
+        v-click-outside="onClose"
       ></v-date-picker>
 
       <v-card-actions>
@@ -108,7 +109,8 @@ export default {
   data () {
     return {
       menu: false,
-      activeModel: this.model
+      activeModel: this.model,
+      myValue: null,
     }
   },
   watch: {
@@ -125,19 +127,9 @@ export default {
       }
     }
   },
-  computed: {
-    myValue: {
-      get: function () {
-        return this.activeModel[this.index]
-      },
-      // setter
-      set: function (newValue) {
-        this.activeModel[this.index] = newValue
-      }
-    }
-  },
   methods: {
     onSave () {
+      this.activeModel[this.index] = this.myValue
       this.$emit('changed', this.activeModel)
       this.menu = false
     },
@@ -159,7 +151,10 @@ export default {
     },
   },
   mounted () {
-
+    if (this.activeModel[this.index] !== undefined &&
+      this.activeModel[this.index] !== null) {
+      this.myValue = this.activeModel[this.index]
+    }
   },
   beforeDestroy () {
     this.activeModel = null

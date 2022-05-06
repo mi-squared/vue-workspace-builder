@@ -27,6 +27,7 @@
           :key="id"
           v-model="myValue"
           :items="items"
+          v-click-outside="onClose"
         >
         </v-autocomplete>
 
@@ -92,9 +93,6 @@ export default {
       type: String,
       required: true
     },
-    // items: {
-    //   required: true
-    // },
     id: {
       type: String,
       required: true
@@ -112,25 +110,22 @@ export default {
     return {
       loaded: false,
       menu: false,
-      activeModel: this.model
+      activeModel: this.model,
+      myValue: null // The list option value (not display label)
     }
   },
   computed: {
     ...mapListGetters({
       getList: GET_LIST
     }),
-    myValue: {
-      get: function () {
-        return this.activeModel[this.index]
-      },
-      // setter
-      set: function (newValue) {
-        this.activeModel[this.index] = newValue
-      }
-    },
     items () {
       return this.getList(this.listId).data
     },
+    /**
+     * Display value for the list option
+     *
+     * @returns {string|*}
+     */
     displayValue () {
       const displayValue = this.items.find(item => {
         if (this.myValue != undefined &&
@@ -155,6 +150,7 @@ export default {
   },
   methods: {
     onSave () {
+      this.activeModel[this.index] = this.myValue
       this.$emit('changed', this.activeModel)
       this.menu = false
     },
@@ -167,6 +163,7 @@ export default {
     }
   },
   mounted () {
+    this.myValue = this.model[this.index]
     this.loaded = true
   },
   beforeDestroy () {
