@@ -33,7 +33,7 @@
               outlined
               dark
               v-bind="attrs"
-              @click="dialog = true"
+              @click="onNewEntityButtonClicked"
               class="mr-2"
             >
               <v-icon class="mr-2">mdi-plus-circle-outline</v-icon>
@@ -123,21 +123,18 @@
 
               <div v-if="header.value == 'id'">
 
+                <a
+                  class="mt-4 text-body-2 font-weight-light"
+                  @click="onEntityIdClick(item)"
+                >
+                  #{{ item.id }}
+                </a>
                 <!-- display the "main" form as full screen -->
                 <v-dialog
                   v-model="mainFormDialogs[item.id]"
                   fullscreen
                   hide-overlay
                 >
-                  <template v-slot:activator="{ on, attrsMainForm }">
-                    <a
-                      class="mt-4 text-body-2 font-weight-light"
-                      v-bind="attrsMainForm"
-                      @click="onEntityIdClick(item)"
-                    >
-                      #{{ item.id }}
-                    </a>
-                  </template>
                   <v-card>
                     <v-toolbar
                       dark
@@ -166,9 +163,9 @@
                     <v-container v-if="mainForm != null">
                       <v-card flat width="100%">
                         <v-card-text>
+                          <!-- was  v-if="mainFormDialogs[item.id]" -->
                           <JsonForm
-                            v-if="mainFormDialogs[item.id]"
-                            :key="item.id"
+                            :key="item.dashboard_entity_id"
                             :form="mainForm"
                             :model="mainEntityModel"
                             :schema="mainForm.schema"
@@ -1013,13 +1010,19 @@ export default {
         return []
       }
     },
+    onNewEntityButtonClicked () {
+      this.backgroundRefreshTimer = false
+      this.dialog = true
+    },
     onNewEntityModalClosed () {
+      this.backgroundRefreshTimer = true
       this.dialog = false
       this.newEntityModel = {}
       this.newPatientModel = {}
       this.entityCreateKey++
     },
     saveNewEntity ({ entity, patient }) {
+      this.backgroundRefreshTimer = true
       // Save the entity
       console.log("Saving New Entity: " + this.newEntityModel)
 
@@ -1054,6 +1057,7 @@ export default {
       this.mainPatientModel = { ...this.extractPatient(entity) }
     },
     onMainFormEntitySaved({ entity, patient }) {
+      document.getElementsByClassName('v-dialog--active')[0].scrollTop = 0
       this.backgroundRefreshTimer = true
       this.mainEntityModel = {
         ...this.mainEntityModel,
@@ -1068,6 +1072,7 @@ export default {
       this.loadEntitiesApi()
     },
     onMainFormClosed (entity) {
+      document.getElementsByClassName('v-dialog--active')[0].scrollTop = 0
       this.backgroundRefreshTimer = true // un-Pause the timer / background refresh
       // Clear the entity and patient models when we close the main form
       this.mainEntityModel = {}

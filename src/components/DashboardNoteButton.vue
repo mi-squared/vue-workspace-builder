@@ -3,7 +3,8 @@
     <v-menu
       v-model="menu"
       :close-on-content-click="false"
-      nudge-left="400px"
+      nudge-left="290px"
+      min-width="320px"
       attach
     >
       <template v-slot:activator="{ on, attrs }">
@@ -19,13 +20,12 @@
 
       <v-card
         in-width="400px"
-        v-click-outside="onClose"
       >
         <v-list>
           <v-list-item>
             <v-list-item-content>
               <v-list-item-title>New Note</v-list-item-title>
-              <v-list-item-subtitle>{{ entity.fname }} {{ entity.lname }}</v-list-item-subtitle>
+              <v-list-item-subtitle>{{ entity.fname }} {{ entity.lname }} <span class="text--lighten-4">(#{{ entity.dashboard_entity_id }})</span> </v-list-item-subtitle>
             </v-list-item-content>
 
             <v-list-item-action>

@@ -27,7 +27,6 @@
           :key="id"
           v-model="myValue"
           :items="items"
-          v-click-outside="onClose"
         >
         </v-autocomplete>
 

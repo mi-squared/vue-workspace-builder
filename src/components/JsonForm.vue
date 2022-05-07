@@ -171,7 +171,7 @@ export default {
      * so we handle those separately on the onFormElementChange event
      */
     onFormChange() {
-
+      if (this.loaded) {
 
         // Merge our separate state with the state from the VJSF model. We have to do this because VJSF only
         // provides fields that have values (not fields that have been cleared) in this message. We don't want
@@ -182,7 +182,9 @@ export default {
         }
         this.optionsForForm = this.calculateOptions()
         //console.log("onFormChange(param)")
-
+      } else {
+        console.log("onFormChange: skipping notification parent")
+      }
     },
     /**
      * Listen to @input-child event on the vjsf instance. This gives us a key/value pair
@@ -191,7 +193,7 @@ export default {
      * @param param
      */
     onFormElementChange(param) {
-
+      if (this.loaded) {
 
         let newVal = param.value
         if (param.value == undefined) {
@@ -203,7 +205,9 @@ export default {
         this.optionsForForm = this.calculateOptions()
         //console.log("onFormElementChange(param)")
         //console.log(param)
-
+      } else {
+        console.log("onFormChange: skipping notification parent")
+      }
     },
     onPatientChanged(data) {
       const patient = data.patient

@@ -28,7 +28,6 @@
       <v-date-picker
         v-model="myValue"
         no-title
-        v-click-outside="onClose"
       ></v-date-picker>
 
       <v-card-actions>

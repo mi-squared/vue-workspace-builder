@@ -4,9 +4,8 @@
       v-model="menu"
       :close-on-content-click="false"
       transition="scale-transition"
-      offset-y
       max-width="400px"
-      min-width="auto"
+      min-width="320px"
       attach
     >
       <template v-slot:activator="{ on, attrs }">
@@ -14,12 +13,10 @@
           class="editable-string"
           v-bind="attrs"
           v-on="on"
-          v-click-outside="onClose"
         >
           <span v-if="entity[index]">
             {{ entity[index] }}
           </span>
-<!--          <v-icon v-else>mdi-note-plus-outline</v-icon>-->
           <span class="mb-0" v-else>
             &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
           </span>
@@ -39,6 +36,7 @@
           </v-text-field>
         </v-card-text>
         <v-card-actions>
+          <v-spacer></v-spacer>
           <v-tooltip bottom>
             <template v-slot:activator="{ on, attrs }">
               <v-btn

@@ -220,6 +220,9 @@ export const dashboard = {
     [PUSH_ENTITY]: ({ commit, rootGetters }, { workspaceId, dashboardId, entityId, entity, patient }) => {
       const userMeta = rootGetters['user/GET_USER_META']
 
+      // Commit eagerly so we have the updated data in the data table right away
+      commit(SET_ENTITY, { entityId, entity })
+
       // If we have a token, make the API call
       if (userMeta.csrfToken) {
         // Make sure to update the dashboardId on the entity itself in case it changed
