@@ -631,7 +631,7 @@ import {
   FETCH_DASHBOARD,
   FETCH_DASHBOARD_ROWS, FETCH_ENTITIES,
   GET_DASHBOARD,
-  GET_DASHBOARD_ROWS, GET_ENTITY_BY_ID, GET_NOTES_BY_ENTITY_ID, INIT_DASHBOARD, PUSH_ENTITY
+  GET_DASHBOARD_ROWS, GET_ENTITY_BY_ID, GET_NOTES_BY_ENTITY_ID, INIT_DASHBOARD, PUSH_ENTITY, UPDATE_TEST
 } from '../store/types-dashboard'
 
 const { mapGetters: mapDashboardGetters, mapActions: mapDashboardActions } = createNamespacedHelpers('dashboard')
@@ -680,6 +680,7 @@ export default {
   },
   data () {
     return {
+      lastUpdateTestDatetime: null,
       tableHeight: '',
       timeZone: '',
       paginationOptions: {},
@@ -907,6 +908,7 @@ export default {
       fetchDashboard: FETCH_DASHBOARD,
       fetchDashboardRows: FETCH_DASHBOARD_ROWS,
       fetchEntities: FETCH_ENTITIES,
+      updateTest: UPDATE_TEST,
       createEntity: CREATE_ENTITY,
       pushEntity: PUSH_ENTITY,
       addNote: ADD_NOTE
@@ -1334,17 +1336,33 @@ export default {
       console.log('Dialog closed')
     },
     refreshAttrition: function () {
-      this.timer = setInterval(() => {
-        this.currentDateObject = new Date()
-      }, 29000)
 
+      // Update the clock once per minute
+      let time = new Date()
+      let secondsRemaining = (60 - time.getSeconds()) * 1000;
       const that = this
+      setTimeout(() => {
+        that.timer = setInterval(() => {
+          that.currentDateObject = new Date()
+        }, 60000)
+      }, secondsRemaining)
+
       this.updateTimer = setInterval(() => {
         if (that.backgroundRefresh === true &&
           that.backgroundRefreshTimer === true) {
-          that.loadEntitiesApi(false)
+          that.updateTest({
+            dashboardId: that.dashboard.id,
+            workspaceId: that.dashboard.workspaceId,
+            entityIds: that.orderedEntities,
+            lastUpdateTestDatetime: that.lastUpdateTestDatetime
+          }).then(function (response) {
+            that.lastUpdateTestDatetime = response.lastUpdateTestDatetime
+            if (response.doUpdate === true) {
+              that.loadEntitiesApi(false)
+            }
+          })
         }
-      }, 10000)
+      }, 5000)
     },
     cancelAutoUpdate () {
       clearInterval(this.updateTimer)
@@ -1471,6 +1489,8 @@ export default {
     }
 
     this.currentDateObject = new Date()
+    // init the last updated time (since we don't have one from the server yet)
+    this.lastUpdateTestDatetime = this.currentDateObject.toISOString().slice(0, 19).replace('T', ' ')
 
     window.addEventListener("resize", this.onResize)
 

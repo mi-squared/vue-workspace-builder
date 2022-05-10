@@ -5,7 +5,7 @@ import {
   FETCH_DASHBOARD, FETCH_DASHBOARD_ROWS, FETCH_ENTITIES, FETCH_NOTES_BY_ENTITY_ID,
   GET_DASHBOARD,
   GET_DASHBOARD_ROWS, GET_ENTITY_BY_ID, GET_NOTES_BY_ENTITY_ID, INIT_DASHBOARD, PUSH_ENTITY,
-  SET_DASHBOARD, SET_DASHBOARD_ROWS, SET_ENTITY, SET_NOTE
+  SET_DASHBOARD, SET_DASHBOARD_ROWS, SET_ENTITY, SET_NOTE, UPDATE_TEST
 } from '../types-dashboard'
 import Vue from 'vue'
 import {
@@ -14,7 +14,7 @@ import {
   fetchDashboardRows, fetchEntities,
   getDashboardById, getNotesByEntityId, initDashboardById,
   updateDashboard,
-  updateEntity
+  updateEntity, updateTestEntities
 } from '../../api'
 import { newNote } from '../../model-builder'
 
@@ -184,6 +184,15 @@ export const dashboard = {
         }).catch(function () {
           alert('there was an error, you may need to log back in')
         })
+      }
+    },
+
+    [UPDATE_TEST] ({ rootGetters }, { dashboardId, workspaceId, entityIds, lastUpdateTestDatetime }) {
+      const userMeta = rootGetters['user/GET_USER_META']
+
+      // If we have a token, make the API call
+      if (userMeta.csrfToken) {
+        return updateTestEntities(dashboardId, workspaceId, entityIds, lastUpdateTestDatetime, userMeta)
       }
     },
 

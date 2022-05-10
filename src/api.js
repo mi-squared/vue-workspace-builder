@@ -289,6 +289,26 @@ export function fetchDashboardRows(dashboardId, userMeta)
   })
 }
 
+export function updateTestEntities(dashboardId, workspaceId, entityIds, lastUpdateTestDatetime, userMeta)
+{
+  return new Promise((resolve) => {
+    axios.get(baseUrl + '/apis/api/updatetest', {
+      params: {
+        dashboardId: dashboardId,
+        workspaceId: workspaceId,
+        entityIds: entityIds,
+        lastUpdateTestDatetime: lastUpdateTestDatetime
+      },
+      headers: {
+        'apicsrftoken': userMeta.csrfToken
+      }
+    }).then(function (response) {
+      const updateTestResponse = response.data
+      resolve(updateTestResponse)
+    }).catch(handleApiError)
+  })
+}
+
 export function fetchEntities(dashboardId, dashboardFilterEnabled, archivedFilterEnabled, search, filter, paginationOptions, userMeta)
 {
   return new Promise((resolve) => {
