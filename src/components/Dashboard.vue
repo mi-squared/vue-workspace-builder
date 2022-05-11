@@ -129,61 +129,6 @@
                 >
                   #{{ item.id }}
                 </a>
-                <!-- display the "main" form as full screen -->
-                <v-dialog
-                  v-model="mainFormDialogs[item.id]"
-                  fullscreen
-                  hide-overlay
-                >
-                  <v-card>
-                    <v-toolbar
-                      dark
-                      color="primary"
-                    >
-                      <v-toolbar-title>
-                        {{ item.fname }} {{ item.lname }}
-                        <span class="lighten-1">(#{{ item.id }})</span>
-                      </v-toolbar-title>
-
-                      <v-spacer></v-spacer>
-                      <v-switch
-                        class="mt-5 mr-8"
-                        label="Archived"
-                        :input-value="item.archived == 1 ? true : false"
-                        @change="archiveEntity(item, 1 - item.archived)"
-                      ></v-switch>
-                      <v-btn
-                        icon
-                        dark
-                        @click="onMainFormClosed(item)"
-                      >
-                        <v-icon>mdi-close</v-icon>
-                      </v-btn>
-                    </v-toolbar>
-                    <v-container v-if="mainForm != null">
-                      <v-card flat width="100%">
-                        <v-card-text>
-                          <!-- was  v-if="mainFormDialogs[item.id]" -->
-                          <JsonForm
-                            :key="item.dashboard_entity_id"
-                            :form="mainForm"
-                            :model="mainEntityModel"
-                            :schema="mainForm.schema"
-                            :options="mainForm.options"
-                            :pid="Number(item.pid)"
-                            :patient="mainPatientModel"
-                            @save="onMainFormEntitySaved"
-                            @cancel="mainFormDialogs[item.id] = false"
-                          ></JsonForm>
-                        </v-card-text>
-
-                      </v-card>
-                    </v-container>
-                    <v-container v-else>
-                      <v-alert>No Main Form Selected for this dashboard</v-alert>
-                    </v-container>
-                  </v-card>
-                </v-dialog>
               </div>
 
               <div v-else-if="header.value == 'pid'">
@@ -586,6 +531,65 @@
           </v-dialog>
         </v-row>
       </template>
+
+    <!-- display the "main" form as full screen -->
+    <template>
+      <v-dialog
+        v-model="mainFormDialogs[mainEntityModel.dashboard_entity_id]"
+        fullscreen
+        hide-overlay
+      >
+        <v-card>
+          <v-toolbar
+            dark
+            color="primary"
+          >
+            <v-toolbar-title>
+              {{ mainEntityModel.fname }} {{ mainEntityModel.lname }}
+              <span class="lighten-1">(#{{ mainEntityModel.id }})</span>
+            </v-toolbar-title>
+
+            <v-spacer></v-spacer>
+            <v-switch
+              class="mt-5 mr-8"
+              label="Archived"
+              :input-value="mainEntityModel.archived == 1 ? true : false"
+              @change="archiveEntity(mainEntityModel, 1 - mainEntityModel.archived)"
+            ></v-switch>
+            <v-btn
+              icon
+              dark
+              @click="onMainFormClosed(mainEntityModel)"
+            >
+              <v-icon>mdi-close</v-icon>
+            </v-btn>
+          </v-toolbar>
+          <v-container v-if="mainForm != null">
+            <v-card flat width="100%">
+              <v-card-text>
+                <!-- was  v-if="mainFormDialogs[item.id]" -->
+                <JsonForm
+                  :key="'main-form-' + mainEntityModel.dashboard_entity_id"
+                  :form="mainForm"
+                  :model="mainEntityModel"
+                  :schema="mainForm.schema"
+                  :options="mainForm.options"
+                  :pid="Number(mainEntityModel.pid)"
+                  :patient="mainPatientModel"
+                  @save="onMainFormEntitySaved"
+                  @cancel="onMainFormClosed(mainEntityModel)"
+                ></JsonForm>
+              </v-card-text>
+
+            </v-card>
+          </v-container>
+          <v-container v-else>
+            <v-alert>No Main Form Selected for this dashboard</v-alert>
+          </v-container>
+        </v-card>
+      </v-dialog>
+    </template>
+
       <v-snackbar
         v-model="snackbar"
       >
@@ -1052,11 +1056,11 @@ export default {
       })
     },
     onEntityIdClick(entity) {
-      console.log(entity)
+      console.log(entity.fname + " " + entity.lname)
       this.backgroundRefreshTimer = false // Pause the timer / background refresh while form is open
-      this.mainFormDialogs[entity.id] = true
       this.mainEntityModel = { ...entity }
       this.mainPatientModel = { ...this.extractPatient(entity) }
+      this.mainFormDialogs[entity.dashboard_entity_id] = true
     },
     onMainFormEntitySaved({ entity, patient }) {
       document.getElementsByClassName('v-dialog--active')[0].scrollTop = 0
@@ -1079,7 +1083,7 @@ export default {
       // Clear the entity and patient models when we close the main form
       this.mainEntityModel = {}
       this.mainPatientModel = {}
-      this.mainFormDialogs[entity.id] = false
+      this.mainFormDialogs[entity.dashboard_entity_id] = false
     },
     onNoteSaved(payload) {
       // console.log("note saved with text:" + payload.text)
