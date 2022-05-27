@@ -35,6 +35,14 @@
                 required
             ></v-text-field>
 
+            <v-text-field
+              label="Jotform ID"
+              hint="If a jotform webhook no coordinator key associate with an entity, we will place it in the dashboard with matching ID"
+              hide-details="auto"
+              v-model="activeDashboard.jotformId"
+              required
+            ></v-text-field>
+
             <v-select
               v-model="activeDashboard.mainFormId"
               label="Main Form"

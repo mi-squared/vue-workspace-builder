@@ -212,8 +212,8 @@ export function updateEntity(workspaceId, dashboardId, entityId, entity, patient
           'Content-Type': 'application/json;charset=utf-8'
         }
       }).then(function (response) {
-      const entity = response.data
-      resolve(entity)
+        const entity = response.data.model
+        resolve(entity)
     }).catch(handleApiError)
   })
 }
@@ -377,44 +377,41 @@ export function updateDashboard(dashboard, userMeta) {
   })
 }
 
-export function updateAttachment(attachment, userMeta)
+export function updateEntityMeta(endpoint, entityMeta, userMeta)
 {
   return new Promise( (resolve) => {
-    //id: Math.floor(Math.random() * 32768),
-    axios.post(baseUrl + '/apis/api/note', {
-        params: {
-          attachment: attachment
-        }
-      },
+    axios.put(baseUrl + '/apis/api/' + endpoint,
+      entityMeta,
       {
         headers: {
           'apicsrftoken': userMeta.csrfToken,
           'Content-Type': 'application/json;charset=utf-8'
         }
       }).then(function (response) {
-      const attachment = response.data
-      resolve(attachment)
+      const entityMeta = response.data.model
+      if (response.data.messages != undefined &&
+        response.data.messages.length) {
+        alert(response.data.messages.join("; "))
+      }
+      resolve(entityMeta)
     }).catch(handleApiError)
   })
 }
 
-export function createNote(note, userMeta)
+export function createEntityMeta(endpoint, entityMeta, userMeta)
 {
   return new Promise( (resolve) => {
     //id: Math.floor(Math.random() * 32768),
-    axios.post(baseUrl + '/apis/api/note', {
-        params: {
-          note: note
-        }
-      },
+    axios.post(baseUrl + '/apis/api/' + endpoint,
+      entityMeta,
       {
         headers: {
           'apicsrftoken': userMeta.csrfToken,
           'Content-Type': 'application/json;charset=utf-8'
         }
       }).then(function (response) {
-      const note = response.data
-      resolve(note)
+        const entityMeta = response.data.model
+        resolve(entityMeta)
     }).catch(handleApiError)
   })
 }

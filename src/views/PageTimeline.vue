@@ -108,8 +108,8 @@
         <v-container fluid class="mt-4">
           <v-timeline>
             <v-timeline-item
-              v-for="(timelineItem, i) in timelineItems"
-              :key="i"
+              v-for="timelineItem in timelineItems"
+              :key="timelineItem.index"
               :color="timelineItem.workspace.color"
               small
             >
@@ -135,8 +135,8 @@
                 </v-card-title>
                 <v-card-text>
                   <JsonFormTimelineView
-                    :key="'view_' + timelineItem.entity.dashboard_entity_id + '_' + i"
-                    v-if="timelineItem.form != null && (mainFormDialogs[i] == undefined || mainFormDialogs[i] == false)"
+                    :key="timelineItem.index"
+                    v-if="timelineItem.form != null"
                     :form="timelineItem.form"
                     :model="timelineItem.entity"
                   >
@@ -144,84 +144,10 @@
                 </v-card-text>
                 <v-card-actions>
 
-                  <!-- DISPLAY the Main Form when edit clicked -->
-                  <v-dialog
-                    v-model="mainFormDialogs[i]"
-                    fullscreen
-                    hide-overlay
-                  >
-                    <template v-slot:activator="{ on, attrsMainForm }">
-                      <v-btn
-                        v-bind="attrsMainForm"
-                        v-on="on"
-                      >Edit</v-btn>
-                    </template>
-                    <v-card>
-                      <v-toolbar
-                        dark
-                        color="primary"
-                      >
-                        <v-toolbar-title>
-                          {{ timelineItem.entity.fname }} {{ timelineItem.entity.lname }}
-                        </v-toolbar-title>
-                        <v-subheader>{{ timelineItem.workspace.title }} : {{ timelineItem.dashboard.title }} {{ formatDatetime(timelineItem.entity.created_datetime) }} &nbsp; <span class="text--lighten-1">(#{{ timelineItem.entity.dashboard_entity_id }})</span></v-subheader>
-                        <v-spacer></v-spacer>
+                  <v-btn
+                    @click="onEditClicked(timelineItem)"
+                  >Edit</v-btn>
 
-                        <v-switch
-                          class="mt-5 mr-8"
-                          label="Archived"
-                          :input-value="timelineItem.entity.archived == 1 ? true : false"
-                          @change="archiveEntity(timelineItem.entity, 1 - timelineItem.entity.archived)"
-                        ></v-switch>
-
-                        <v-btn
-                          icon
-                          dark
-                          @click="mainFormDialogs[i] = false"
-                        >
-                          <v-icon>mdi-close</v-icon>
-                        </v-btn>
-                      </v-toolbar>
-                      <v-container v-if="timelineItem.dashboard.mainForm != null">
-                        <v-card flat width="100%">
-                          <v-card-text>
-                            <!-- in case two timeline entities from different workspaces have same ID -->
-                            <JsonForm
-                              :key="timelineItem.entity.dashboard_entity_id + '_' + i"
-                              :form="timelineItem.dashboard.mainForm"
-                              :model="timelineItem.entity"
-                              :schema="timelineItem.dashboard.mainForm.schema"
-                              :options="timelineItem.dashboard.mainForm.options"
-                              :pid="Number(timelineItem.entity.pid)"
-                              :patient="extractPatient(timelineItem.entity)"
-                              @changed="onEntityChanged"
-                            ></JsonForm>
-                          </v-card-text>
-
-                          <v-card-actions>
-                            <v-spacer></v-spacer>
-                            <v-btn
-                              color="blue darken-1"
-                              text
-                              @click="mainFormDialogs[i] = false"
-                            >
-                              Close
-                            </v-btn>
-                            <v-btn
-                              color="blue darken-1"
-                              text
-                              @click=onMainFormEntitySaved(timelineItem)
-                            >
-                              Save
-                            </v-btn>
-                          </v-card-actions>
-                        </v-card>
-                      </v-container>
-                      <v-container v-else>
-                        <v-alert>No Main Form Selected for this dashboard</v-alert>
-                      </v-container>
-                    </v-card>
-                  </v-dialog>
                   <!---  - ----------------- - - - ----------->
                   <v-badge
                     v-if="timelineNotes(timelineItem).length > 0"
@@ -231,8 +157,8 @@
                   >
                     <v-btn
                       class="ml-2"
-                      v-if="showNotes[i]"
-                      @click="toggleNotes(i)"
+                      v-if="showNotes[timelineItem.index]"
+                      @click="toggleNotes(timelineItem.index)"
                     >
                       Hide Notes
                       <v-icon>mdi-menu-up</v-icon>
@@ -240,7 +166,7 @@
                     <v-btn
                       class="ml-2"
                       v-else
-                      @click="toggleNotes(i)"
+                      @click="toggleNotes(timelineItem.index)"
                     >
                       Show Notes
                       <v-icon>mdi-menu-down</v-icon>
@@ -248,16 +174,79 @@
                   </v-badge>
                   <v-spacer></v-spacer>
                   <DashboardFilesButton
-                    :entity="timelineItem"
+                    :entity="timelineItem.entity"
+                    :dashboard="timelineItem.dashboard"
                   ></DashboardFilesButton>
                 </v-card-actions>
-                <v-card-text v-if="showNotes[i]">
-                  <NoteHistoryTimeline :notes="timelineNotes(timelineItem)" :activeUsersList="listOptions['active_users'].data"></NoteHistoryTimeline>
+                <v-card-text v-if="showNotes[timelineItem.index]">
+                  <NoteHistoryTimeline
+                    :notes="timelineNotes(timelineItem)"
+                    :entity="timelineItem.entity"
+                  ></NoteHistoryTimeline>
                 </v-card-text>
               </v-card>
             </v-timeline-item>
           </v-timeline>
         </v-container>
+
+        <template>
+          <!-- DISPLAY the Main Form when edit clicked -->
+          <v-dialog
+            v-model="mainFormDialog"
+            fullscreen
+            hide-overlay
+          >
+            <v-card>
+              <v-toolbar
+                dark
+                color="primary"
+              >
+                <v-toolbar-title>
+                  {{ activeTimelineItem.entity.fname }} {{ activeTimelineItem.entity.lname }}
+                </v-toolbar-title>
+                <v-subheader>{{ activeTimelineItem.workspace.title }} : {{ activeTimelineItem.dashboard.title }} {{ formatDatetime(activeTimelineItem.entity.created_datetime) }} &nbsp; <span class="text--lighten-1">(#{{ activeTimelineItem.entity.dashboard_entity_id }})</span></v-subheader>
+                <v-spacer></v-spacer>
+
+                <v-switch
+                  class="mt-5 mr-8"
+                  label="Archived"
+                  :input-value="activeTimelineItem.entity.archived == 1 ? true : false"
+                  @change="archiveEntity(activeTimelineItem, 1 - activeTimelineItem.entity.archived)"
+                ></v-switch>
+
+                <v-btn
+                  icon
+                  dark
+                  @click="onCancel"
+                >
+                  <v-icon>mdi-close</v-icon>
+                </v-btn>
+              </v-toolbar>
+              <v-container v-if="activeTimelineItem.dashboard.mainForm != null">
+                <v-card flat width="100%">
+                  <v-card-text>
+                    <!-- in case two timeline entities from different workspaces have same ID -->
+                    <JsonForm
+                      :key="activeTimelineItem.index"
+                      :form="activeTimelineItem.dashboard.mainForm"
+                      :model="activeTimelineItem.entity"
+                      :schema="activeTimelineItem.dashboard.mainForm.schema"
+                      :options="activeTimelineItem.dashboard.mainForm.options"
+                      :pid="Number(activeTimelineItem.entity.pid)"
+                      :patient="extractPatient(activeTimelineItem.entity)"
+                      @save="onMainFormEntitySaved"
+                      @cancel="onCancel"
+                    ></JsonForm>
+                  </v-card-text>
+                </v-card>
+              </v-container>
+              <v-container v-else>
+                <v-alert>No Main Form Selected for this dashboard</v-alert>
+              </v-container>
+            </v-card>
+          </v-dialog>
+
+        </template>
       </v-main>
 
       <v-footer app>
@@ -280,16 +269,18 @@ import moment from 'moment-timezone'
 import NoteHistoryTimeline from '../components/NoteHistoryTimeline'
 import { FETCH_LISTS_WITH_DATA_BULK, GET_LIST } from '../store/types-list'
 import {
+  GET_NOTES_BY_ENTITY_ID,
   PUSH_ENTITY
 } from '../store/types-dashboard'
 import DashboardFilesButton from '../components/DashboardFilesButton'
+import { INIT } from '../store/types-user'
 
 const { mapGetters: mapTimelineGetters, mapActions: mapTimelineActions } = createNamespacedHelpers('timeline')
 const { mapGetters: mapWorkspaceGetters, mapActions: mapWorkspaceActions } = createNamespacedHelpers('workspace')
 const { mapGetters: mapFormGetters } = createNamespacedHelpers('form')
 const { mapGetters: mapListGetters, mapActions: mapListActions } = createNamespacedHelpers('list')
-const { mapActions: mapDashboardActions } = createNamespacedHelpers('dashboard')
-
+const { mapGetters: mapDashboardGetters, mapActions: mapDashboardActions } = createNamespacedHelpers('dashboard')
+const { mapActions: mapUserActions } = createNamespacedHelpers('user')
 export default {
   name: 'PageTimeline',
   components: {
@@ -312,8 +303,15 @@ export default {
     toDateMenu: false,
     toDate: '',
     toDateFormatted: '',
-    mainFormDialogs: {},
+    mainFormDialog: false,
     showNotes: [],
+    activeTimelineItem: {
+      entity: {},
+      workspace: {},
+      dashboard: {},
+      form: {},
+      index: 0
+    },
     activeEntityModel: {},
     activePatientModel: {},
     workspaceSelection: [],
@@ -372,8 +370,11 @@ export default {
     ...mapListGetters({
       getList: GET_LIST
     }),
+    ...mapDashboardGetters({
+      getNotesByEntityId: GET_NOTES_BY_ENTITY_ID
+    }),
     timelineItems () {
-      return this.timeline.items
+      return this.timeline
     }
   },
   methods: {
@@ -390,6 +391,13 @@ export default {
     ...mapWorkspaceActions({
       fetchAllWorkspaces: FETCH_ALL_WORKSPACES
     }),
+    ...mapUserActions({
+      initUser: INIT
+    }),
+    onEditClicked(timelineItem) {
+      this.activeTimelineItem = { ...timelineItem }
+      this.mainFormDialog = true
+    },
     toggleNotes(i) {
       // We must use $set here because since the values of the showNotes are not initialized,
       // they are not reactive by default
@@ -399,6 +407,13 @@ export default {
       } else {
         this.$set(this.showNotes, i, false)
       }
+    },
+    timelineNotes(timelineItem) {
+      const notes =  this.getNotesByEntityId({
+        entityId: timelineItem.entity.dashboard_entity_id,
+        dashboardId: timelineItem.entity.dashboard_id
+      })
+      return notes
     },
     formatDate (date) {
       if (date == null) return ''
@@ -420,12 +435,6 @@ export default {
     loadPatientDashboard() {
       setOpenEmrPatient(this.pid)
     },
-    timelineNotes(timelineItem) {
-      if (timelineItem.notes != undefined) {
-       return Object.values(timelineItem.notes)
-      }
-      return []
-    },
     extractPatient (entity) {
       // Given an entity, which contains all patient data, extract only patient fields
       const dataTypes = this.getDataTypes
@@ -442,30 +451,43 @@ export default {
       })
       return patient
     },
-    onEntityChanged ({ model, patient }) {
-      this.activeEntityModel = model
-      this.activePatientModel = {
-        ...this.extractPatient(patient),
+    onCancel() {
+      this.activeTimelineItem = {
+        entity: {},
+        workspace: {},
+        dashboard: {},
+        form: {},
+        index: 0
       }
+      this.activePatientModel = {}
+      this.activeEntityModel = {}
+      this.mainFormDialog = false
     },
-    onMainFormEntitySaved(timelineItem) {
-      // Update the timeline model with the active model from the form
-      timelineItem.entity = {
-        ...timelineItem.entity,
-        ...this.activeEntityModel
+    onMainFormEntitySaved({ entity, patient }) {
+      document.getElementsByClassName('v-dialog--active')[0].scrollTop = 0
+      this.activeTimelineItem.entity = {
+        ...this.activeTimelineItem.entity,
+        ...entity
       }
+      this.activePatientModel = {
+        ...this.extractPatient(this.activeTimelineItem.entity),
+        ...patient
+      }
+      // Update the timeline model with the active model from the form
       this.pushEntity({
-        workspaceId: timelineItem.dashboard.workspaceId,
-        dashboardId: timelineItem.dashboard.id,
-        entityId: timelineItem.entity.dashboard_entity_id,
-        entity: timelineItem.entity,
-        patient: this.activePatientModel
-      }).then(() => {
+        workspaceId: this.activeTimelineItem.workspace.id,
+        dashboardId: this.activeTimelineItem.dashboard.id,
+        entityId: entity.dashboard_entity_id,
+        entity: entity,
+        patient: patient
+      }).then((resolvedEntity) => {
         this.setTimelineItemEntity({
-          entityId: timelineItem.entity.dashboard_entity_id,
-          dashboardId: timelineItem.dashboard.id,
-          entity: timelineItem.entity
+          entityId: resolvedEntity.dashboard_entity_id,
+          dashboardId: resolvedEntity.dashboard_id,
+          entity: resolvedEntity
         })
+
+        this.onCancel(this.activeTimelineItem)
       })
     },
     archiveEntity(timelineItem, archive = 1) {
@@ -479,8 +501,12 @@ export default {
         entityId: timelineItem.entity.dashboard_entity_id,
         entity: timelineItem.entity,
         patient: this.activePatientModel
-      }).then(() => {
-        //this.loadEntitiesApi()
+      }).then((resolvedEntity) => {
+        this.setTimelineItemEntity({
+          entityId: resolvedEntity.dashboard_entity_id,
+          dashboardId: resolvedEntity.dashboard_id,
+          entity: resolvedEntity
+        })
       })
     },
   },
@@ -488,18 +514,15 @@ export default {
     console.log("timeline mounted")
     document.title = "Timeline"
     const that = this
-    this.getTimelineForPatient({ pid: this.pid }).then(timeline => {
-      console.log(timeline)
-      // fetch all workspaces
-      that.fetchAllWorkspaces().then(() => {
-        let listIdsForFetch = ['active_users']
-        that.fetchListsBulk({ arrayOfListIds: listIdsForFetch }).then(listOptions => {
-          // We are basically copying all the lists to local state here (TODO we really only need the ones with IDs we identified)
-          that.listOptions = listOptions
-          this.loaded = true
-        })
-      })
 
+    this.initUser().then(() => {
+
+      that.getTimelineForPatient({ pid: that.pid }).then(timeline => {
+
+        console.log(timeline)
+        that.loaded = true
+
+      })
     })
   }
 }

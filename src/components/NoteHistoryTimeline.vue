@@ -18,6 +18,9 @@
 <script>
 
 import { formatDatetime } from '../display-helpers'
+import { createNamespacedHelpers } from 'vuex'
+import { GET_LIST } from '../store/types-list'
+const { mapGetters: mapListGetters } = createNamespacedHelpers('list')
 
 export default {
   name: 'NoteHistoryTimeline',
@@ -26,8 +29,8 @@ export default {
       type: Array,
       required: true
     },
-    activeUsersList: {
-      type: Array,
+    entity: {
+      type: Object,
       required: true
     }
   },
@@ -36,7 +39,15 @@ export default {
     }
   },
   computed: {
-
+    ...mapListGetters({
+      getList: GET_LIST
+    }),
+    activeUsersList () {
+      if (this.getList('active_users') != undefined) {
+        return this.getList('active_users').data
+      }
+      return []
+    },
   },
   methods: {
     displayUser(userId) {

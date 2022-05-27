@@ -1,30 +1,45 @@
 import {
   ADD_NOTE,
   ALL_DASHBOARDS,
-  CREATE_DASHBOARD, CREATE_ENTITY,
-  FETCH_DASHBOARD, FETCH_DASHBOARD_ROWS, FETCH_ENTITIES, FETCH_NOTES_BY_ENTITY_ID,
+  CREATE_COORDINATOR,
+  CREATE_DASHBOARD,
+  CREATE_ENTITY, DELETE_META,
+  FETCH_DASHBOARD,
+  FETCH_ENTITIES,
+  FETCH_NOTES_BY_ENTITY_ID,
+  GET_ATTACHMENTS_BY_ENTITY_ID,
+  GET_COORDINATORS_BY_ENTITY_ID,
   GET_DASHBOARD,
-  GET_DASHBOARD_ROWS, GET_ENTITY_BY_ID, GET_NOTES_BY_ENTITY_ID, INIT_DASHBOARD, PUSH_ENTITY, SET_ATTACHMENT,
-  SET_DASHBOARD, SET_DASHBOARD_ROWS, SET_ENTITY, SET_NOTE, UPDATE_ATTACHMENT
+  GET_DASHBOARD_ROWS,
+  GET_ENTITY_BY_ID,
+  GET_NOTES_BY_ENTITY_ID,
+  INIT_DASHBOARD,
+  PUSH_ENTITY,
+  SET_DASHBOARD,
+  SET_DASHBOARD_META,
+  SET_DASHBOARD_ROWS,
+  SET_ENTITY,
+  SET_META,
+  SET_NOTE, UPDATE_ATTACHMENT,
+  UPDATE_TEST
 } from '../types-dashboard'
 import Vue from 'vue'
 import {
   createDashboard,
-  createEntity, createNote,
-  fetchDashboardRows, fetchEntities,
-  getDashboardById, getNotesByEntityId, initDashboardById, updateAttachment,
+  createEntity, createEntityMeta,
+  fetchEntities,
+  getDashboardById, getNotesByEntityId, initDashboardById,
   updateDashboard,
-  updateEntity, updateTestEntities
+  updateEntity, updateEntityMeta, updateTestEntities
 } from '../../api'
-import { newNote } from '../../model-builder'
+import { newCoordinator, newNote } from '../../model-builder'
 
 export const dashboard = {
   namespaced: true,
   state: {
     dashboards: {},
     entities: {},
-    notes: {},
-    attachments: {},
+    meta: {}
   },
   getters: {
     [ALL_DASHBOARDS]: state => state.dashboards,
@@ -34,10 +49,31 @@ export const dashboard = {
     },
 
     [GET_NOTES_BY_ENTITY_ID]: state => ({ entityId, dashboardId }) => {
-      return Object.values(state.notes).filter(note => {
-        if (note.entityId == entityId &&
-          note.dashboardId == dashboardId) {
-          return note
+      return Object.values(state.meta).filter(meta => {
+        if (meta.metaType == 'Mi2\\Workspace\\Models\\EntityNote' &&
+          meta.entityId == entityId &&
+          meta.dashboardId == dashboardId) {
+          return meta
+        }
+      })
+    },
+
+    [GET_ATTACHMENTS_BY_ENTITY_ID]: state => ({ entityId, dashboardId }) => {
+      return Object.values(state.meta).filter(meta => {
+        if (meta.metaType == 'Mi2\\Workspace\\Models\\EntityAttachment' &&
+          meta.entityId == entityId &&
+          meta.dashboardId == dashboardId) {
+          return meta
+        }
+      })
+    },
+
+    [GET_COORDINATORS_BY_ENTITY_ID]: state => ({ entityId, dashboardId }) => {
+      return Object.values(state.meta).filter(meta => {
+        if (meta.metaType == 'Mi2\\Workspace\\Models\\EntityCoordinator' &&
+          meta.entityId == entityId &&
+          meta.dashboardId == dashboardId) {
+          return meta
         }
       })
     },
@@ -63,7 +99,7 @@ export const dashboard = {
       const userMeta = rootGetters['user/GET_USER_META']
       return new Promise(resolve => {
         createEntity(workspaceId, dashboardId, entity, patient, userMeta, sourceEntityId).then(newEntity => {
-          commit(SET_ENTITY, { entityId: newEntity.id, entity: newEntity })
+          commit(SET_ENTITY, { entityId: newEntity.dashboard_entity_id, entity: newEntity })
           resolve(newEntity)
         })
       })
@@ -165,34 +201,6 @@ export const dashboard = {
       }
     },
 
-    [FETCH_DASHBOARD_ROWS] ({ commit, rootGetters }, { dashboardId }) {
-      const userMeta = rootGetters['user/GET_USER_META']
-
-      // If we have a token, make the API call
-      if (userMeta.csrfToken) {
-        // Return the promise created by the API
-        return fetchDashboardRows(dashboardId, userMeta).then(entities => {
-          commit(SET_DASHBOARD_ROWS, { entities })
-
-          Object.values(entities).forEach(entity => {
-            if (entity.notes != undefined) {
-              Object.values(entity.notes).forEach(note => {
-                commit(SET_NOTE, { noteId: note.id, note })
-              })
-            }
-            if (entity.attachments != undefined) {
-              Object.values(entity.attachments).forEach(attachment => {
-                commit(SET_ATTACHMENT, { attachmentId: attachment.id, attachment })
-              })
-            }
-          })
-
-        }).catch(function () {
-          alert('there was an error, you may need to log back in')
-        })
-      }
-    },
-
     [UPDATE_TEST] ({ rootGetters }, { dashboardId, workspaceId, entityIds, lastUpdateTestDatetime }) {
       const userMeta = rootGetters['user/GET_USER_META']
 
@@ -211,13 +219,7 @@ export const dashboard = {
           fetchEntities(dashboardId, dashboardFilterEnabled, archivedFilterEnabled, search, filter, paginationOptions, userMeta).then(response => {
             commit(SET_DASHBOARD_ROWS, { entities: response.entities })
 
-            Object.values(response.entities).forEach(entity => {
-              if (entity.notes != undefined) {
-                Object.values(entity.notes).forEach(note => {
-                  commit(SET_NOTE, { noteId: note.id, note })
-                })
-              }
-            })
+            commit(SET_DASHBOARD_META, { meta: response.entityMetaArray })
 
             // Resolve the outer promise by returning the fetched entities
             resolve(response)
@@ -227,6 +229,10 @@ export const dashboard = {
           })
         })
       }
+    },
+
+    [SET_DASHBOARD_META]: ({ commit }, { meta }) => {
+      commit(SET_DASHBOARD_META, { meta: meta })
     },
 
     /**
@@ -263,8 +269,29 @@ export const dashboard = {
         const note = newNote(workspaceId, dashboardId, entityId, pid, text, coordinatorKey)
 
         // Make the API call to create the note
-        createNote(note, userMeta).then(note => {
-          commit(SET_NOTE, { noteId: note.id, note })
+        return new Promise(resolve => {
+          createEntityMeta('note', note, userMeta).then(note => {
+            commit(SET_META, { metaId: note.id, meta: note })
+            resolve(note)
+          })
+        })
+      }
+    },
+
+    [CREATE_COORDINATOR]: ({ commit, rootGetters }, { workspaceId, dashboardId, entityId, pid = null, jotformId }) => {
+      const userMeta = rootGetters['user/GET_USER_META']
+
+      // If we have a token, make the API call
+      if (userMeta.csrfToken) {
+        // User the model-builder to combine our parameters into a note model
+        const coordinator = newCoordinator(workspaceId, dashboardId, entityId, pid, jotformId)
+
+        // Make the API call to create the note
+        return new Promise(resolve => {
+          createEntityMeta('coordinator', coordinator, userMeta).then(coordinator => {
+            commit(SET_META, { metaId: coordinator.id, meta: coordinator })
+            resolve(coordinator)
+          })
         })
       }
     },
@@ -274,8 +301,18 @@ export const dashboard = {
 
       // If we have a token, make the API call
       if (userMeta.csrfToken) {
-        updateAttachment(attachment, userMeta).then(attachment => {
-          commit(SET_ATTACHMENT, { attachmentId: attachment.id, attachment })
+
+        return new Promise(resolve => {
+          updateEntityMeta('attachment', attachment, userMeta).then(meta => {
+            if (meta != null) {
+              commit(SET_META, { metaId: meta.id, meta })
+            } else {
+              // Remove the meta from VUEX, but have to use the original attachement.id because
+              // meta is null!
+              commit(DELETE_META, { metaId: attachment.id })
+            }
+            resolve(meta)
+          })
         })
       }
     },
@@ -318,12 +355,12 @@ export const dashboard = {
       }
     },
 
-    [SET_NOTE] (state, { noteId, note }) {
-      Vue.set(state.notes, noteId, note)
+    [SET_META] (state, { metaId, meta }) {
+      Vue.set(state.meta, metaId, meta)
     },
 
-    [SET_ATTACHMENT] (state, { attachmentId, attachment }) {
-      Vue.set(state.attachments, attachmentId, attachment)
+    [DELETE_META] (state, { metaId }) {
+      Vue.delete(state.meta, metaId)
     },
 
     // Dashboard Builder Mutations
@@ -331,9 +368,14 @@ export const dashboard = {
       Vue.set(state.dashboards, dashboardId, dashboard)
     },
 
+    [SET_DASHBOARD_META] (state, { meta }) {
+      // TODO this may not be efficient, cloning the entire entity state every time we set entities
+      Vue.set(state, 'meta', meta)
+    },
+
     [SET_DASHBOARD_ROWS] (state, { entities }) {
       // TODO this may not be efficient, cloning the entire entity state every time we set entities
-      Vue.set(state, 'entities', { ...state.entities, ...entities })
+      Vue.set(state, 'entities', entities)
     }
   },
 

@@ -61,6 +61,20 @@ export function newDashboard(workspaceId, dashboard) {
   }
 }
 
+export function newCoordinator(workspaceId, dashboardId, entityId, pid, jotformId)
+{
+  return {
+    id: null,
+    workspaceId: workspaceId,
+    dashboardId: dashboardId,
+    entityId: entityId,
+    pid: pid,
+    metaValue: jotformId,
+    coordinatorKey: jotformId,
+    metaType: 'Mi2\\Workspace\\Models\\EntityCoordinator',
+  }
+}
+
 export function newNote(workspaceId, dashboardId, entityId, pid, text, coordinatorKey = null)
 {
     return {
@@ -70,6 +84,7 @@ export function newNote(workspaceId, dashboardId, entityId, pid, text, coordinat
       entityId: entityId,
       pid: pid,
       text: text,
+      metaType: 'Mi2\\Workspace\\Models\\EntityNote',
       coordinatorKey: coordinatorKey
     }
 }
