@@ -9,7 +9,12 @@
       {{ element.title }}
     </p>
     <p class="font-weight-medium">
-      {{ activeModel[element.dataSourceColumn] }}
+      <span v-if="element.dataSourceColumn == 'pid'">
+        {{ model.fname }} {{ model.lname }} ({{ model.pubpid }})
+      </span>
+      <span v-else>
+        {{ model[element.dataSourceColumn] }}
+      </span>
     </p>
   </v-col>
 </v-row>
@@ -26,11 +31,6 @@ export default {
     model: {
       type: Object,
       required: true
-    }
-  },
-  data () {
-    return {
-      activeModel: this.model
     }
   },
   computed: {

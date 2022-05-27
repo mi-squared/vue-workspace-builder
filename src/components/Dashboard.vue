@@ -247,6 +247,7 @@
                   <tr>
                     <td class="py-0 px-1">
                       <DashboardFilesButton
+                        :key="item.dashboard_entity_id + '-attachments'"
                         :entity="item"
                         :dashboard="dashboard"
                       >
@@ -269,25 +270,12 @@
                       <td class="py-0 px-1">
                         <DashboardNoteButton
                           :entity="item"
+                          :dashboard="dashboard"
+                          :activeUsersList="activeUsersList"
                           @save="onNoteSaved"
                           @show="onDashboardComponentVisibilityChanged"
                         >
                         </DashboardNoteButton>
-                      </td>
-                      <td class="py-0 px-1">
-
-                        <v-btn icon @click="expand(!isExpanded)">
-                          <v-badge
-                            :content="getNotesByEntityId({ entityId: item.id, dashboardId: dashboard.id }).length"
-                            :value="getNotesByEntityId({ entityId: item.id, dashboardId: dashboard.id }).length"
-                            color="green"
-                            overlap
-                          >
-                          <v-icon>
-                            {{ isExpanded ? 'mdi-email-multiple-outline' : 'mdi-email-multiple' }}
-                          </v-icon>
-                          </v-badge>
-                        </v-btn>
                       </td>
                   </tr>
                 </table>
@@ -314,10 +302,6 @@
                     <v-toolbar-title>#{{ item.id }}</v-toolbar-title>
                     <v-toolbar-items>
 
-<!--   TODO gmail indicator goes here                   <v-btn icon>-->
-<!--                        <v-icon>mdi-gmail</v-icon>-->
-<!--                      </v-btn>-->
-
                       <v-btn
                         v-if="item.archived == 1"
 
@@ -333,6 +317,14 @@
                       >
                         <v-icon>mdi-archive</v-icon>
                       </v-btn>
+
+                      <MailToButton
+                        :entity="item"
+                        :dashboard="dashboard"
+                        :templateList="templateList"
+                        @save="onNoteSaved"
+                        @show="onDashboardComponentVisibilityChanged"
+                      ></MailToButton>
 
                     </v-toolbar-items>
                   </v-toolbar>
@@ -462,51 +454,7 @@
 
             </td>
           </tr>
-
-
         </template>
-
-
-        <!-- This is what gets displayed when the "expand" icon is clicked -->
-        <template v-slot:expanded-item="{ headers, item }">
-          <tr>
-            <td :colspan="headers.length">
-              <!-- pass in entity ID for key-->
-              <NoteHistory :entity="item" :key="item.id" :dashboard="dashboard" :activeUsersList="activeUsersList"></NoteHistory>
-
-<!--              More info about {{ item }}-->
-            </td>
-          </tr>
-        </template>
-
-        <!--        <template v-for="slot in slots" v-slot:item.[slot.name]="props">-->
-        <!--          <component :is="slot.component" :key="slot.key" :options="props"></component>-->
-        <!--        </template>-->
-
-        <!-- EditableTextField This renders our editable text elements -->
-<!--        <template v-for="slot in slots" v-slot:[slot.slotName]="props">-->
-<!--          <v-edit-dialog-->
-<!--            :key="slot.key"-->
-<!--            :return-value.sync="props.item[slot['fieldName']]"-->
-<!--            @save="save"-->
-<!--            @cancel="cancel"-->
-<!--            @open="open"-->
-<!--            @close="close"-->
-<!--          >-->
-<!--            {{ props.item[slot['fieldName']] }}-->
-<!--            <template v-slot:input>-->
-<!--              <v-text-field-->
-<!--                v-model="props.item[slot['fieldName']]"-->
-<!--                :rules="[max25chars]"-->
-<!--                label="Edit"-->
-<!--                single-line-->
-<!--                counter-->
-<!--              ></v-text-field>-->
-<!--            </template>-->
-<!--          </v-edit-dialog>-->
-<!--        </template>-->
-
-
       </v-data-table>
 
       <!-- Form Dialog for NEW button-->
@@ -645,7 +593,6 @@ const { mapGetters: mapUserGetters } = createNamespacedHelpers('user')
 
 import { GET_FORM } from '../store/types-form'
 import DashboardNoteButton from './DashboardNoteButton'
-import NoteHistory from './NoteHistory'
 const { mapGetters: mapFormGetters } = createNamespacedHelpers('form')
 import { formatDate, formatDatetime } from '../display-helpers'
 import { MixinLogicEvaluator } from '../mixin-logic-evaluator'
@@ -656,6 +603,7 @@ import DashboardFilters from './DashboardFilters'
 import SelectModal from './form-elements/SelectModal'
 import DatePickerModal from './form-elements/DatePickerModal'
 import DashboardFilesButton from './DashboardFilesButton'
+import MailToButton from './MailToButton'
 
 export default {
   name: 'Dashboard',
@@ -671,13 +619,13 @@ export default {
     }
   },
   components: {
+    MailToButton,
     DatePickerModal,
     SelectModal,
     DashboardFilesButton,
     DashboardFilters,
     EditableString,
     DatetimePicker,
-    NoteHistory,
     DashboardNoteButton,
     JsonForm,
     AppDate,
@@ -755,7 +703,7 @@ export default {
         "value": "data-notes",
         "groupable": false,
         "sortable": false,
-        "width": "120px"
+        "width": "100px"
       },
       filesHeader: {
         "text": "",
@@ -829,6 +777,12 @@ export default {
       }
       return []
     },
+    templateList () {
+      if (this.getList('jotform_templates') != undefined) {
+        return this.getList('jotform_templates').data
+      }
+      return []
+    },
     newEntityForm() {
       let form = null
       if (this.dashboard.newEntityFormId) {
@@ -861,10 +815,20 @@ export default {
       return headers
     },
     rows () {
-      return this.orderedEntities.map(entityId => {
-        const rows = this.getEntityById(entityId)
-        return rows
+      // We have to map the actual entities onto the order mapping, but sometimes like after a sort, the objects are not
+      // in vuex yet, so we need to filter out undefined entites
+      const rows = this.orderedEntities.map(entityId => {
+        const row = this.getEntityById(entityId)
+        return row
+      }).filter(row => {
+        if (row == undefined) {
+          return false
+        } else {
+          return true
+        }
       })
+
+      return rows
     },
     loading () {
       return !this.loaded
@@ -1075,7 +1039,7 @@ export default {
       }
       this.onEntityChanged(this.mainEntityModel, this.mainPatientModel)
       this.onMainFormClosed(this.mainEntityModel)
-      this.loadEntitiesApi()
+      // this.loadEntitiesApi()
     },
     onMainFormClosed (entity) {
       document.getElementsByClassName('v-dialog--active')[0].scrollTop = 0
@@ -1090,17 +1054,17 @@ export default {
       this.addNote({
         workspaceId: this.dashboard.workspaceId,
         dashboardId: this.dashboard.id,
-        entityId: payload.entity.id,
+        entityId: payload.entity.dashboard_entity_id,
         pid: payload.entity.pid,
-        text: payload.text
+        text: payload.text,
+        coordinatorKey: payload.coordinatorKey
       })
     },
     lastNoteText(entity) {
-      // const notes = this.getNotesByEntityId({
-      //   entityId: entity.id,
-      //   dashboardId: this.dashboard.id
-      // })
-      const notes = entity.notes
+      const notes = this.getNotesByEntityId({
+        entityId: entity.dashboard_entity_id,
+        dashboardId: this.dashboard.id
+      })
       if (notes.length > 0) {
         const noteText = notes[notes.length - 1].text
         if (noteText.length > 60) {
@@ -1190,7 +1154,7 @@ export default {
     removeEntityFromDashboard(entity) {
       // We want to remove the entity row from the table before VUEX mutates it, so let's remove it first
       let movedEntityIndex = this.orderedEntities.findIndex(entityId => {
-        if (entity.id == entityId) {
+        if (entity.dashboard_entity_id == entityId) {
           return true
         } else {
           return false
@@ -1210,7 +1174,7 @@ export default {
             if (rule.action.name == 'Archive') {
               this.removeEntityFromDashboard(entity)
               entity.archived = 1
-              this.snackbarText = "Entity #" + entity.id + " Was archived [Conditional Logic Action]"
+              this.snackbarText = "Entity #" + entity.dashboard_entity_id + " Was archived [Conditional Logic Action]"
               this.snackbar = true
             }
           }
@@ -1226,14 +1190,14 @@ export default {
       this.pushEntity({
         workspaceId: this.dashboard.workspaceId,
         dashboardId: this.dashboard.id,
-        entityId: entity.id,
+        entityId: entity.dashboard_entity_id,
         entity,
         patient: patientModel // Send the patient model along with the entity
       }).then(() => {
         // force update of the dashboard form components by incrementing change count, which they use as part of :key
-        this.incrementChangeCount(Number(entity.id))
+        this.incrementChangeCount(Number(entity.dashboard_entity_id))
         this.loaded = true
-        //this.loadEntitiesApi()
+        this.loadEntitiesApi()
       })
     },
     archiveEntity(entity, archive = 1) {
@@ -1249,7 +1213,7 @@ export default {
       this.pushEntity({
         workspaceId: this.dashboard.workspaceId,
         dashboardId: this.dashboard.id,
-        entityId: entity.id,
+        entityId: entity.dashboard_entity_id,
         entity
       }).then(() => {
         this.loaded = true
@@ -1274,7 +1238,7 @@ export default {
       this.pushEntity({
         workspaceId: this.dashboard.workspaceId,
         dashboardId: dashboardId,
-        entityId: entity.id,
+        entityId: entity.dashboard_entity_id,
         entity
       }).then(() => {
         this.loaded = true
@@ -1313,6 +1277,7 @@ export default {
         // Here's a trick, since this entity is already created, and we need to create it on a new
         // workspace, we need to unset the id property
         delete newEntity.id
+        delete newEntity.dashboard_entity_id
 
         // Now use our vuex action to create the entity via API, when callback show our snack
         // The service on the API side is smart enough to toss the fields that don't apply to the new workspace
@@ -1321,7 +1286,7 @@ export default {
           dashboardId: defaultDashboardId,
           entity: newEntity,
           patient: null, // We don't send the patient, because there should already be an existing PID in the entity
-          sourceEntityId: entity.id // source is the original entity
+          sourceEntityId: entity.dashbord_entity_id // source is the original entity
         }).then(() => {
           this.snackbarText = "Successfully Sent to Workspace " + this.workspaces[workspaceId]
           this.snackbar = true

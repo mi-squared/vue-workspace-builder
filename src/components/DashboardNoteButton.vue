@@ -1,10 +1,10 @@
 <template>
   <div class="text-center relative-container">
-    <v-menu
-      v-model="menu"
+    <v-dialog
+      v-model="dialog"
+      scrollable
       :close-on-content-click="false"
-      nudge-left="290px"
-      min-width="320px"
+      max-width="600px"
       attach
     >
       <template v-slot:activator="{ on, attrs }">
@@ -13,101 +13,174 @@
           v-bind="attrs"
           v-on="on"
         >
-          <v-icon>mdi-email-plus</v-icon>
+          <v-badge
+            :content="getNotesByEntityId({ entityId: entity.dashboard_entity_id, dashboardId: dashboard.id }).length"
+            :value="getNotesByEntityId({ entityId: entity.dashboard_entity_id, dashboardId: dashboard.id }).length"
+            color="green"
+            overlap
+          >
+            <v-icon>mdi-note-multiple</v-icon>
+          </v-badge>
         </v-btn>
 
       </template>
 
-      <v-card
-        in-width="400px"
-      >
-        <v-list>
-          <v-list-item>
-            <v-list-item-content>
-              <v-list-item-title>New Note</v-list-item-title>
-              <v-list-item-subtitle>{{ entity.fname }} {{ entity.lname }} <span class="text--lighten-4">(#{{ entity.dashboard_entity_id }})</span> </v-list-item-subtitle>
-            </v-list-item-content>
+      <v-card>
+        <v-toolbar
+          flat
+          dark
+          color="primary"
+        >
+          <v-icon class="mr-1">mdi-note-multiple</v-icon>
+          <v-toolbar-title>Notes - {{ entity.fname }} {{ entity.lname }} <span class="text--lighten-4">(#{{ entity.dashboard_entity_id }})</span> </v-toolbar-title>
+          <v-spacer></v-spacer>
+          <v-btn
+            icon
+            dark
+            @click="dialog = false"
+          >
+            <v-icon>mdi-close</v-icon>
+          </v-btn>
+        </v-toolbar>
 
-            <v-list-item-action>
-              <v-icon>mdi-email</v-icon>
-            </v-list-item-action>
-          </v-list-item>
-        </v-list>
+        <v-card-text style="height: 400px;">
+          <v-list
+            three-line
+            subheader
+          >
+
+            <v-divider></v-divider>
+
+            <v-list-item v-if="getNotesByEntityId({ entityId: entity.dashboard_entity_id, dashboardId: dashboard.id }).length">
+              <NoteHistory
+                :entity="entity"
+                :key="entity.dashboard_entity_id"
+                :dashboard="dashboard"
+                :activeUsersList="activeUsersList"
+                :notes="getNotesByEntityId({ entityId: entity.dashboard_entity_id, dashboardId: dashboard.id })"
+              >
+              </NoteHistory>
+            </v-list-item>
+            <v-list-item v-else>
+              <v-list-item-subtitle>
+                <h2>No notes found</h2>
+              </v-list-item-subtitle>
+            </v-list-item>
+          </v-list>
+
+        </v-card-text>
 
         <v-divider></v-divider>
 
-        <v-list>
-          <v-list-item>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn
+            color="primary"
+            dark
+            class="ma-2"
+            @click="newNoteDialog = !newNoteDialog"
+          >
+            <v-icon>mdi-note-plus</v-icon>
+            New Note
+          </v-btn>
+        </v-card-actions>
+
+      </v-card>
+    </v-dialog>
+
+    <v-dialog v-model="newNoteDialog" max-width="400px">
+      <v-card>
+        <v-card-text>
             <v-textarea
               v-model="noteText"
               :autofocus="true"
             ></v-textarea>
-          </v-list-item>
-        </v-list>
-
+        </v-card-text>
         <v-card-actions>
-          <v-spacer></v-spacer>
-
-          <v-btn
-            text
-            @click="onClose"
-          >
-            Cancel
-          </v-btn>
+            <v-spacer></v-spacer>
           <v-btn
             color="primary"
             text
-            @click="save"
+            @click="newNoteDialog = false"
           >
-            Save
+            Cancel
           </v-btn>
+            <v-btn
+              color="primary"
+              text
+              @click="save"
+            >
+              <v-icon>mdi-note-plus</v-icon>
+              Save
+            </v-btn>
         </v-card-actions>
       </v-card>
-    </v-menu>
+    </v-dialog>
+
   </div>
 </template>
 
 <script>
+import { GET_NOTES_BY_ENTITY_ID } from '../store/types-dashboard'
+import { createNamespacedHelpers } from 'vuex'
+import NoteHistory from './NoteHistory'
+const { mapGetters: mapDashboardGetters } = createNamespacedHelpers('dashboard')
 
 export default {
   name: 'DashboardNoteButton',
+  components: { NoteHistory },
   props: {
     entity: {
       type: Object,
+      required: true
+    },
+    dashboard: {
+      type: Object,
+      required: true
+    },
+    activeUsersList: {
+      type: Array,
       required: true
     }
   },
   data() {
     return {
-      menu: false,
+      dialog: false,
+      newNoteDialog: false,
       noteText: ''
     }
   },
   watch: {
-    menu: function () {
-      if (this.menu === true) {
+    dialog: function () {
+      if (this.dialog === true) {
         this.$emit("show", true)
       } else {
         this.$emit("show", false)
       }
     }
   },
+  computed: {
+    ...mapDashboardGetters({
+      getNotesByEntityId: GET_NOTES_BY_ENTITY_ID
+    }),
+  },
   methods: {
     save() {
       // emit an event to the parent so the last note text can be updated adn note persisted
       this.$emit('save', {
         entity: this.entity,
-        text: this.noteText
+        text: this.noteText,
+        coordinatorKey: null
       })
 
       // Reset the note text
       this.noteText = ''
 
       // Close the modal
-      this.menu = false
+      this.newNoteDialog = false
     },
     onClose() {
-      this.menu = false
+      this.dialog = false
     }
   },
   mounted () {
