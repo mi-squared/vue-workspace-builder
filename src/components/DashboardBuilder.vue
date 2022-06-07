@@ -1,6 +1,34 @@
 <template>
   <v-container>
 
+    <v-dialog
+      v-model="errorDialog"
+      width="500"
+    >
+      <v-card>
+        <v-card-title class="text-h5 grey lighten-2">
+          There was an error
+        </v-card-title>
+
+        <v-card-text>
+          {{ errorMessage }}
+        </v-card-text>
+
+        <v-divider></v-divider>
+
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn
+            color="primary"
+            text
+            @click="setErrorMessage('')"
+          >
+            OK
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
       <v-tabs
           v-model="tab"
           icons-and-text
@@ -259,7 +287,7 @@ import { createNamespacedHelpers } from 'vuex'
 import { GET_FORMS } from '../store/types-workspace'
 const { mapActions: mapWorkspaceActions, mapGetters: mapWorkspaceGetters } = createNamespacedHelpers('workspace')
 
-import { GET_DASHBOARD, SET_DASHBOARD } from '../store/types-dashboard'
+import { GET_DASHBOARD, GET_ERROR_MESSAGE, SET_DASHBOARD, SET_ERROR_MESSAGE } from '../store/types-dashboard'
 const { mapActions: mapDashboardActions, mapGetters: mapDashboardGetters } = createNamespacedHelpers('dashboard')
 const { mapGetters: mapFormGetters } = createNamespacedHelpers('form')
 
@@ -317,11 +345,21 @@ export default {
       getFormsByWorkspaceId: GET_FORMS
     }),
     ...mapDashboardGetters({
-      getDashboard: GET_DASHBOARD
+      getDashboard: GET_DASHBOARD,
+      getErrorMessage: GET_ERROR_MESSAGE
     }),
     ...mapFormGetters({
       allForms: ALL_FORMS,
     }),
+    errorMessage() {
+      return this.getErrorMessage
+    },
+    errorDialog () {
+      if (this.getErrorMessage) {
+        return true
+      }
+      return false
+    },
     dataSource() {
       return this.workspace.dataSource
     },
@@ -355,7 +393,8 @@ export default {
   methods: {
     ...mapWorkspaceActions,
     ...mapDashboardActions({
-      setDashboard: SET_DASHBOARD
+      setDashboard: SET_DASHBOARD,
+      setErrorMessage: SET_ERROR_MESSAGE
     }),
     /**
      * When a data source column is selected to be added as a dashboard header, this function is called

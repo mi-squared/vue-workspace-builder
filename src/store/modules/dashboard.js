@@ -11,14 +11,14 @@ import {
   GET_COORDINATORS_BY_ENTITY_ID,
   GET_DASHBOARD,
   GET_DASHBOARD_ROWS,
-  GET_ENTITY_BY_ID,
+  GET_ENTITY_BY_ID, GET_ERROR_MESSAGE,
   GET_NOTES_BY_ENTITY_ID,
   INIT_DASHBOARD,
   PUSH_ENTITY,
   SET_DASHBOARD,
   SET_DASHBOARD_META,
   SET_DASHBOARD_ROWS,
-  SET_ENTITY,
+  SET_ENTITY, SET_ERROR_MESSAGE,
   SET_META,
   SET_NOTE, UPDATE_ATTACHMENT,
   UPDATE_TEST
@@ -39,7 +39,8 @@ export const dashboard = {
   state: {
     dashboards: {},
     entities: {},
-    meta: {}
+    meta: {},
+    errorMessage: ""
   },
   getters: {
     [ALL_DASHBOARDS]: state => state.dashboards,
@@ -47,6 +48,8 @@ export const dashboard = {
     [GET_DASHBOARD]: state => id => {
       return state.dashboards[id]
     },
+
+    [GET_ERROR_MESSAGE]: state => state.errorMessage,
 
     [GET_NOTES_BY_ENTITY_ID]: state => ({ entityId, dashboardId }) => {
       return Object.values(state.meta).filter(meta => {
@@ -121,10 +124,14 @@ export const dashboard = {
     [SET_DASHBOARD] ({ commit, rootGetters }, { dashboardId, dashboard }) {
       // Get meta data from the user module
       const userMeta = rootGetters['user/GET_USER_META']
+
       // Make a POST to server, then update VUEX
-      updateDashboard(dashboard, userMeta).then(dashboard => {
-        commit(SET_DASHBOARD, { dashboardId, dashboard })
-        return dashboard
+      updateDashboard(dashboard, userMeta).then(response => {
+        if (response.messages.length > 0) {
+          commit(SET_ERROR_MESSAGE, { errorMessage: response.messages })
+        }
+        commit(SET_DASHBOARD, { dashboardId, dashboard: response.model })
+        return response.model
       })
     },
 
@@ -233,6 +240,10 @@ export const dashboard = {
 
     [SET_DASHBOARD_META]: ({ commit }, { meta }) => {
       commit(SET_DASHBOARD_META, { meta: meta })
+    },
+
+    [SET_ERROR_MESSAGE]: ({ commit }, { errorMessage }) => {
+      commit(SET_ERROR_MESSAGE, { errorMessage: errorMessage })
     },
 
     /**
@@ -353,6 +364,10 @@ export const dashboard = {
         }
         Vue.set(state.entities, entityId, toSave)
       }
+    },
+
+    [SET_ERROR_MESSAGE] (state, { errorMessage }) {
+      Vue.set(state, "errorMessage", errorMessage)
     },
 
     [SET_META] (state, { metaId, meta }) {

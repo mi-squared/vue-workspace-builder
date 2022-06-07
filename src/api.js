@@ -350,8 +350,8 @@ export function createDashboard(formData, userMeta) {
           'Content-Type': 'application/json;charset=utf-8'
         }
       }).then(function (response) {
-        const dashboard = response.data
-        resolve(dashboard)
+        const dashboardResponse = response.data
+        resolve(dashboardResponse)
     }).catch(handleApiError)
   })
 }
@@ -371,8 +371,8 @@ export function updateDashboard(dashboard, userMeta) {
           'Content-Type': 'application/json;charset=utf-8'
         }
       }).then(function (response) {
-        const dashboard = response.data
-        resolve(dashboard)
+        const dashboardResponse = response.data
+        resolve(dashboardResponse)
       }).catch(handleApiError)
   })
 }
