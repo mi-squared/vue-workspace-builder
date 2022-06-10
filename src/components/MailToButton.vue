@@ -134,7 +134,7 @@ export default {
           text: "A `" + item.text + "` was initiated.",
           coordinatorKey: coordinatorKey
         }).then(() => {
-          window.location = encodeURI(mailto)
+          window.open(encodeURI(mailto))
         })
 
       })
