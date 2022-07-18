@@ -331,6 +331,43 @@
 
                   <v-divider></v-divider>
 
+                  <!-- display UI Actions registered on server -->
+                  <v-list>
+                    <v-list-item>
+                      <v-list-item-content>
+                        <v-list-item-title class="text-h6">
+                          Actions
+                        </v-list-item-title>
+                      </v-list-item-content>
+                      <v-list-item-action>
+                        <DashboardActionsPerformedButton
+                          :entity="item"
+                          :dashboard="dashboard"
+                          :activeUsersList="activeUsersList"
+                        ></DashboardActionsPerformedButton>
+                      </v-list-item-action>
+                    </v-list-item>
+                    <v-divider></v-divider>
+
+                    <v-list-item-group>
+                      <v-list-item
+                        v-for="dashboardAction in getDashboardActions"
+                        :key="dashboardAction.handle"
+                        @click="performAction(dashboardAction.handle, item)"
+                      >
+
+                        <DashboardActionIcon
+                          :dashboardAction="dashboardAction">
+                        </DashboardActionIcon>
+                        <v-list-item-content>
+                          <v-list-item-title>{{ dashboardAction.title }}</v-list-item-title>
+                        </v-list-item-content>
+                      </v-list-item>
+                    </v-list-item-group>
+                  </v-list>
+
+                  <v-divider></v-divider>
+
                   <v-list>
                     <v-list-item>
                       <v-list-item-icon>
@@ -555,6 +592,42 @@
         </template>
       </v-snackbar>
 
+    <v-dialog
+      v-model="errorDialog"
+      width="500"
+    >
+      <v-card>
+        <v-card-title class="text-h5 grey lighten-2">
+
+          <v-icon v-if="getErrorMessage.iconType == 'icon'">{{ getErrorMessage.icon }}</v-icon>
+          <v-img
+            v-else-if="getErrorMessage.iconType == 'image'"
+            :src="getErrorMessage.icon"
+          >
+          </v-img>
+
+          There was an error
+        </v-card-title>
+
+        <v-card-text>
+          {{ getErrorMessage.message }}
+        </v-card-text>
+
+        <v-divider></v-divider>
+
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn
+            color="primary"
+            text
+            @click="setErrorMessage('')"
+          >
+            OK
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
   </div>
 </template>
 
@@ -581,9 +654,16 @@ import {
   ADD_NOTE,
   CREATE_ENTITY,
   FETCH_DASHBOARD,
-  FETCH_DASHBOARD_ROWS, FETCH_ENTITIES,
+  FETCH_ENTITIES,
   GET_DASHBOARD,
-  GET_DASHBOARD_ROWS, GET_ENTITY_BY_ID, GET_NOTES_BY_ENTITY_ID, INIT_DASHBOARD, PUSH_ENTITY, UPDATE_TEST
+  GET_DASHBOARD_ACTIONS,
+  GET_DASHBOARD_ROWS,
+  GET_ENTITY_BY_ID, GET_ERROR_MESSAGE,
+  GET_NOTES_BY_ENTITY_ID,
+  INIT_DASHBOARD,
+  PERFORM_DASHBOARD_ACTION,
+  PUSH_ENTITY, SET_ERROR_MESSAGE,
+  UPDATE_TEST
 } from '../store/types-dashboard'
 
 const { mapGetters: mapDashboardGetters, mapActions: mapDashboardActions } = createNamespacedHelpers('dashboard')
@@ -604,6 +684,8 @@ import SelectModal from './form-elements/SelectModal'
 import DatePickerModal from './form-elements/DatePickerModal'
 import DashboardFilesButton from './DashboardFilesButton'
 import MailToButton from './MailToButton'
+import DashboardActionsPerformedButton from './DashboardActionsPerformedButton'
+import DashboardActionIcon from './DashboardActionIcon'
 
 export default {
   name: 'Dashboard',
@@ -619,6 +701,8 @@ export default {
     }
   },
   components: {
+    DashboardActionIcon,
+    DashboardActionsPerformedButton,
     MailToButton,
     DatePickerModal,
     SelectModal,
@@ -745,7 +829,9 @@ export default {
       getDashboard: GET_DASHBOARD,
       getDashboardRows: GET_DASHBOARD_ROWS,
       getEntityById: GET_ENTITY_BY_ID,
-      getNotesByEntityId: GET_NOTES_BY_ENTITY_ID
+      getNotesByEntityId: GET_NOTES_BY_ENTITY_ID,
+      getDashboardActions: GET_DASHBOARD_ACTIONS,
+      getErrorMessage: GET_ERROR_MESSAGE,
     }),
     ...mapUserGetters({
       getUserMeta: GET_USER_META
@@ -761,6 +847,12 @@ export default {
     ...mapFormGetters({
       getForm: GET_FORM
     }),
+    errorDialog () {
+      if (this.getErrorMessage.message) {
+        return true
+      }
+      return false
+    },
     listOptions () {
       return this.allLists
     },
@@ -874,12 +966,13 @@ export default {
     ...mapDashboardActions({
       initDashboard: INIT_DASHBOARD,
       fetchDashboard: FETCH_DASHBOARD,
-      fetchDashboardRows: FETCH_DASHBOARD_ROWS,
       fetchEntities: FETCH_ENTITIES,
       updateTest: UPDATE_TEST,
       createEntity: CREATE_ENTITY,
       pushEntity: PUSH_ENTITY,
-      addNote: ADD_NOTE
+      addNote: ADD_NOTE,
+      setErrorMessage: SET_ERROR_MESSAGE,
+      performDashboardAction: PERFORM_DASHBOARD_ACTION,
     }),
     ...mapListActions({
       fetchListsBulk: FETCH_LISTS_WITH_DATA_BULK
@@ -900,6 +993,21 @@ export default {
         // Doesn't have the value set, just return empty string
         return ''
       }
+    },
+    /**
+     * Tell vuex that an action was triggered by the user
+     * @param handle
+     * @param entity
+     */
+    performAction(handle, entity) {
+      this.performDashboardAction({
+        handle: handle,
+        pid: entity.pid,
+        workspaceId: this.dashboard.workspaceId,
+        dashboardId: this.dashboard.id,
+        entityId: entity.dashboard_entity_id,
+        context: null,
+      })
     },
     save () {
       this.snack = true

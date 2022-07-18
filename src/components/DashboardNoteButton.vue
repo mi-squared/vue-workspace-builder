@@ -1,11 +1,14 @@
 <template>
   <div class="text-center relative-container">
+    <!-- need retain focus is false on parent and child otherwise
+    get infinite recursion https://github.com/vuetifyjs/vuetify/issues/8459 -->
     <v-dialog
       v-model="dialog"
       scrollable
       :close-on-content-click="false"
       max-width="600px"
       attach
+      :retain-focus="false"
     >
       <template v-slot:activator="{ on, attrs }">
         <v-btn
@@ -53,10 +56,9 @@
 
             <v-list-item v-if="getNotesByEntityId({ entityId: entity.dashboard_entity_id, dashboardId: dashboard.id }).length">
               <NoteHistory
+                :dense="true"
                 :entity="entity"
                 :key="entity.dashboard_entity_id"
-                :dashboard="dashboard"
-                :activeUsersList="activeUsersList"
                 :notes="getNotesByEntityId({ entityId: entity.dashboard_entity_id, dashboardId: dashboard.id })"
               >
               </NoteHistory>

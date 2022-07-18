@@ -6,16 +6,16 @@ import {
   CREATE_ENTITY, DELETE_META,
   FETCH_DASHBOARD,
   FETCH_ENTITIES,
-  FETCH_NOTES_BY_ENTITY_ID,
+  FETCH_NOTES_BY_ENTITY_ID, GET_ACTIONS_PERFORMED_BY_ENTITY_ID,
   GET_ATTACHMENTS_BY_ENTITY_ID,
   GET_COORDINATORS_BY_ENTITY_ID,
-  GET_DASHBOARD,
+  GET_DASHBOARD, GET_DASHBOARD_ACTIONS,
   GET_DASHBOARD_ROWS,
   GET_ENTITY_BY_ID, GET_ERROR_MESSAGE,
   GET_NOTES_BY_ENTITY_ID,
-  INIT_DASHBOARD,
+  INIT_DASHBOARD, PERFORM_DASHBOARD_ACTION,
   PUSH_ENTITY,
-  SET_DASHBOARD,
+  SET_DASHBOARD, SET_DASHBOARD_ACTIONS,
   SET_DASHBOARD_META,
   SET_DASHBOARD_ROWS,
   SET_ENTITY, SET_ERROR_MESSAGE,
@@ -26,13 +26,15 @@ import {
 import Vue from 'vue'
 import {
   createDashboard,
-  createEntity, createEntityMeta,
+  createEntity, createEntityMeta, deleteEntityMeta,
   fetchEntities,
-  getDashboardById, getNotesByEntityId, initDashboardById,
+  getDashboardById, getNotesByEntityId, initDashboardById, performAction,
   updateDashboard,
   updateEntity, updateEntityMeta, updateTestEntities
 } from '../../api'
 import { newCoordinator, newNote } from '../../model-builder'
+import Error from '../../models/Error'
+import Icon from '../../models/Icon'
 
 export const dashboard = {
   namespaced: true,
@@ -40,7 +42,8 @@ export const dashboard = {
     dashboards: {},
     entities: {},
     meta: {},
-    errorMessage: ""
+    actions: {},
+    errorMessage: {}
   },
   getters: {
     [ALL_DASHBOARDS]: state => state.dashboards,
@@ -53,7 +56,18 @@ export const dashboard = {
 
     [GET_NOTES_BY_ENTITY_ID]: state => ({ entityId, dashboardId }) => {
       return Object.values(state.meta).filter(meta => {
-        if (meta.metaType == 'Mi2\\Workspace\\Models\\EntityNote' &&
+        if (meta.deletedDate == null &&
+          meta.metaType == 'Mi2\\Workspace\\Models\\EntityNote' &&
+          meta.entityId == entityId &&
+          meta.dashboardId == dashboardId) {
+          return meta
+        }
+      })
+    },
+
+    [GET_ACTIONS_PERFORMED_BY_ENTITY_ID]: state => ({ entityId, dashboardId }) => {
+      return Object.values(state.meta).filter(meta => {
+        if (meta.metaType == 'Mi2\\Workspace\\Models\\EntityActionPerformed' &&
           meta.entityId == entityId &&
           meta.dashboardId == dashboardId) {
           return meta
@@ -87,6 +101,10 @@ export const dashboard = {
           return entity
         }
       })
+    },
+
+    [GET_DASHBOARD_ACTIONS]: state => {
+      return Object.values(state.actions)
     },
 
     [GET_ENTITY_BY_ID]: state => entityId => {
@@ -128,11 +146,36 @@ export const dashboard = {
       // Make a POST to server, then update VUEX
       updateDashboard(dashboard, userMeta).then(response => {
         if (response.messages.length > 0) {
-          commit(SET_ERROR_MESSAGE, { errorMessage: response.messages })
+          commit(SET_ERROR_MESSAGE, { errorMessage: {
+            icon: null,
+              iconType: null,
+            status: null,
+            message: response.messages
+          }
+          })
         }
         commit(SET_DASHBOARD, { dashboardId, dashboard: response.model })
         return response.model
       })
+    },
+
+    [PERFORM_DASHBOARD_ACTION] ({ commit, rootGetters }, { handle, pid, workspaceId, dashboardId, entityId, context = null }) {
+      const userMeta = rootGetters['user/GET_USER_META']
+
+      // If we have a token, make the API call
+      if (userMeta.csrfToken) {
+        performAction(userMeta, handle, pid, workspaceId, dashboardId, entityId, context).then(response => {
+          if (response.messages.length > 0) {
+            commit(SET_ERROR_MESSAGE, {
+              errorMessage: new Error(
+                response.messages,
+                new Icon(response.model.icon, response.model.iconType),
+                ""
+              )
+            })
+          }
+        })
+      }
     },
 
     /**
@@ -145,6 +188,10 @@ export const dashboard = {
      * @returns {Promise<unknown>}
      */
     [INIT_DASHBOARD] ({ commit, dispatch, rootGetters }, { dashboardId }) {
+
+      // Initialize error message to blank
+      commit(SET_ERROR_MESSAGE, { errorMessage: new Error("", new Icon("",""), "") })
+
       console.log("Fetching Dashboard: " + dashboardId)
       // Get meta data from the user module
       const userMeta = rootGetters['user/GET_USER_META']
@@ -157,6 +204,8 @@ export const dashboard = {
            initDashboardById(dashboardId, userMeta).then(response => {
 
             commit(SET_DASHBOARD, { dashboardId: response.dashboard.id, dashboard: response.dashboard })
+
+            commit(SET_DASHBOARD_ACTIONS, { actions: response.actions })
 
             dispatch('workspace/VUEX_SET_DATA_TYPES', { dataTypes: response.dataTypes }, { root: true })
 
@@ -243,6 +292,9 @@ export const dashboard = {
     },
 
     [SET_ERROR_MESSAGE]: ({ commit }, { errorMessage }) => {
+      if (errorMessage == '' || typeof errorMessage == 'undefined') {
+        errorMessage = new Error("", null, null)
+      }
       commit(SET_ERROR_MESSAGE, { errorMessage: errorMessage })
     },
 
@@ -284,6 +336,20 @@ export const dashboard = {
           createEntityMeta('note', note, userMeta).then(note => {
             commit(SET_META, { metaId: note.id, meta: note })
             resolve(note)
+          })
+        })
+      }
+    },
+
+    [DELETE_META]: ({ commit, rootGetters },  { endpoint, metaId, deleteReason }) => {
+      const userMeta = rootGetters['user/GET_USER_META']
+      // If we have a token, make the API call
+      if (userMeta.csrfToken) {
+        // Make the API call to create the note
+        return new Promise(resolve => {
+          deleteEntityMeta(endpoint, metaId, deleteReason, userMeta).then(metaId => {
+            commit(DELETE_META, { metaId: metaId })
+            resolve(metaId)
           })
         })
       }
@@ -375,12 +441,19 @@ export const dashboard = {
     },
 
     [DELETE_META] (state, { metaId }) {
-      Vue.delete(state.meta, metaId)
+      // Set deletedDate to a non-null
+      state.meta[metaId].deletedDate = "1"
+      const deleted = state.meta[metaId]
+      Vue.set(state.meta, metaId, deleted)
     },
 
     // Dashboard Builder Mutations
     [SET_DASHBOARD] (state, { dashboardId, dashboard }) {
       Vue.set(state.dashboards, dashboardId, dashboard)
+    },
+
+    [SET_DASHBOARD_ACTIONS] (state, { actions }) {
+      Vue.set(state, 'actions', actions)
     },
 
     [SET_DASHBOARD_META] (state, { meta }) {

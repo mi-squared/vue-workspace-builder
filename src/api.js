@@ -170,6 +170,29 @@ export function fetchListsWithDataBulk(arrayOfListId, userMeta)
   })
 }
 
+export function performAction(userMeta, handle, pid, workspaceId, dashboardId, entityId, context = null)
+{
+  return new Promise(resolve => {
+    axios.post(baseUrl + '/apis/api/action', {
+      handle: handle,
+      pid: pid,
+      context: context,
+      dashboardId: dashboardId,
+      workspaceId: workspaceId,
+      entityId: entityId,
+    },
+      {
+        headers: {
+          'apicsrftoken': userMeta.csrfToken,
+          'Content-Type': 'application/json;charset=utf-8'
+        }
+      }).then(function (response) {
+      const responseObj = response.data
+      resolve(responseObj)
+    }).catch(handleApiError)
+  })
+}
+
 export function createEntity(workspaceId, dashboardId, entity, patient, userMeta, sourceEntityId = null)
 {
   return new Promise((resolve) => {
@@ -268,23 +291,6 @@ export function getDashboardById(dashboardId, userMeta)
     }).then(function (response) {
       const dashboard = response.data
       resolve(dashboard)
-    }).catch(handleApiError)
-  })
-}
-
-export function fetchDashboardRows(dashboardId, userMeta)
-{
-  return new Promise((resolve) => {
-    axios.get(baseUrl + '/apis/api/dashboardrows', {
-      params: {
-        id: dashboardId
-      },
-      headers: {
-        'apicsrftoken': userMeta.csrfToken
-      }
-    }).then(function (response) {
-      const rows = response.data
-      resolve(rows)
     }).catch(handleApiError)
   })
 }
@@ -398,6 +404,15 @@ export function updateEntityMeta(endpoint, entityMeta, userMeta)
   })
 }
 
+/**
+ * Different entity metas require different actions on the server, so we post to an endpoint per type.
+ * For example, create an attachment requires creating the document from the doc store
+ *
+ * @param endpoint
+ * @param entityMeta
+ * @param userMeta
+ * @returns {Promise<unknown>}
+ */
 export function createEntityMeta(endpoint, entityMeta, userMeta)
 {
   return new Promise( (resolve) => {
@@ -412,6 +427,36 @@ export function createEntityMeta(endpoint, entityMeta, userMeta)
       }).then(function (response) {
         const entityMeta = response.data.model
         resolve(entityMeta)
+    }).catch(handleApiError)
+  })
+}
+
+/**
+ * Different entity metas require different actions on the server, so we post to an endpoint per type.
+ * For eamplple, deleting an attachment requires deleting the document from the doc store
+ *
+ * @param endpoint
+ * @param metaId
+ * @param deleteReason
+ * @param userMeta
+ * @returns {Promise<unknown>}
+ */
+export function deleteEntityMeta(endpoint, metaId, deleteReason, userMeta) {
+  return new Promise( (resolve) => {
+    axios.delete(baseUrl + '/apis/api/' + endpoint,
+      {
+        headers: {
+          'apicsrftoken': userMeta.csrfToken,
+          'Content-Type': 'application/json;charset=utf-8'
+        },
+        data: {
+          id: metaId,
+          reason: deleteReason
+        }
+      }).then(function (response) {
+        // Delete response is just the ID
+      const entityMetaId = response.data
+      resolve(entityMetaId)
     }).catch(handleApiError)
   })
 }

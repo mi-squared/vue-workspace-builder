@@ -106,7 +106,8 @@
 
         <!-- Provides the application the proper gutter -->
         <v-container fluid class="mt-4">
-          <v-timeline>
+          <v-timeline
+            :dense="false">
             <v-timeline-item
               v-for="timelineItem in timelineItems"
               :key="timelineItem.index"
@@ -178,11 +179,14 @@
                     :dashboard="timelineItem.dashboard"
                   ></DashboardFilesButton>
                 </v-card-actions>
-                <v-card-text v-if="showNotes[timelineItem.index]">
-                  <NoteHistoryTimeline
+                <v-card-text
+                  v-if="showNotes[timelineItem.index]"
+                >
+                  <NoteHistory
+                    :dense="false"
                     :notes="timelineNotes(timelineItem)"
                     :entity="timelineItem.entity"
-                  ></NoteHistoryTimeline>
+                  ></NoteHistory>
                 </v-card-text>
               </v-card>
             </v-timeline-item>
@@ -266,7 +270,6 @@ import JsonFormTimelineView from '../components/JsonFormTimelineView'
 import JsonForm from '../components/JsonForm'
 import { setOpenEmrPatient } from '../api'
 import moment from 'moment-timezone'
-import NoteHistoryTimeline from '../components/NoteHistoryTimeline'
 import { FETCH_LISTS_WITH_DATA_BULK, GET_LIST } from '../store/types-list'
 import {
   GET_NOTES_BY_ENTITY_ID,
@@ -274,6 +277,7 @@ import {
 } from '../store/types-dashboard'
 import DashboardFilesButton from '../components/DashboardFilesButton'
 import { INIT } from '../store/types-user'
+import NoteHistory from '../components/NoteHistory'
 
 const { mapGetters: mapTimelineGetters, mapActions: mapTimelineActions } = createNamespacedHelpers('timeline')
 const { mapGetters: mapWorkspaceGetters, mapActions: mapWorkspaceActions } = createNamespacedHelpers('workspace')
@@ -284,8 +288,8 @@ const { mapActions: mapUserActions } = createNamespacedHelpers('user')
 export default {
   name: 'PageTimeline',
   components: {
+    NoteHistory,
     DashboardFilesButton,
-    NoteHistoryTimeline,
     JsonFormTimelineView,
     JsonForm
   },

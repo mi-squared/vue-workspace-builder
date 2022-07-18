@@ -11,7 +11,7 @@ export const timeline = {
   getters: {
     timeline: state => {
       return Object.values(state.timeline).sort(function (a, b) {
-        const diff = new Date(a.entity.created_datetime) - new Date(b.entity.created_datetime)
+        const diff = new Date(b.entity.created_datetime) - new Date(a.entity.created_datetime)
         return diff
       })
     }

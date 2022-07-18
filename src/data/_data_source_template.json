@@ -51,11 +51,51 @@
           "category": "system"
         }
       },
+      "deleted_datetime": {
+        "name": "deleted_datetime",
+        "type": "datetime",
+        "default": null,
+        "comment": "Date and time that this entity was marked deleted.",
+        "extra": {
+          "createdBy": "system",
+          "category": "system"
+        }
+      },
+      "deleted_by": {
+        "name": "deleted_by",
+        "type": "user",
+        "default": null,
+        "comment": "User that deleted this entity. Refers to users.id.",
+        "extra": {
+          "createdBy": "system",
+          "category": "system"
+        }
+      },
+      "deleted_reason": {
+        "name": "deleted_reason",
+        "type": "text",
+        "default": null,
+        "comment": "Reason why user deleted this entity.",
+        "extra": {
+          "createdBy": "system",
+          "category": "system"
+        }
+      },
       "dashboard_id": {
         "name": "dashboard_id",
         "type": "integer",
         "default": null,
         "comment": "Refers to the dashboard that the entity is currently on, OR NULL if not on a dashboard.",
+        "extra": {
+          "createdBy": "system",
+          "category": "system"
+        }
+      },
+      "dashboard_id": {
+        "name": "referral_id",
+        "type": "integer",
+        "default": null,
+        "comment": "Refers to the referral in the aa_ws_referral_identifiers table, links referrals across tables.",
         "extra": {
           "createdBy": "system",
           "category": "system"
