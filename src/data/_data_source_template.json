@@ -91,16 +91,6 @@
           "category": "system"
         }
       },
-      "dashboard_id": {
-        "name": "referral_id",
-        "type": "integer",
-        "default": null,
-        "comment": "Refers to the referral in the aa_ws_referral_identifiers table, links referrals across tables.",
-        "extra": {
-          "createdBy": "system",
-          "category": "system"
-        }
-      },
       "moved_to_dashboard_date": {
         "name": "moved_to_dashboard_date",
         "type": "datetime",
