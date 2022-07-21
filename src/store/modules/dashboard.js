@@ -146,13 +146,7 @@ export const dashboard = {
       // Make a POST to server, then update VUEX
       updateDashboard(dashboard, userMeta).then(response => {
         if (response.messages.length > 0) {
-          commit(SET_ERROR_MESSAGE, { errorMessage: {
-            icon: null,
-              iconType: null,
-            status: null,
-            message: response.messages
-          }
-          })
+          commit(SET_ERROR_MESSAGE, { errorMessage: new Error(response.messages, new Icon("",""), "") })
         }
         commit(SET_DASHBOARD, { dashboardId, dashboard: response.model })
         return response.model
@@ -170,7 +164,7 @@ export const dashboard = {
               errorMessage: new Error(
                 response.messages,
                 new Icon(response.model.icon, response.model.iconType),
-                ""
+                response.status == 'success' ? "Success Response" : "There was an error"
               )
             })
           }
@@ -293,7 +287,7 @@ export const dashboard = {
 
     [SET_ERROR_MESSAGE]: ({ commit }, { errorMessage }) => {
       if (errorMessage == '' || typeof errorMessage == 'undefined') {
-        errorMessage = new Error("", null, null)
+        errorMessage = new Error("", new Icon("",""), "")
       }
       commit(SET_ERROR_MESSAGE, { errorMessage: errorMessage })
     },

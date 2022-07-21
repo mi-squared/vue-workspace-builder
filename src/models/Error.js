@@ -1,7 +1,7 @@
 export default class Error {
-  constructor (message, icon, details) {
+  constructor (message, icon, title) {
     this.message = message
     this.icon = icon
-    this.details = details
+    this.title = title ?? "There was an error"
   }
 }

@@ -357,6 +357,7 @@ export default {
     errorDialog () {
       if (this.getErrorMessage != undefined &&
         this.getErrorMessage != null &&
+        this.getErrorMessage.message != undefined &&
         this.getErrorMessage.message.length > 0) {
         return true
       }

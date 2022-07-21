@@ -599,14 +599,20 @@
       <v-card>
         <v-card-title class="text-h5 grey lighten-2">
 
-          <v-icon v-if="getErrorMessage.iconType == 'icon'">{{ getErrorMessage.icon }}</v-icon>
+          {{ getErrorMessage.title }}
+          <v-spacer></v-spacer>
+
+          <v-icon
+            v-if="getErrorMessage.icon && getErrorMessage.icon.iconType == 'icon'"
+            size="24"
+          >{{ getErrorMessage.icon.icon }}</v-icon>
           <v-img
-            v-else-if="getErrorMessage.iconType == 'image'"
-            :src="getErrorMessage.icon"
+            v-else-if="getErrorMessage.icon && getErrorMessage.icon.iconType == 'image'"
+            :src="getErrorMessage.icon.icon"
+            height="24"
+            contain
           >
           </v-img>
-
-          There was an error
         </v-card-title>
 
         <v-card-text>
