@@ -16,8 +16,8 @@
           v-on="on"
         >
           <v-badge
-            :content="getActionsPerformedByEntityId({ entityId: entity.dashboard_entity_id, dashboardId: dashboard.id }).length"
-            :value="getActionsPerformedByEntityId({ entityId: entity.dashboard_entity_id, dashboardId: dashboard.id }).length"
+            :content="actionsPerformed.length"
+            :value="actionsPerformed.length"
             color="green"
             overlap
           >
@@ -53,12 +53,12 @@
 
             <v-divider></v-divider>
 
-            <v-list-item v-if="getActionsPerformedByEntityId({ entityId: entity.dashboard_entity_id, dashboardId: dashboard.id }).length">
+            <v-list-item v-if="actionsPerformed.length">
               <ActionPerformedHistory
                 :dense="true"
                 :entity="entity"
                 :key="entity.dashboard_entity_id"
-                :actionsPerformed="getActionsPerformedByEntityId({ entityId: entity.dashboard_entity_id, dashboardId: dashboard.id })"
+                :actionsPerformed="actionsPerformed"
               >
               </ActionPerformedHistory>
             </v-list-item>
@@ -84,7 +84,10 @@
 </template>
 
 <script>
-import { GET_ACTIONS_PERFORMED_BY_ENTITY_ID } from '../store/types-dashboard'
+import {
+  GET_ACTIONS_PERFORMED_BY_ENTITY_ID,
+  GET_ACTIONS_PERFORMED_BY_PID
+} from '../store/types-dashboard'
 import { createNamespacedHelpers } from 'vuex'
 import ActionPerformedHistory from './ActionPerformedHistory'
 const { mapGetters: mapDashboardGetters } = createNamespacedHelpers('dashboard')
@@ -122,8 +125,18 @@ export default {
   },
   computed: {
     ...mapDashboardGetters({
-      getActionsPerformedByEntityId: GET_ACTIONS_PERFORMED_BY_ENTITY_ID
+      getActionsPerformedByEntityId: GET_ACTIONS_PERFORMED_BY_ENTITY_ID,
+      getActionsPerformedByPid: GET_ACTIONS_PERFORMED_BY_PID
     }),
+    actionsPerformed () {
+      // Get both actions performed by PID (could be un-related to entity) and by entity (could not have a patient)
+      // Merge the arrays and remove duplicates
+      const a1 = this.getActionsPerformedByEntityId({ entityId: this.entity.dashboard_entity_id, dashboardId: this.dashboard.id })
+      const a2 = this.getActionsPerformedByPid({ pid: this.entity.pid })
+      const a3 = a1.concat(a2)
+      const dups_removed = [...new Map(a3.map(v => [v.id, v])).values()]
+      return dups_removed
+    }
   },
   methods: {
     onClose() {

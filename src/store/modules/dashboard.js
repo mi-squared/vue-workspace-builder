@@ -3,24 +3,35 @@ import {
   ALL_DASHBOARDS,
   CREATE_COORDINATOR,
   CREATE_DASHBOARD,
-  CREATE_ENTITY, DELETE_META,
+  CREATE_ENTITY,
+  DELETE_META,
   FETCH_DASHBOARD,
   FETCH_ENTITIES,
-  FETCH_NOTES_BY_ENTITY_ID, GET_ACTIONS_PERFORMED_BY_ENTITY_ID,
+  FETCH_NOTES_BY_ENTITY_ID,
+  GET_ACTION_INDICATORS_BY_ENTITY_ID,
+  GET_ACTIONS_PERFORMED_BY_ENTITY_ID,
+  GET_ACTIONS_PERFORMED_BY_PID,
   GET_ATTACHMENTS_BY_ENTITY_ID,
   GET_COORDINATORS_BY_ENTITY_ID,
-  GET_DASHBOARD, GET_DASHBOARD_ACTIONS,
+  GET_DASHBOARD,
+  GET_DASHBOARD_ACTIONS,
   GET_DASHBOARD_ROWS,
-  GET_ENTITY_BY_ID, GET_ERROR_MESSAGE,
+  GET_ENTITY_BY_ID,
+  GET_ERROR_MESSAGE,
   GET_NOTES_BY_ENTITY_ID,
-  INIT_DASHBOARD, PERFORM_DASHBOARD_ACTION,
+  INIT_DASHBOARD,
+  PERFORM_DASHBOARD_ACTION,
   PUSH_ENTITY,
-  SET_DASHBOARD, SET_DASHBOARD_ACTIONS,
+  SET_DASHBOARD,
+  SET_DASHBOARD_ACTION_INDICATORS,
+  SET_DASHBOARD_ACTIONS,
   SET_DASHBOARD_META,
   SET_DASHBOARD_ROWS,
-  SET_ENTITY, SET_ERROR_MESSAGE,
+  SET_ENTITY,
+  SET_ERROR_MESSAGE,
   SET_META,
-  SET_NOTE, UPDATE_ATTACHMENT,
+  SET_NOTE,
+  UPDATE_ATTACHMENT,
   UPDATE_TEST
 } from '../types-dashboard'
 import Vue from 'vue'
@@ -43,6 +54,7 @@ export const dashboard = {
     entities: {},
     meta: {},
     actions: {},
+    indicators: {},
     errorMessage: {}
   },
   getters: {
@@ -75,6 +87,15 @@ export const dashboard = {
       })
     },
 
+    [GET_ACTIONS_PERFORMED_BY_PID]: state => ({ pid }) => {
+      return Object.values(state.meta).filter(meta => {
+        if (meta.metaType == 'Mi2\\Workspace\\Models\\EntityActionPerformed' &&
+          meta.pid == pid) {
+          return meta
+        }
+      })
+    },
+
     [GET_ATTACHMENTS_BY_ENTITY_ID]: state => ({ entityId, dashboardId }) => {
       return Object.values(state.meta).filter(meta => {
         if (meta.metaType == 'Mi2\\Workspace\\Models\\EntityAttachment' &&
@@ -93,6 +114,14 @@ export const dashboard = {
           return meta
         }
       })
+    },
+
+    [GET_ACTION_INDICATORS_BY_ENTITY_ID]: state => ({ entityId }) => {
+      if (state.indicators[entityId] != undefined) {
+        return state.indicators[entityId]
+      } else {
+        return []
+      }
     },
 
     [GET_DASHBOARD_ROWS]: state => dashboardId => {
@@ -271,6 +300,8 @@ export const dashboard = {
 
             commit(SET_DASHBOARD_META, { meta: response.entityMetaArray })
 
+            commit(SET_DASHBOARD_ACTION_INDICATORS, { indicators: response.actionIndicators })
+
             // Resolve the outer promise by returning the fetched entities
             resolve(response)
 
@@ -448,6 +479,10 @@ export const dashboard = {
 
     [SET_DASHBOARD_ACTIONS] (state, { actions }) {
       Vue.set(state, 'actions', actions)
+    },
+
+    [SET_DASHBOARD_ACTION_INDICATORS] (state, { indicators }) {
+      Vue.set(state, 'indicators', indicators)
     },
 
     [SET_DASHBOARD_META] (state, { meta }) {

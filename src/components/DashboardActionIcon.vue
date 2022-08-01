@@ -1,5 +1,5 @@
 <template>
-  <v-list-item-avatar tile size="24">
+  <v-list-item-avatar tile :size="size">
     <v-icon v-if="dashboardAction.iconType == 'icon'">{{ dashboardAction.icon }}</v-icon>
     <v-img
       v-else-if="dashboardAction.iconType == 'image'"
@@ -17,6 +17,11 @@ export default {
     dashboardAction: {
       type: Object,
       required: true
+    },
+    size: {
+      type: Number,
+      required: false,
+      default: 24
     }
   }
 }

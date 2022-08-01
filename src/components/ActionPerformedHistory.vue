@@ -61,7 +61,10 @@ export default {
     }),
     actionsPerformedNewestFirst () {
       const actionPerformed =  { ...this.actionsPerformed }
-      return Object.values(actionPerformed).reverse()
+      const sorted = Object.values(actionPerformed).sort((a, b) => {
+        return new Date(b.createdDate) - new Date(a.createdDate)
+      })
+      return sorted
     },
     activeUsersList() {
       return this.getList('active_users').data

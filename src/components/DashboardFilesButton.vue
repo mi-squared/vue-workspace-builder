@@ -134,7 +134,7 @@ export default {
   },
   computed: {
     ...mapDashboardGetters({
-      getAttachmentsByEntityId: GET_ATTACHMENTS_BY_ENTITY_ID
+      getAttachmentsByEntityId: GET_ATTACHMENTS_BY_ENTITY_ID,
     }),
     getBadgeColor () {
       // If the status is approved for all attachments, turn green. Otherwise, the badge is red

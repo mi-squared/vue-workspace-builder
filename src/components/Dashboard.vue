@@ -161,8 +161,8 @@
               <div v-else-if="header.value == 'data-indicators'">
 
                 <v-tooltip
-                  v-for="(indicator, index) in conditionalLogicIndicators(item)"
-                  :key="index"
+                  v-for="indicator in conditionalLogicIndicators(item)"
+                  :key="item.dashboard_entity_id + '_' + indicator.note"
                   bottom
                 >
                   <template v-slot:activator="{ on, attrs }">
@@ -174,6 +174,24 @@
                     >{{ indicator.icon }}</v-icon>
                   </template>
                   <span>{{ indicator.note }}</span>
+                </v-tooltip>
+
+                <v-tooltip
+                  v-for="actionIndicator in actionIndicators(item)"
+                  :key="item.dashboard_entity_id + '_' + actionIndicator.handle"
+                  bottom
+                >
+                  <template v-slot:activator="{ on, attrs }">
+                    <span
+                      v-bind="attrs"
+                      v-on="on">
+                      <DashboardActionIcon
+                        :size="20"
+                        :dashboard-action="actionIndicator"
+                      ></DashboardActionIcon>
+                    </span>
+                  </template>
+                  <span>{{ actionIndicator.title }}</span>
                 </v-tooltip>
 
                 <!-- if this is an archived entity, show an indicator -->
@@ -220,11 +238,6 @@
                   </template>
                   <span>{{ workspaceSource(item) }}</span>
                 </v-tooltip>
-
-                <!-- now we check conditions to add indicators -->
-                <!--          <v-icon v-if="item.something == 'dsafdsfad'" class="d-inline" color="green">mdi-circle</v-icon>-->
-                <!--          <v-icon class="d-inline">mdi-circle</v-icon>-->
-                <!--          <v-icon class="d-inline">mdi-airplane</v-icon>-->
               </div>
 
               <!-- The source column on it's own displays the source data -->
@@ -286,6 +299,7 @@
                 <v-menu
                   bottom
                   left
+                  min-width="360"
                 >
                   <template v-slot:activator="{ on, attrs }">
                     <v-btn
@@ -362,6 +376,12 @@
                         <v-list-item-content>
                           <v-list-item-title>{{ dashboardAction.title }}</v-list-item-title>
                         </v-list-item-content>
+
+                        <v-list-item-icon
+                          v-if="actionWasPerformed(dashboardAction.handle, item)"
+                        >
+                          <v-icon color="green">mdi-check</v-icon>
+                        </v-list-item-icon>
                       </v-list-item>
                     </v-list-item-group>
                   </v-list>
@@ -660,7 +680,7 @@ import {
   ADD_NOTE,
   CREATE_ENTITY,
   FETCH_DASHBOARD,
-  FETCH_ENTITIES,
+  FETCH_ENTITIES, GET_ACTION_INDICATORS_BY_ENTITY_ID, GET_ACTIONS_PERFORMED_BY_ENTITY_ID,
   GET_DASHBOARD,
   GET_DASHBOARD_ACTIONS,
   GET_DASHBOARD_ROWS,
@@ -838,6 +858,8 @@ export default {
       getNotesByEntityId: GET_NOTES_BY_ENTITY_ID,
       getDashboardActions: GET_DASHBOARD_ACTIONS,
       getErrorMessage: GET_ERROR_MESSAGE,
+      getActionsPerformedByEntityId: GET_ACTIONS_PERFORMED_BY_ENTITY_ID,
+      getActionIndicatorsByEntityId: GET_ACTION_INDICATORS_BY_ENTITY_ID
     }),
     ...mapUserGetters({
       getUserMeta: GET_USER_META
@@ -1014,6 +1036,15 @@ export default {
         entityId: entity.dashboard_entity_id,
         context: null,
       })
+    },
+    actionsPerformed(entity) {
+      return this.getActionsPerformedByEntityId({ entityId: entity.dashboard_entity_id, dashboardId: this.dashboard.id })
+    },
+    actionIndicators(entity) {
+      return this.getActionIndicatorsByEntityId({ entityId: entity.dashboard_entity_id})
+    },
+    actionWasPerformed(handle, entity) {
+      return this.actionsPerformed(entity).find(actionPerformed => actionPerformed.handle === handle)
     },
     save () {
       this.snack = true
@@ -1379,7 +1410,7 @@ export default {
           }
         }
 
-        this.onEntityChanged(entity)
+        // this.onEntityChanged(entity)
 
         // We're going to clone this entity and modify the clone so we don't mess this one up.
         let newEntity = { ...entity }
@@ -1400,8 +1431,9 @@ export default {
           dashboardId: defaultDashboardId,
           entity: newEntity,
           patient: null, // We don't send the patient, because there should already be an existing PID in the entity
-          sourceEntityId: entity.dashbord_entity_id // source is the original entity
+          sourceEntityId: entity.dashboard_entity_id // source is the original entity
         }).then(() => {
+          this.onEntityChanged(entity)
           this.snackbarText = "Successfully Sent to Workspace " + this.workspaces[workspaceId]
           this.snackbar = true
         })

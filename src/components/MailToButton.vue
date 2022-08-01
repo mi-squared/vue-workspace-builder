@@ -119,7 +119,7 @@ export default {
         // window.location = "mailto:mlundeen@crisisprepandrecovery.com?subject=CPR%20E-Signature%20Consent%20Forms&body=Hi%20Amy.%20Please%20follow%20this%20link%20to%20E-Sign%20your%20consent%20forms%20for%20your%20upcoming%20appointment%20with%20CPR.%0A%0Ahttps%3A%2F%2Fform.jotform.com%2F210535749373157"
         const body = "Hi " + that.entity.fname + ", \n" +
           "Please follow this link to sign your " + item.text + "\n" +
-          "https://form.jotform.com/" + item.value + "?oe_key=" + coordinatorKey
+          "https://cprecovery.jotform.com/" + item.value + "?oe_key=" + coordinatorKey
         const subject = item.text
         const mailto = "mailto:" +
           that.entity.email +
