@@ -19,6 +19,62 @@
         </v-card-title>
         <v-card-text>{{ actionPerformed.action.description }}</v-card-text>
         <v-card-text class="font-weight-light">{{ formatDatetime(actionPerformed.createdDate) }} by {{ displayUser(actionPerformed.createdBy) }}</v-card-text>
+
+        <v-card-actions>
+          <v-spacer></v-spacer>
+
+          <v-dialog
+            v-if="actionPerformed.action.details !== null"
+            v-model="actionPerformedDetailsDialogs[actionPerformed.id]"
+            width="500"
+            hide-overlay
+          >
+            <template v-slot:activator="{ on, attrs }">
+              <v-btn
+                icon
+                v-bind="attrs"
+                v-on="on"
+              >
+                <v-icon>mdi-dots-vertical</v-icon>
+              </v-btn>
+            </template>
+
+            <v-card>
+              <v-card-title> {{ actionPerformed.action.details.title }} </v-card-title>
+              <v-card-text>
+                <v-simple-table>
+                  <template v-slot:default>
+                    <thead>
+                    <tr>
+                      <th class="text-left"
+                          v-for="(title, headerIndex) in actionPerformed.action.details.headers"
+                          :key="actionPerformed.id + '_' + headerIndex">
+                        {{ title }}
+                      </th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                      <tr
+                        v-for="(row, rowIndex) in actionPerformed.action.details.data"
+                        :key="actionPerformed.id + '_' +  rowIndex"
+                      >
+                        <td
+                          v-for="(td, dataIndex) in row"
+                          :key="actionPerformed.id + '_' +  dataIndex"
+                        >
+                          {{ td }}
+                        </td>
+                      </tr>
+                    </tbody>
+                  </template>
+                </v-simple-table>
+              </v-card-text>
+            </v-card>
+
+          </v-dialog>
+
+        </v-card-actions>
+
       </v-card>
 
     </v-timeline-item>
@@ -53,6 +109,7 @@ export default {
   },
   data () {
     return {
+      actionPerformedDetailsDialogs: {}
     }
   },
   computed: {
@@ -87,7 +144,7 @@ export default {
     }
   },
   mounted () {
-    console.log("note history mounted")
+    console.log("action performed history mounted")
   }
 }
 </script>

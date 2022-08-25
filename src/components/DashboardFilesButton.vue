@@ -27,36 +27,42 @@
           v-for="(item, index) in attachments"
           :key="index"
         >
-          <v-list-item-title>
-            <a @click="onClickView(item)">{{ item.title }}</a>
-          </v-list-item-title>
-          <v-list-item-subtitle>{{ item.status }}</v-list-item-subtitle>
+          <v-list-item-content>
+            <v-list-item-title>
+              <a @click="onClickView(item)">{{ item.title }}</a>
+            </v-list-item-title>
+            <v-list-item-subtitle>{{ item.status }}</v-list-item-subtitle>
+          </v-list-item-content>
 
-          <v-list-item-icon>
-            <v-btn icon @click="onClickView(item)">
-              <v-icon :color="getViewColor(item)">mdi-eye-arrow-right-outline</v-icon>
-            </v-btn>
-          </v-list-item-icon>
-
-          <v-list-item-icon>
-            <v-btn
-              icon
-              @click.stop="onClickApprove(item)"
-              :disabled="item.status == 'new' || item.status == ''"
-            >
-              <v-icon :color="getApproveColor(item)">mdi-check-circle-outline</v-icon>
-            </v-btn>
-          </v-list-item-icon>
-
-          <v-list-item-icon>
-            <v-btn
-              icon
-              @click.stop="onClickDelete(item)"
-              :disabled="item.status == 'approved' || item.status == 'new' || item.status == ''"
-            >
-              <v-icon>mdi-close-circle-outline</v-icon>
-            </v-btn>
-          </v-list-item-icon>
+          <v-list-item-action>
+            <v-list-item-icon>
+              <v-btn icon @click="onClickView(item)">
+                <v-icon :color="getViewColor(item)">mdi-eye-arrow-right-outline</v-icon>
+              </v-btn>
+            </v-list-item-icon>
+          </v-list-item-action>
+          <v-list-item-action>
+            <v-list-item-icon>
+              <v-btn
+                icon
+                @click.stop="onClickApprove(item)"
+                :disabled="item.status == 'new' || item.status == ''"
+              >
+                <v-icon :color="getApproveColor(item)">mdi-check-circle-outline</v-icon>
+              </v-btn>
+            </v-list-item-icon>
+          </v-list-item-action>
+          <v-list-item-action>
+            <v-list-item-icon>
+              <v-btn
+                icon
+                @click.stop="onClickDelete(item)"
+                :disabled="item.status == 'approved' || item.status == 'new' || item.status == ''"
+              >
+                <v-icon>mdi-close-circle-outline</v-icon>
+              </v-btn>
+            </v-list-item-icon>
+          </v-list-item-action>
         </v-list-item>
       </v-list>
       <v-list v-else>
@@ -262,8 +268,11 @@ export default {
 
 <style scoped>
 
-.v-list-item__icon {
-  margin-left: 16px;
+.v-application--is-ltr .v-list-item__action:last-of-type:not(:only-child), .v-application--is-ltr .v-list-item__avatar:last-of-type:not(:only-child), .v-application--is-ltr .v-list-item__icon:last-of-type:not(:only-child) {
+  margin-left: 0px;
 }
 
+.v-application--is-ltr .v-list-item__action:first-child, .v-application--is-ltr .v-list-item__icon:first-child {
+  margin-right: 0px;
+}
 </style>

@@ -118,7 +118,11 @@ export default {
       getList: GET_LIST
     }),
     items () {
-      return this.getList(this.listId).data
+      if (this.getList(this.listId) != undefined) {
+        return this.getList(this.listId).data
+      } else {
+        return []
+      }
     },
     /**
      * Display value for the list option
