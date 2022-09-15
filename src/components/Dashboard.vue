@@ -845,10 +845,12 @@ export default {
     },
     globalSearch: {
       handler () {
+
+        this.loadEntitiesApi()
+
         // When we change global search, set pagination options page back to one so we don't get
         // stuck on a page with no content
         this.paginationOptions.page = 1
-        this.loadEntitiesApi()
       },
       deep: true,
     },
