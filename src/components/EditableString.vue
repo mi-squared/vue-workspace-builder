@@ -115,7 +115,10 @@ export default {
   methods: {
     onSave() {
       this.entity[this.index] = this.myString
-      this.$emit('save', this.entity)
+      this.$emit('save', {
+        entity: this.entity,
+        fieldKey: this.index
+      })
       this.menu = false
     },
     onClear() {

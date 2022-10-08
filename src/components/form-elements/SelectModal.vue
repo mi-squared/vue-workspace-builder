@@ -154,7 +154,10 @@ export default {
   methods: {
     onSave () {
       this.activeModel[this.index] = this.myValue
-      this.$emit('changed', this.activeModel)
+      this.$emit('changed', {
+        entity: this.activeModel,
+        fieldKey: this.index
+      })
       this.menu = false
     },
     onClose () {
