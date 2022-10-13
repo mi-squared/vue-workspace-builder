@@ -28,6 +28,7 @@ import {
   SET_DASHBOARD_META,
   SET_DASHBOARD_ROWS,
   SET_ENTITY,
+  SET_ENTITY_FIELD,
   SET_ERROR_MESSAGE,
   SET_META,
   SET_NOTE,
@@ -326,7 +327,7 @@ export const dashboard = {
     /**
      * Push an entity to the server using API
      */
-    [PUSH_ENTITY]: ({ commit, rootGetters }, { workspaceId, dashboardId, entityId, entity, patient }) => {
+    [PUSH_ENTITY]: ({ commit, rootGetters }, { workspaceId, dashboardId, entityId, entity, patient, fieldKey }) => {
       const userMeta = rootGetters['user/GET_USER_META']
 
       // Commit eagerly so we have the updated data in the data table right away
@@ -337,9 +338,14 @@ export const dashboard = {
         // Make sure to update the dashboardId on the entity itself in case it changed
         entity.dashboard_id = dashboardId
         return new Promise(resolve => {
-          updateEntity(workspaceId, dashboardId, entityId, entity, patient, userMeta).then(entity => {
-            // If we have an entity on this dashboard, then find it and set it
-            commit(SET_ENTITY, { entityId, entity })
+          updateEntity(workspaceId, dashboardId, entityId, entity, patient, fieldKey, userMeta).then(entity => {
+
+            if (fieldKey !== null) {
+              commit(SET_ENTITY_FIELD, {entityId, entity, fieldKey})
+            } else {
+              // If we have an entity on this dashboard, then find it and set it
+              commit(SET_ENTITY, {entityId, entity})
+            }
 
             // Let the caller know this AP call is complete
             resolve(entity)
@@ -455,6 +461,18 @@ export const dashboard = {
         }
         Vue.set(state.entities, entityId, toSave)
       }
+    },
+
+    [SET_ENTITY_FIELD] (state, { entityId, entity, fieldKey }) {
+      let entityToUpdate = state.entities[entityId]
+      let entityWithFieldOnly = {}
+      entityWithFieldOnly[fieldKey] = entity[fieldKey]
+      // Only overwrite the single field we got
+      let toSave = {
+        ...entityToUpdate,
+        ...entityWithFieldOnly
+      }
+      Vue.set(state.entities, entityId, toSave)
     },
 
     [SET_ERROR_MESSAGE] (state, { errorMessage }) {

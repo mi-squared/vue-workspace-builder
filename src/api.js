@@ -217,7 +217,7 @@ export function createEntity(workspaceId, dashboardId, entity, patient, userMeta
   })
 }
 
-export function updateEntity(workspaceId, dashboardId, entityId, entity, patient, userMeta)
+export function updateEntity(workspaceId, dashboardId, entityId, entity, patient, fieldKey, userMeta)
 {
   return new Promise((resolve) => {
     axios.put(baseUrl + '/apis/api/entity', {
@@ -226,7 +226,8 @@ export function updateEntity(workspaceId, dashboardId, entityId, entity, patient
           dashboardId: dashboardId,
           entityId: entityId,
           entity: entity,
-          patient: patient
+          patient: patient,
+          fieldKey // pass the field key if only updating one field, we can only update the one field in vuex on return trip
         }
       },
       {

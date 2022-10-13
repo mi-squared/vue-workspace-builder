@@ -65,7 +65,7 @@
 
             <v-switch
               class="mt-4"
-              v-model="backgroundRefresh"
+              v-model="backgroundRefresh.switch"
               label="Background Refresh"
             >
             </v-switch>
@@ -437,7 +437,7 @@
                     :index="header.value"
                     :model="item"
                     :listId="listIdForItem(header)"
-                    @changed="onEntityChanged(item)"
+                    @changed="onEntityValueChanged"
                     @show="onDashboardComponentVisibilityChanged"
                   ></SelectModal>
                 </div>
@@ -465,24 +465,25 @@
                     :key="generateKey(item, header)"
                     :entity="item"
                     :index="header.value"
-                    @save="onEntityChanged(item)"
+                    @save="onEntityValueChanged"
                     @show="onDashboardComponentVisibilityChanged"
                   ></EditableString>
                 </div>
 
                 <div v-if="header.type == 'datetime'">
 
-                  <DatetimePicker
+                  <DatetimePickerModal
                     :key="generateKey(item, header)"
-                    v-model="item[header.value]"
+                    :model="item"
+                    :index="header.value"
                     timeFormat="HH:mm"
                     dateFormat="MM/dd/yyyy"
-                    @input="onEntityChanged(item)"
+                    @input="onEntityValueChanged"
                     @show="onDashboardComponentVisibilityChanged"
                   >
                     <v-icon slot="dateIcon">mdi-calendar</v-icon>
                     <v-icon slot="timeIcon">mdi-clock</v-icon>
-                  </DatetimePicker>
+                  </DatetimePickerModal>
                 </div>
 
                 <div v-if="header.type == 'date'">
@@ -491,7 +492,7 @@
                     :id="item.id"
                     :model="item"
                     :index="header.value"
-                    @changed="onEntityChanged(item)"
+                    @changed="onEntityValueChanged"
                     @show="onDashboardComponentVisibilityChanged"
                   ></DatePickerModal>
 
@@ -703,7 +704,7 @@ const { mapGetters: mapFormGetters } = createNamespacedHelpers('form')
 import { formatDate, formatDatetime } from '../display-helpers'
 import { MixinLogicEvaluator } from '../mixin-logic-evaluator'
 import { setOpenEmrPatient } from '../api'
-import DatetimePicker from './DatetimePicker'
+import DatetimePickerModal from './form-elements/DatetimePickerModal'
 import EditableString from './EditableString'
 import DashboardFilters from './DashboardFilters'
 import SelectModal from './form-elements/SelectModal'
@@ -735,7 +736,7 @@ export default {
     DashboardFilesButton,
     DashboardFilters,
     EditableString,
-    DatetimePicker,
+    DatetimePickerModal,
     DashboardNoteButton,
     JsonForm,
     AppDate,
@@ -761,8 +762,14 @@ export default {
       snackbar: false,
       snackbarText: '',
       showArchives: false,
-      backgroundRefresh: true,
-      backgroundRefreshTimer: true,
+      backgroundRefresh: {
+        switch: true,
+        api: true,
+        userWait: true,
+        userModal: true
+      },
+      backgroundRefreshTimer: '', // Background refresh timer
+      pauseBackgroundRefreshUserWorkingTimer: '', // Stop background app refresh because user is working
       changeCount: {}, // histogram of counts each compnenent changes
       isPreview: this.preview || false,
       skeletonLoaderAttrs: {
@@ -1131,18 +1138,18 @@ export default {
       }
     },
     onNewEntityButtonClicked () {
-      this.backgroundRefreshTimer = false
-      this.dialog = true
+      this.backgroundRefresh.userModal = false // user opening modal, pause refresh
+      this.dialog = true // show the dialog (has it's own refresh pause while saving via API)
     },
     onNewEntityModalClosed () {
-      this.backgroundRefreshTimer = true
+      this.backgroundRefresh.userModal = true // user closed modal, continue refresh
       this.dialog = false
       this.newEntityModel = {}
       this.newPatientModel = {}
       this.entityCreateKey++
     },
     saveNewEntity ({ entity, patient }) {
-      this.backgroundRefreshTimer = true
+      this.backgroundRefresh.api = false
       // Save the entity
       console.log("Saving New Entity: " + this.newEntityModel)
 
@@ -1165,20 +1172,21 @@ export default {
 
         // TODO we shouldn't have to do this if the API returned the correctly formatted entity on the create endpoint
         that.loadEntitiesApi()
+        this.backgroundRefresh.api = true
         // Reset the model
         that.onNewEntityModalClosed()
       })
     },
     onEntityIdClick(entity) {
       console.log(entity.fname + " " + entity.lname)
-      this.backgroundRefreshTimer = false // Pause the timer / background refresh while form is open
+      this.backgroundRefresh.userModal = false // Pause the timer / background refresh while form is open
       this.mainEntityModel = { ...entity }
       this.mainPatientModel = { ...this.extractPatient(entity) }
       this.mainFormDialogs[entity.dashboard_entity_id] = true
     },
     onMainFormEntitySaved({ entity, patient }) {
       document.getElementsByClassName('v-dialog--active')[0].scrollTop = 0
-      this.backgroundRefreshTimer = true
+      this.backgroundRefresh.userModal = true
       this.mainEntityModel = {
         ...this.mainEntityModel,
         ...entity
@@ -1189,11 +1197,11 @@ export default {
       }
       this.onEntityChanged(this.mainEntityModel, this.mainPatientModel)
       this.onMainFormClosed(this.mainEntityModel)
-      // this.loadEntitiesApi()
+      this.loadEntitiesApi() // So the row gets updated immediately (not wait for bg)
     },
     onMainFormClosed (entity) {
       document.getElementsByClassName('v-dialog--active')[0].scrollTop = 0
-      this.backgroundRefreshTimer = true // un-Pause the timer / background refresh
+      this.backgroundRefresh.userModal = true // un-Pause the timer / background refresh
       // Clear the entity and patient models when we close the main form
       this.mainEntityModel = {}
       this.mainPatientModel = {}
@@ -1312,9 +1320,13 @@ export default {
       })
       this.orderedEntities.splice(movedEntityIndex, 1)
     },
-    onEntityChanged(entity, patient = null) {
+    onEntityValueChanged({ entity, fieldKey }) {
+      this.onEntityChanged(entity, null, fieldKey)
+    },
+    onEntityChanged(entity, patient = null, fieldKey = null) {
       // Let the user know we're doing something
-      this.loaded = false
+      // this.loaded = false
+      this.backgroundRefresh.api = false // pause background refresh
 
       if (this.dashboard.hasConditionalLogic) {
         this.dashboard.conditionalLogic.rules.forEach(rule => {
@@ -1342,12 +1354,15 @@ export default {
         dashboardId: this.dashboard.id,
         entityId: entity.dashboard_entity_id,
         entity,
-        patient: patientModel // Send the patient model along with the entity
+        patient: patientModel, // Send the patient model along with the entity
+        fieldKey: fieldKey // If a specific field was changed, pass the key, so when request comes back round-trip we can update that filed only in VUEX
       }).then(() => {
         // force update of the dashboard form components by incrementing change count, which they use as part of :key
         this.incrementChangeCount(Number(entity.dashboard_entity_id))
-        this.loaded = true
-        this.loadEntitiesApi()
+        // this.loaded = true
+        this.setBackgroundRefreshTimerOnIn(3000) // Restart background refresh 5 sec after save
+        this.backgroundRefresh.api = true
+        // this.loadEntitiesApi()
       })
     },
     archiveEntity(entity, archive = 1) {
@@ -1468,8 +1483,10 @@ export default {
       }, secondsRemaining)
 
       this.updateTimer = setInterval(() => {
-        if (that.backgroundRefresh === true &&
-          that.backgroundRefreshTimer === true) {
+        if (that.backgroundRefresh.switch === true && // true if UI switch is on
+          that.backgroundRefresh.userModal === true && // true when user doesn't have a modal open
+          that.backgroundRefresh.api === true && // waiting for an API call to return
+          that.backgroundRefresh.userWait === true) { // true when user hasn't "just" saved data
           that.updateTest({
             dashboardId: that.dashboard.id,
             workspaceId: that.dashboard.workspaceId,
@@ -1483,6 +1500,14 @@ export default {
           })
         }
       }, 5000)
+    },
+    setBackgroundRefreshTimerOnIn(milliseconds = 1000) {
+      // We are going to wait for the user for some number of ms
+      let that = this
+      this.backgroundRefresh.userWait = false
+      this.pauseBackgroundRefreshUserWorkingTimer = setTimeout(() => {
+        that.backgroundRefresh.userWait = true
+      }, milliseconds)
     },
     cancelAutoUpdate () {
       clearInterval(this.updateTimer)
@@ -1581,9 +1606,9 @@ export default {
     },
     onDashboardComponentVisibilityChanged (isShowing) {
       if (isShowing === true) {
-        this.backgroundRefreshTimer = false
+        this.backgroundRefresh.userModal = false
       } else {
-        this.backgroundRefreshTimer = true
+        this.backgroundRefresh.userModal = true
       }
     }
   },
