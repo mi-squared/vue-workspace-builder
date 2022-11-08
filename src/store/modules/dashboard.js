@@ -33,12 +33,13 @@ import {
   SET_META,
   SET_NOTE,
   UPDATE_ATTACHMENT,
-  UPDATE_TEST
+  UPDATE_TEST,
+  DELETE_ENTITY
 } from '../types-dashboard'
 import Vue from 'vue'
 import {
   createDashboard,
-  createEntity, createEntityMeta, deleteEntityMeta,
+  createEntity, createEntityMeta, deleteEntityMeta, deleteEntity,
   fetchEntities,
   getDashboardById, getNotesByEntityId, initDashboardById, performAction,
   updateDashboard,
@@ -152,6 +153,17 @@ export const dashboard = {
         createEntity(workspaceId, dashboardId, entity, patient, userMeta, sourceEntityId).then(newEntity => {
           commit(SET_ENTITY, { entityId: newEntity.dashboard_entity_id, entity: newEntity })
           resolve(newEntity)
+        })
+      })
+    },
+
+    [DELETE_ENTITY] ({ commit, rootGetters }, { workspaceId, entityId }) {
+      // Get meta data from the user module
+      const userMeta = rootGetters['user/GET_USER_META']
+      return new Promise(resolve => {
+        deleteEntity(workspaceId, entityId, userMeta).then(entityId => {
+          commit(DELETE_ENTITY, { entityId });
+          resolve(entityId);
         })
       })
     },
@@ -461,6 +473,12 @@ export const dashboard = {
         }
         Vue.set(state.entities, entityId, toSave)
       }
+    },
+
+    [DELETE_ENTITY] (state, { entityId }) {
+      const updatedEntities = { ...state.entities }
+      delete updatedEntities[entityId]
+      Vue.set(state, 'entities', updatedEntities)
     },
 
     [SET_ENTITY_FIELD] (state, { entityId, entity, fieldKey }) {

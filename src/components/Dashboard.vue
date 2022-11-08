@@ -332,6 +332,13 @@
                         <v-icon>mdi-archive</v-icon>
                       </v-btn>
 
+                      <v-btn
+                        icon
+                        @click="showDeleteEntityDialog(item)"
+                      >
+                        <v-icon>mdi-delete</v-icon>
+                      </v-btn>
+
                       <MailToButton
                         :entity="item"
                         :dashboard="dashboard"
@@ -655,6 +662,14 @@
       </v-card>
     </v-dialog>
 
+    <DashboardDeleteEntityDialog
+      :show="Boolean(entityToDelete?.id)"
+      :entityId="entityToDelete?.id"
+      :entityName="entityToDelete?.fname + ' ' + entityToDelete?.lname"
+      @cancel="onCancelDeleteEntity"
+      @confirm="onConfirmDeleteEntity"
+    />
+
   </div>
 </template>
 
@@ -689,7 +704,8 @@ import {
   GET_NOTES_BY_ENTITY_ID,
   INIT_DASHBOARD,
   PERFORM_DASHBOARD_ACTION,
-  PUSH_ENTITY, SET_ERROR_MESSAGE,
+  PUSH_ENTITY, DELETE_ENTITY,
+  SET_ERROR_MESSAGE,
   UPDATE_TEST
 } from '../store/types-dashboard'
 
@@ -710,6 +726,7 @@ import DashboardFilters from './DashboardFilters'
 import SelectModal from './form-elements/SelectModal'
 import DatePickerModal from './form-elements/DatePickerModal'
 import DashboardFilesButton from './DashboardFilesButton'
+import DashboardDeleteEntityDialog from './DashboardDeleteEntityDialog'
 import MailToButton from './MailToButton'
 import DashboardActionsPerformedButton from './DashboardActionsPerformedButton'
 import DashboardActionIcon from './DashboardActionIcon'
@@ -734,6 +751,7 @@ export default {
     DatePickerModal,
     SelectModal,
     DashboardFilesButton,
+    DashboardDeleteEntityDialog,
     DashboardFilters,
     EditableString,
     DatetimePickerModal,
@@ -786,6 +804,7 @@ export default {
       //currentUnixTimestamp: null,
       expanded: [],
       singleExpand: false,
+      entityToDelete: {},
       entityTitle: 'Referral',
       max25chars: v => v.length <= 25 || 'Input too long!',
       // This is the filter containing conditions for sending to server. Custom filter is the filter created
@@ -1010,6 +1029,7 @@ export default {
       updateTest: UPDATE_TEST,
       createEntity: CREATE_ENTITY,
       pushEntity: PUSH_ENTITY,
+      deleteEntity: DELETE_ENTITY,
       addNote: ADD_NOTE,
       setErrorMessage: SET_ERROR_MESSAGE,
       performDashboardAction: PERFORM_DASHBOARD_ACTION,
@@ -1217,6 +1237,22 @@ export default {
         text: payload.text,
         coordinatorKey: payload.coordinatorKey
       })
+    },
+    onCancelDeleteEntity() {
+      this.entityToDelete = {}
+    },
+    onConfirmDeleteEntity: async function() {
+      try {
+        await this.deleteEntity({ workspaceId: this.dashboard.workspaceId, entityId: this.entityToDelete.id })
+        this.snackbarText = 'Entity with id ' + this.entityToDelete.id + ' successfully deleted'
+        this.snackbar = true
+        this.entityToDelete = {}
+      } catch (e) {
+        console.log('Error:', e)
+      }
+    },
+    showDeleteEntityDialog(entity) {
+      this.entityToDelete = entity
     },
     lastNoteText(entity) {
       const notes = this.getNotesByEntityId({
