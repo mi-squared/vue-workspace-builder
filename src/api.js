@@ -217,6 +217,28 @@ export function createEntity(workspaceId, dashboardId, entity, patient, userMeta
   })
 }
 
+export function deleteEntity(workspaceId, entityId, userMeta) {
+
+  return new Promise((resolve) => {
+    axios.post(baseUrl+ '/apis/api/deleteentity', {
+      params: {
+        workspaceId,
+        entityId
+      }
+    },
+    {
+      headers: {
+        'apicsrftoken': userMeta.csrfToken,
+          'Content-Type': 'application/json;charset=utf-8'
+      }
+    }).then(function (response) {
+      if (response.data.deleted){
+        resolve(entityId)
+      }
+    }).catch(handleApiError)
+  })
+}
+
 export function updateEntity(workspaceId, dashboardId, entityId, entity, patient, fieldKey, userMeta)
 {
   return new Promise((resolve) => {
