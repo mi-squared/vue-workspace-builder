@@ -3,9 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "serve": "vue-cli-service serve",
-    "build": "vue-cli-service build",
-    "lint": "vue-cli-service lint"
+    "dev": "vite",
+    "build": "vite build",
+    "serve": "vite preview"
   },
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "^1.2.36",
@@ -14,7 +14,6 @@
     "@koumoul/vjsf": "^2.9.0",
     "@mdi/font": "^6.4.95",
     "axios": "^0.21.4",
-    "core-js": "^3.16.1",
     "date-fns": "^2.25.0",
     "eslint-plugin-html": "^6.1.2",
     "eslint-plugin-standard": "^5.0.0",
@@ -33,18 +32,14 @@
   },
   "devDependencies": {
     "@mdi/js": "^6.4.95",
-    "@vue/cli-plugin-babel": "~4.5.0",
-    "@vue/cli-plugin-eslint": "~4.5.0",
-    "@vue/cli-plugin-router": "~4.5.0",
-    "@vue/cli-service": "~4.5.0",
-    "babel-eslint": "^10.1.0",
+    "@vitejs/plugin-vue": "^1.10.2",
     "deepmerge": "^4.2.2",
     "eslint": "^6.8.0",
     "eslint-plugin-vue": "^6.2.2",
     "miragejs": "^0.1.42",
     "sass": "~1.32",
-    "sass-loader": "^10",
-    "vue-template-compiler": "^2.6.11"
+    "vite": "^2.9.15",
+    "vite-plugin-vue2": "^1.9.0"
   },
   "eslintConfig": {
     "root": true,

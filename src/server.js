@@ -215,7 +215,7 @@ export function makeServer({ environment = "development" } = {}) {
     },
 
     routes() {
-      this.namespace = process.env.VUE_APP_BASE_URL;
+      this.namespace = import.meta.VITE_BASE_URL;
 
       this.get(
         "/interface/modules/custom_modules/oe-workspace-server/init.php",
