@@ -21,6 +21,8 @@ export default defineConfig({
   },
   publicDir: base_path,
   server: {
+    port: 8080,
+    strictPort: true,
     headers: {
       "Access-Control-Allow-Origin": "*",
     },
@@ -32,7 +34,28 @@ export default defineConfig({
       },
     },
     host: "127.0.0.1",
-    proxy: { "/": "http://localhost:8300" },
+    proxy: {
+      "/": {
+        target: `http://localhost:8300`,
+        changeOrigin: true,
+        secure: false,
+        configure: (proxy, _options) => {
+          proxy.on("error", (err, _req, _res) => {
+            console.log("proxy error", err);
+          });
+          proxy.on("proxyReq", (proxyReq, req, _res) => {
+            console.log("Sending Request to the Target:", req.method, req.url);
+          });
+          proxy.on("proxyRes", (proxyRes, req, _res) => {
+            console.log(
+              "Received Response from the Target:",
+              proxyRes.statusCode,
+              req.url
+            );
+          });
+        },
+      },
+    },
   },
 });
 
