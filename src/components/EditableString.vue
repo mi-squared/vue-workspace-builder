@@ -25,7 +25,7 @@
       </template>
 
       <v-card>
-        <v-card-text>
+        <v-card-text v-if="textType == 'field'">
           <v-text-field
             dense
             v-model="myString"
@@ -34,6 +34,16 @@
           >
             <v-icon slot="prepend-inner" small>mdi-notepad</v-icon>
           </v-text-field>
+        </v-card-text>
+        <v-card-text v-else-if="textType == 'area'">
+          <v-textarea
+            dense
+            v-model="myString"
+            class="mt-4"
+            autofocus
+          >
+            <v-icon slot="prepend-inner" small>mdi-notepad</v-icon>
+          </v-textarea>
         </v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
@@ -95,12 +105,16 @@ export default {
     },
     index: {
       required: true
+    },
+    textTypeProp: {
+      required: false,
     }
   },
   data() {
     return {
       menu: false,
-      myString: ''
+      myString: '',
+      textType: this.textTypeProp ?? 'field' // can be field or area
     }
   },
   watch: {

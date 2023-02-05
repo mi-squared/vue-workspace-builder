@@ -477,6 +477,17 @@
                   ></EditableString>
                 </div>
 
+                <div v-if="header.type == 'text'">
+                  <EditableString
+                    :key="generateKey(item, header)"
+                    :entity="item"
+                    :index="header.value"
+                    :text-type-prop="`area`"
+                    @save="onEntityValueChanged"
+                    @show="onDashboardComponentVisibilityChanged"
+                  ></EditableString>
+                </div>
+
                 <div v-if="header.type == 'datetime'">
 
                   <DatetimePickerModal
