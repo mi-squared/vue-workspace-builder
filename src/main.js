@@ -14,7 +14,7 @@ import '@mdi/font/css/materialdesignicons.css'
 
 Vue.config.productionTip = false;
 
-if (process.env.NODE_ENV === "development" && process.env.VUE_APP_API_MOCK) {
+if (import.meta.NODE_ENV === "development" && import.meta.VITE_API_MOCK) {
   makeServer();
 }
 

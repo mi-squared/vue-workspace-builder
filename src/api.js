@@ -1,9 +1,9 @@
 import axios from 'axios'
 import { newDashboard, newDataSourceColumn, newForm, newWorkspace } from './model-builder'
 
-const baseUrl = process.env.VUE_APP_API_BASE_URL
+const baseUrl = import.meta.VITE_API_BASE_URL
 
-console.log('Base URL FOR API = ' + process.env.VUE_APP_API_BASE_URL)
+console.log('Base URL FOR API = ' + import.meta.VITE_API_BASE_URL)
 
 function handleApiError(error) {
   if (axios.isAxiosError(error)) {
